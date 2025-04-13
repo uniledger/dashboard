@@ -5,15 +5,17 @@ import React from 'react';
  */
 const LedgerDetail = ({ 
   ledger,
-  entities,
+  entities = [],
   ledgerAccounts,
   onBack,
   onViewJson
 }) => {
   if (!ledger) return null;
   
-  // Find associated entity
-  const entity = entities.find(e => e.entity_id === ledger.entity_id);
+  // Find associated entity if entities are available
+  const entity = Array.isArray(entities) 
+    ? entities.find(e => e.entity_id === ledger.entity_id)
+    : null;
   
   return (
     <div>
@@ -49,7 +51,7 @@ const LedgerDetail = ({
           </div>
           <div>
             <p className="text-sm text-gray-500">Entity</p>
-            <p className="text-gray-900">{entity?.name || 'N/A'}</p>
+            <p className="text-gray-900">{entity?.name || ledger.r_entity?.name || 'N/A'}</p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Currency</p>
@@ -81,7 +83,7 @@ const LedgerDetail = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {ledgerAccounts.length > 0 ? ledgerAccounts.map(account => (
+            {ledgerAccounts && ledgerAccounts.length > 0 ? ledgerAccounts.map(account => (
               <tr key={account.account_extra_id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {account.account_extra_id}
