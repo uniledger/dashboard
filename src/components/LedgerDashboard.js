@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import axios from 'axios';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
@@ -10,8 +10,9 @@ const LedgerDashboard = () => {
   const [ledgers, setLedgers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [accountTypeData, setAccountTypeData] = useState([]);
 
-  // Fetch actual data from your LedgerRocket API
+  // Fetch actual data from API
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -24,6 +25,10 @@ const LedgerDashboard = () => {
         const ledgersResponse = await axios.get(`${API_BASE_URL}/api/v1/enriched-ledgers/`);
         setLedgers(ledgersResponse.data);
         
+        // Calculate account type data from real accounts
+        const typeData = calculateAccountTypeData(accountsResponse.data);
+        setAccountTypeData(typeData);
+        
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -35,28 +40,12 @@ const LedgerDashboard = () => {
     fetchData();
   }, []);
 
-  // Monthly balance data - would be replaced with actual historical data in a real implementation
-  const monthlyData = [
-    { month: 'Jan', balance: 95000 },
-    { month: 'Feb', balance: 105000 },
-    { month: 'Mar', balance: 110000 },
-    { month: 'Apr', balance: 125000 },
-    { month: 'May', balance: 135000 },
-    { month: 'Jun', balance: 125000 },
-  ];
-
-  // Account type breakdown - in a real implementation, this would be calculated from accounts data
-  const calculateAccountTypeData = () => {
-    // If no accounts data, return default
-    if (!accounts || accounts.length === 0) {
-      return [
-        { type: 'Assets', value: 0 },
-        { type: 'Liabilities', value: 0 },
-        { type: 'Equity', value: 0 },
-      ];
+  // Calculate account types from real data
+  const calculateAccountTypeData = (accountsData) => {
+    if (!accountsData || accountsData.length === 0) {
+      return [];
     }
 
-    // Group accounts by type and sum balances
     const typeMap = {
       'ASSET': 'Assets',
       'LIABILITY': 'Liabilities',
@@ -69,7 +58,7 @@ const LedgerDashboard = () => {
     
     const typeBalances = {};
     
-    accounts.forEach(account => {
+    accountsData.forEach(account => {
       const type = account.account_code && account.account_code.type 
         ? typeMap[account.account_code.type] || account.account_code.type
         : 'Unknown';
@@ -83,7 +72,8 @@ const LedgerDashboard = () => {
     }));
   };
 
-  const accountTypeData = calculateAccountTypeData();
+  // Generate colors for charts
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
 
   if (loading) {
     return (
@@ -155,14 +145,16 @@ const LedgerDashboard = () => {
             >
               Ledgers
             </button>
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`pb-3 px-1 ${activeTab === 'analytics' 
-                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-            >
-              Analytics
-            </button>
+            {accountTypeData.length > 0 && (
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`pb-3 px-1 ${activeTab === 'analytics' 
+                  ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
+                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+              >
+                Analytics
+              </button>
+            )}
           </nav>
         </div>
 
@@ -290,58 +282,46 @@ const LedgerDashboard = () => {
           </div>
         )}
 
-        {activeTab === 'analytics' && (
+        {activeTab === 'analytics' && accountTypeData.length > 0 && (
           <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Financial Analytics</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Accounts Analysis</h2>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Account Balance History</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={monthlyData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => ['$' + value.toLocaleString(), 'Balance']} />
-                    <Legend />
-                    <Line type="monotone" dataKey="balance" stroke="#3B82F6" activeDot={{ r: 8 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Account Type Breakdown</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={accountTypeData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="type" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => ['$' + value.toLocaleString(), 'Amount']} />
-                    <Legend />
-                    <Bar dataKey="value" fill="#3B82F6" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="mt-6 bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">API Usage Statistics</h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="p-4 border rounded-lg text-center">
-                  <p className="text-gray-500 text-sm">API Calls Today</p>
-                  <p className="text-2xl font-bold text-blue-600">237</p>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Account Type Breakdown</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={accountTypeData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={true}
+                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                        nameKey="type"
+                      >
+                        {accountTypeData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => value.toLocaleString()} />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
-                <div className="p-4 border rounded-lg text-center">
-                  <p className="text-gray-500 text-sm">Transactions Created</p>
-                  <p className="text-2xl font-bold text-blue-600">42</p>
-                </div>
-                <div className="p-4 border rounded-lg text-center">
-                  <p className="text-gray-500 text-sm">New Accounts</p>
-                  <p className="text-2xl font-bold text-blue-600">3</p>
-                </div>
-                <div className="p-4 border rounded-lg text-center">
-                  <p className="text-gray-500 text-sm">Response Time</p>
-                  <p className="text-2xl font-bold text-green-600">78ms</p>
+                <div>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={accountTypeData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="type" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => value.toLocaleString()} />
+                      <Legend />
+                      <Bar dataKey="value" name="Balance" fill="#3B82F6" />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             </div>
