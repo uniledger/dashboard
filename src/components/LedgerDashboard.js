@@ -42,100 +42,6 @@ const LedgerDashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // For demo purposes - simulating API data
-        // In a real implementation, uncomment the API calls
-        
-        // Simulate API data for frontend-only development
-        const mockEntities = [
-          { entity_id: 'ent_001', name: 'Acme Corporation', country: 'USA' },
-          { entity_id: 'ent_002', name: 'Global Banking Ltd', country: 'UK' },
-          { entity_id: 'ent_003', name: 'Tech Innovations Inc', country: 'Canada' },
-        ];
-        
-        const mockLedgers = [
-          { 
-            ledger_id: 'led_001', 
-            name: 'USD Operations', 
-            description: 'Main USD operating ledger',
-            entity_id: 'ent_001',
-            country: 'USA',
-            r_entity: { name: 'Acme Corporation' },
-            r_currency: { currency_code: 'USD', scale: 2 }
-          },
-          { 
-            ledger_id: 'led_002', 
-            name: 'EUR Transactions', 
-            description: 'European operations',
-            entity_id: 'ent_001',
-            country: 'France',
-            r_entity: { name: 'Acme Corporation' },
-            r_currency: { currency_code: 'EUR', scale: 2 }
-          },
-          { 
-            ledger_id: 'led_003', 
-            name: 'Corporate Reserves', 
-            description: 'Long-term investments',
-            entity_id: 'ent_002',
-            country: 'UK',
-            r_entity: { name: 'Global Banking Ltd' },
-            r_currency: { currency_code: 'GBP', scale: 2 }
-          }
-        ];
-        
-        const mockAccounts = [
-          { 
-            account_extra_id: 'acc_001', 
-            name: 'Operating Cash', 
-            account_code: { type: 'ASSET', code: '1001' },
-            entity_id: 'ent_001',
-            ledger_id: 'led_001',
-            balance: 125000,
-            enriched_ledger: { 
-              name: 'USD Operations', 
-              ledger_id: 'led_001',
-              entity_id: 'ent_001',
-              r_entity: { name: 'Acme Corporation' },
-              r_currency: { currency_code: 'USD', scale: 2 }
-            }
-          },
-          { 
-            account_extra_id: 'acc_002', 
-            name: 'Accounts Receivable', 
-            account_code: { type: 'ASSET', code: '1200' },
-            entity_id: 'ent_001',
-            ledger_id: 'led_001',
-            balance: 85000,
-            enriched_ledger: { 
-              name: 'USD Operations', 
-              ledger_id: 'led_001',
-              entity_id: 'ent_001',
-              r_entity: { name: 'Acme Corporation' },
-              r_currency: { currency_code: 'USD', scale: 2 }
-            }
-          },
-          { 
-            account_extra_id: 'acc_003', 
-            name: 'Accounts Payable', 
-            account_code: { type: 'LIABILITY', code: '2001' },
-            entity_id: 'ent_001',
-            ledger_id: 'led_001',
-            balance: 65000,
-            enriched_ledger: { 
-              name: 'USD Operations', 
-              ledger_id: 'led_001',
-              entity_id: 'ent_001',
-              r_entity: { name: 'Acme Corporation' },
-              r_currency: { currency_code: 'USD', scale: 2 }
-            }
-          }
-        ];
-        
-        setEntities(mockEntities);
-        setLedgers(mockLedgers);
-        setAccounts(mockAccounts);
-        
-        // Uncomment these lines to use the real API
-        /*
         // Fetch enriched accounts
         const accountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/`);
         const accountsData = await accountsResponse.json();
@@ -150,7 +56,6 @@ const LedgerDashboard = () => {
         const entitiesResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/`);
         const entitiesData = await entitiesResponse.json();
         setEntities(entitiesData);
-        */
         
         setLoading(false);
       } catch (err) {
@@ -163,19 +68,10 @@ const LedgerDashboard = () => {
     fetchData();
   }, []);
 
-  // Set accounts for a specific entity when selected
+  // Fetch accounts for a specific entity
   useEffect(() => {
     if (!selectedEntityId || loading) return;
     
-    // Filter accounts for the entity
-    const filteredAccounts = accounts.filter(a => 
-      a.entity_id === selectedEntityId || 
-      (a.enriched_ledger && a.enriched_ledger.entity_id === selectedEntityId)
-    );
-    setEntityAccounts(filteredAccounts);
-    
-    // Uncomment to use real API endpoint
-    /*
     const fetchEntityAccounts = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/${selectedEntityId}/accounts/`);
@@ -183,7 +79,7 @@ const LedgerDashboard = () => {
         setEntityAccounts(data);
       } catch (err) {
         console.error('Error fetching entity accounts:', err);
-        // Fall back to filtering
+        // Fall back to filtering accounts
         const filteredAccounts = accounts.filter(a => 
           a.entity_id === selectedEntityId || 
           (a.enriched_ledger && a.enriched_ledger.entity_id === selectedEntityId)
@@ -193,22 +89,12 @@ const LedgerDashboard = () => {
     };
 
     fetchEntityAccounts();
-    */
   }, [selectedEntityId, accounts, loading]);
 
-  // Set accounts for a specific ledger when selected
+  // Fetch accounts for a specific ledger
   useEffect(() => {
     if (!selectedLedgerId || loading) return;
     
-    // Filter accounts for the ledger
-    const filteredAccounts = accounts.filter(a => 
-      a.ledger_id === selectedLedgerId || 
-      (a.enriched_ledger && a.enriched_ledger.ledger_id === selectedLedgerId)
-    );
-    setLedgerAccounts(filteredAccounts);
-    
-    // Uncomment to use real API endpoint
-    /*
     const fetchLedgerAccounts = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/${selectedLedgerId}/accounts/`);
@@ -216,7 +102,7 @@ const LedgerDashboard = () => {
         setLedgerAccounts(data);
       } catch (err) {
         console.error('Error fetching ledger accounts:', err);
-        // Fall back to filtering
+        // Fall back to filtering accounts
         const filteredAccounts = accounts.filter(a => 
           a.ledger_id === selectedLedgerId || 
           (a.enriched_ledger && a.enriched_ledger.ledger_id === selectedLedgerId)
@@ -226,7 +112,6 @@ const LedgerDashboard = () => {
     };
 
     fetchLedgerAccounts();
-    */
   }, [selectedLedgerId, accounts, loading]);
 
   // Handle opening the detail modal
