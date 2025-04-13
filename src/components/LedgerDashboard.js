@@ -354,9 +354,9 @@ const LedgerDashboard = () => {
           <div className="flex justify-between items-center">
             <p className="text-gray-500 text-sm">© 2025 LedgerRocket. All rights reserved.</p>
             <div className="flex space-x-6">
-              <a href="#" className="text-gray-500 hover:text-gray-700 text-sm">Documentation</a>
-              <a href="#" className="text-gray-500 hover:text-gray-700 text-sm">API Reference</a>
-              <a href="#" className="text-gray-500 hover:text-gray-700 text-sm">Support</a>
+              <a href="/documentation" className="text-gray-500 hover:text-gray-700 text-sm">Documentation</a>
+              <a href="/api-reference" className="text-gray-500 hover:text-gray-700 text-sm">API Reference</a>
+              <a href="/support" className="text-gray-500 hover:text-gray-700 text-sm">Support</a>
             </div>
           </div>
         </div>
