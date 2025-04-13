@@ -1,33 +1,156 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import axios from 'axios';
+import DetailModal from './shared/DetailModal';
+import EntityList from './entities/EntityList';
+import EntityDetail from './entities/EntityDetail';
+import LedgerList from './ledgers/LedgerList';
+import LedgerDetail from './ledgers/LedgerDetail';
+import AccountList from './accounts/AccountList';
+import AnalyticsView from './analytics/AnalyticsView';
+import DashboardView from './dashboard/DashboardView';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
 
+/**
+ * Main dashboard component that manages all views and API data
+ */
 const LedgerDashboard = () => {
-  const [activeTab, setActiveTab] = useState('accounts');
+  // State for active tab and detail views
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedEntityId, setSelectedEntityId] = useState(null);
+  const [selectedLedgerId, setSelectedLedgerId] = useState(null);
+  
+  // State for API data
   const [accounts, setAccounts] = useState([]);
   const [ledgers, setLedgers] = useState([]);
+  const [entities, setEntities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [accountTypeData, setAccountTypeData] = useState([]);
+  
+  // State for detail views
+  const [entityAccounts, setEntityAccounts] = useState([]);
+  const [ledgerAccounts, setLedgerAccounts] = useState([]);
+  
+  // State for detail modal
+  const [detailModal, setDetailModal] = useState({ 
+    isOpen: false, 
+    data: null, 
+    title: '' 
+  });
 
-  // Fetch actual data from API
+  // Fetch data from the API
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // For demo purposes - simulating API data
+        // In a real implementation, uncomment the API calls
+        
+        // Simulate API data for frontend-only development
+        const mockEntities = [
+          { entity_id: 'ent_001', name: 'Acme Corporation', country: 'USA' },
+          { entity_id: 'ent_002', name: 'Global Banking Ltd', country: 'UK' },
+          { entity_id: 'ent_003', name: 'Tech Innovations Inc', country: 'Canada' },
+        ];
+        
+        const mockLedgers = [
+          { 
+            ledger_id: 'led_001', 
+            name: 'USD Operations', 
+            description: 'Main USD operating ledger',
+            entity_id: 'ent_001',
+            country: 'USA',
+            r_entity: { name: 'Acme Corporation' },
+            r_currency: { currency_code: 'USD', scale: 2 }
+          },
+          { 
+            ledger_id: 'led_002', 
+            name: 'EUR Transactions', 
+            description: 'European operations',
+            entity_id: 'ent_001',
+            country: 'France',
+            r_entity: { name: 'Acme Corporation' },
+            r_currency: { currency_code: 'EUR', scale: 2 }
+          },
+          { 
+            ledger_id: 'led_003', 
+            name: 'Corporate Reserves', 
+            description: 'Long-term investments',
+            entity_id: 'ent_002',
+            country: 'UK',
+            r_entity: { name: 'Global Banking Ltd' },
+            r_currency: { currency_code: 'GBP', scale: 2 }
+          }
+        ];
+        
+        const mockAccounts = [
+          { 
+            account_extra_id: 'acc_001', 
+            name: 'Operating Cash', 
+            account_code: { type: 'ASSET', code: '1001' },
+            entity_id: 'ent_001',
+            ledger_id: 'led_001',
+            balance: 125000,
+            enriched_ledger: { 
+              name: 'USD Operations', 
+              ledger_id: 'led_001',
+              entity_id: 'ent_001',
+              r_entity: { name: 'Acme Corporation' },
+              r_currency: { currency_code: 'USD', scale: 2 }
+            }
+          },
+          { 
+            account_extra_id: 'acc_002', 
+            name: 'Accounts Receivable', 
+            account_code: { type: 'ASSET', code: '1200' },
+            entity_id: 'ent_001',
+            ledger_id: 'led_001',
+            balance: 85000,
+            enriched_ledger: { 
+              name: 'USD Operations', 
+              ledger_id: 'led_001',
+              entity_id: 'ent_001',
+              r_entity: { name: 'Acme Corporation' },
+              r_currency: { currency_code: 'USD', scale: 2 }
+            }
+          },
+          { 
+            account_extra_id: 'acc_003', 
+            name: 'Accounts Payable', 
+            account_code: { type: 'LIABILITY', code: '2001' },
+            entity_id: 'ent_001',
+            ledger_id: 'led_001',
+            balance: 65000,
+            enriched_ledger: { 
+              name: 'USD Operations', 
+              ledger_id: 'led_001',
+              entity_id: 'ent_001',
+              r_entity: { name: 'Acme Corporation' },
+              r_currency: { currency_code: 'USD', scale: 2 }
+            }
+          }
+        ];
+        
+        setEntities(mockEntities);
+        setLedgers(mockLedgers);
+        setAccounts(mockAccounts);
+        
+        // Uncomment these lines to use the real API
+        /*
         // Fetch enriched accounts
-        const accountsResponse = await axios.get(`${API_BASE_URL}/api/v1/enriched-accounts/`);
-        setAccounts(accountsResponse.data);
+        const accountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/`);
+        const accountsData = await accountsResponse.json();
+        setAccounts(accountsData);
         
         // Fetch enriched ledgers
-        const ledgersResponse = await axios.get(`${API_BASE_URL}/api/v1/enriched-ledgers/`);
-        setLedgers(ledgersResponse.data);
+        const ledgersResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/`);
+        const ledgersData = await ledgersResponse.json();
+        setLedgers(ledgersData);
         
-        // Calculate account type data from real accounts
-        const typeData = calculateAccountTypeData(accountsResponse.data);
-        setAccountTypeData(typeData);
+        // Fetch enriched entities
+        const entitiesResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/`);
+        const entitiesData = await entitiesResponse.json();
+        setEntities(entitiesData);
+        */
         
         setLoading(false);
       } catch (err) {
@@ -40,41 +163,91 @@ const LedgerDashboard = () => {
     fetchData();
   }, []);
 
-  // Calculate account types from real data
-  const calculateAccountTypeData = (accountsData) => {
-    if (!accountsData || accountsData.length === 0) {
-      return [];
-    }
-
-    const typeMap = {
-      'ASSET': 'Assets',
-      'LIABILITY': 'Liabilities',
-      'EQUITY': 'Equity',
-      'REVENUE': 'Revenue',
-      'EXPENSE': 'Expenses',
-      'CONTINGENT': 'Contingent',
-      'MEMO': 'Memo'
+  // Set accounts for a specific entity when selected
+  useEffect(() => {
+    if (!selectedEntityId || loading) return;
+    
+    // Filter accounts for the entity
+    const filteredAccounts = accounts.filter(a => 
+      a.entity_id === selectedEntityId || 
+      (a.enriched_ledger && a.enriched_ledger.entity_id === selectedEntityId)
+    );
+    setEntityAccounts(filteredAccounts);
+    
+    // Uncomment to use real API endpoint
+    /*
+    const fetchEntityAccounts = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/${selectedEntityId}/accounts/`);
+        const data = await response.json();
+        setEntityAccounts(data);
+      } catch (err) {
+        console.error('Error fetching entity accounts:', err);
+        // Fall back to filtering
+        const filteredAccounts = accounts.filter(a => 
+          a.entity_id === selectedEntityId || 
+          (a.enriched_ledger && a.enriched_ledger.entity_id === selectedEntityId)
+        );
+        setEntityAccounts(filteredAccounts);
+      }
     };
+
+    fetchEntityAccounts();
+    */
+  }, [selectedEntityId, accounts, loading]);
+
+  // Set accounts for a specific ledger when selected
+  useEffect(() => {
+    if (!selectedLedgerId || loading) return;
     
-    const typeBalances = {};
+    // Filter accounts for the ledger
+    const filteredAccounts = accounts.filter(a => 
+      a.ledger_id === selectedLedgerId || 
+      (a.enriched_ledger && a.enriched_ledger.ledger_id === selectedLedgerId)
+    );
+    setLedgerAccounts(filteredAccounts);
     
-    accountsData.forEach(account => {
-      const type = account.account_code && account.account_code.type 
-        ? typeMap[account.account_code.type] || account.account_code.type
-        : 'Unknown';
-      
-      typeBalances[type] = (typeBalances[type] || 0) + (account.balance || 0);
+    // Uncomment to use real API endpoint
+    /*
+    const fetchLedgerAccounts = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/${selectedLedgerId}/accounts/`);
+        const data = await response.json();
+        setLedgerAccounts(data);
+      } catch (err) {
+        console.error('Error fetching ledger accounts:', err);
+        // Fall back to filtering
+        const filteredAccounts = accounts.filter(a => 
+          a.ledger_id === selectedLedgerId || 
+          (a.enriched_ledger && a.enriched_ledger.ledger_id === selectedLedgerId)
+        );
+        setLedgerAccounts(filteredAccounts);
+      }
+    };
+
+    fetchLedgerAccounts();
+    */
+  }, [selectedLedgerId, accounts, loading]);
+
+  // Handle opening the detail modal
+  const handleViewJson = (data, title) => {
+    setDetailModal({
+      isOpen: true,
+      data,
+      title
     });
-    
-    return Object.keys(typeBalances).map(type => ({
-      type,
-      value: typeBalances[type]
-    }));
   };
 
-  // Generate colors for charts
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658'];
+  // Handle closing the detail modal
+  const handleCloseModal = () => {
+    setDetailModal({
+      isOpen: false,
+      data: null,
+      title: ''
+    });
+  };
 
+  // Loading state
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -86,6 +259,7 @@ const LedgerDashboard = () => {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
@@ -104,6 +278,13 @@ const LedgerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <DetailModal 
+        isOpen={detailModal.isOpen}
+        data={detailModal.data}
+        title={detailModal.title}
+        onClose={handleCloseModal}
+      />
+      
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
@@ -130,7 +311,47 @@ const LedgerDashboard = () => {
         <div className="border-b border-gray-200 mb-6">
           <nav className="-mb-px flex space-x-8">
             <button
-              onClick={() => setActiveTab('accounts')}
+              onClick={() => {
+                setActiveTab('dashboard');
+                setSelectedEntityId(null);
+                setSelectedLedgerId(null);
+              }}
+              className={`pb-3 px-1 ${activeTab === 'dashboard' 
+                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('entities');
+                setSelectedEntityId(null);
+                setSelectedLedgerId(null);
+              }}
+              className={`pb-3 px-1 ${activeTab === 'entities' 
+                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >
+              Entities
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('ledgers');
+                setSelectedEntityId(null);
+                setSelectedLedgerId(null);
+              }}
+              className={`pb-3 px-1 ${activeTab === 'ledgers' 
+                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >
+              Ledgers
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('accounts');
+                setSelectedEntityId(null);
+                setSelectedLedgerId(null);
+              }}
               className={`pb-3 px-1 ${activeTab === 'accounts' 
                 ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
@@ -138,194 +359,92 @@ const LedgerDashboard = () => {
               Accounts
             </button>
             <button
-              onClick={() => setActiveTab('ledgers')}
-              className={`pb-3 px-1 ${activeTab === 'ledgers' 
+              onClick={() => {
+                setActiveTab('analytics');
+                setSelectedEntityId(null);
+                setSelectedLedgerId(null);
+              }}
+              className={`pb-3 px-1 ${activeTab === 'analytics' 
                 ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
             >
-              Ledgers
+              Analytics
             </button>
-            {accountTypeData.length > 0 && (
-              <button
-                onClick={() => setActiveTab('analytics')}
-                className={`pb-3 px-1 ${activeTab === 'analytics' 
-                  ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                  : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-              >
-                Analytics
-              </button>
-            )}
           </nav>
         </div>
 
-        {/* Dashboard Content */}
+        {/* Dashboard View */}
+        {activeTab === 'dashboard' && (
+          <DashboardView 
+            entities={entities} 
+            ledgers={ledgers} 
+            accounts={accounts} 
+          />
+        )}
+
+        {/* Entities Tab - List View */}
+        {activeTab === 'entities' && !selectedEntityId && (
+          <EntityList 
+            entities={entities}
+            accounts={accounts}
+            ledgers={ledgers}
+            onViewDetails={(entityId) => setSelectedEntityId(entityId)}
+            onViewJson={handleViewJson}
+          />
+        )}
+
+        {/* Entities Tab - Detail View */}
+        {activeTab === 'entities' && selectedEntityId && (
+          <EntityDetail 
+            entity={entities.find(e => e.entity_id === selectedEntityId)}
+            entityLedgers={ledgers.filter(l => l.entity_id === selectedEntityId)}
+            entityAccounts={entityAccounts}
+            onBack={() => setSelectedEntityId(null)}
+            onViewJson={handleViewJson}
+            onViewLedger={(ledgerId) => {
+              setActiveTab('ledgers');
+              setSelectedLedgerId(ledgerId);
+            }}
+          />
+        )}
+
+        {/* Ledgers Tab - List View */}
+        {activeTab === 'ledgers' && !selectedLedgerId && (
+          <LedgerList 
+            ledgers={ledgers}
+            entities={entities}
+            accounts={accounts}
+            onViewDetails={(ledgerId) => setSelectedLedgerId(ledgerId)}
+            onViewJson={handleViewJson}
+          />
+        )}
+
+        {/* Ledgers Tab - Detail View */}
+        {activeTab === 'ledgers' && selectedLedgerId && (
+          <LedgerDetail 
+            ledger={ledgers.find(l => l.ledger_id === selectedLedgerId)}
+            entities={entities}
+            ledgerAccounts={ledgerAccounts}
+            onBack={() => setSelectedLedgerId(null)}
+            onViewJson={handleViewJson}
+          />
+        )}
+
+        {/* Accounts Tab */}
         {activeTab === 'accounts' && (
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">Accounts Overview</h2>
-              <button className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm">
-                + New Account
-              </button>
-            </div>
-            
-            <div className="bg-white shadow overflow-hidden rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Account Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Type
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ledger
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Balance
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {accounts && accounts.length > 0 ? accounts.map((account) => (
-                    <tr key={account.account_extra_id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {account.account_extra_id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {account.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {account.account_code?.type || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {account.enriched_ledger?.name || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                        {account.enriched_ledger?.r_currency?.currency_code || ''} {' '}
-                        {typeof account.balance === 'number' 
-                          ? (account.balance / Math.pow(10, account.enriched_ledger?.r_currency?.scale || 2)).toLocaleString()
-                          : 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <button className="text-blue-600 hover:text-blue-800 mr-2">
-                          View
-                        </button>
-                        <button className="text-gray-600 hover:text-gray-800">
-                          Transactions
-                        </button>
-                      </td>
-                    </tr>
-                  )) : (
-                    <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
-                        No accounts found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <AccountList 
+            accounts={accounts}
+            entities={entities}
+            onViewJson={handleViewJson}
+          />
         )}
 
-        {activeTab === 'ledgers' && (
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">Ledgers</h2>
-              <button className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm">
-                + New Ledger
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {ledgers && ledgers.length > 0 ? ledgers.map((ledger) => (
-                <div key={ledger.ledger_id} className="bg-white rounded-lg shadow p-6">
-                  <div className="flex justify-between">
-                    <h3 className="text-lg font-medium text-gray-900">{ledger.name}</h3>
-                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                      ID: {ledger.ledger_id}
-                    </span>
-                  </div>
-                  <p className="text-gray-500 mt-1">{ledger.description}</p>
-                  <div className="mt-4 grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500">Entity</p>
-                      <p className="text-gray-900">{ledger.r_entity?.name || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Currency</p>
-                      <p className="text-gray-900">{ledger.r_currency?.currency_code || 'N/A'}</p>
-                    </div>
-                  </div>
-                  <div className="mt-6 flex justify-end space-x-3">
-                    <button className="text-sm text-blue-600 hover:text-blue-800">
-                      Manage Accounts
-                    </button>
-                    <button className="text-sm text-blue-600 hover:text-blue-800">
-                      View Transactions
-                    </button>
-                  </div>
-                </div>
-              )) : (
-                <div className="col-span-2 text-center p-12 bg-white rounded-lg shadow">
-                  <p className="text-gray-500">No ledgers found</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'analytics' && accountTypeData.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Accounts Analysis</h2>
-            
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Account Type Breakdown</h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={accountTypeData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={true}
-                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                        nameKey="type"
-                      >
-                        {accountTypeData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => value.toLocaleString()} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={accountTypeData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="type" />
-                      <YAxis />
-                      <Tooltip formatter={(value) => value.toLocaleString()} />
-                      <Legend />
-                      <Bar dataKey="value" name="Balance" fill="#3B82F6" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <AnalyticsView 
+            accounts={accounts}
+            entities={entities}
+          />
         )}
       </main>
 
@@ -334,9 +453,9 @@ const LedgerDashboard = () => {
           <div className="flex justify-between items-center">
             <p className="text-gray-500 text-sm">© 2025 LedgerRocket. All rights reserved.</p>
             <div className="flex space-x-6">
-              <a href="/documentation" className="text-gray-500 hover:text-gray-700 text-sm">Documentation</a>
-              <a href="/api-reference" className="text-gray-500 hover:text-gray-700 text-sm">API Reference</a>
-              <a href="/support" className="text-gray-500 hover:text-gray-700 text-sm">Support</a>
+              <button className="text-gray-500 hover:text-gray-700 text-sm">Documentation</button>
+              <button className="text-gray-500 hover:text-gray-700 text-sm">API Reference</button>
+              <button className="text-gray-500 hover:text-gray-700 text-sm">Support</button>
             </div>
           </div>
         </div>
