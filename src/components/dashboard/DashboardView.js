@@ -143,11 +143,14 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
 
   // Format currency for display
   const formatCurrency = (amount) => {
-    // Format with GBP
-    if (amount < 0) {
-      return `GBP (${Math.abs(Math.round(amount))})`;
+    // Format with commas and no currency code
+    const roundedAmount = Math.round(amount);
+    const formattedAmount = roundedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    
+    if (roundedAmount < 0) {
+      return `(${formattedAmount.replace('-', '')})`;  // Remove minus and add parentheses
     } else {
-      return `GBP ${Math.round(amount)}`;
+      return formattedAmount;
     }
   };
 

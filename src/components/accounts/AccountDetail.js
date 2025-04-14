@@ -62,23 +62,20 @@ const AccountDetail = ({
   const formatBalance = () => {
     if (typeof account.balance !== 'number') return 'N/A';
     
-    const currencyCode = 
-      (resolvedLedger && resolvedLedger.r_currency && resolvedLedger.r_currency.currency_code) || 
-      account.currency_code || 
-      '';
-    
     const scale = 
       (resolvedLedger && resolvedLedger.r_currency && resolvedLedger.r_currency.scale) || 
       account.scale || 
       2;
     
     const balance = account.balance / Math.pow(10, scale);
+    const roundedAmount = Math.round(balance);
+    const formattedAmount = roundedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     
     // Format negative numbers with parentheses and no decimals
-    if (balance < 0) {
-      return `(${Math.abs(Math.round(balance))})`;
+    if (roundedAmount < 0) {
+      return `(${formattedAmount.replace('-', '')})`;
     } else {
-      return `${Math.round(balance)}`;
+      return formattedAmount;
     }
   };
   
