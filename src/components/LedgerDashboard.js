@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import axios from 'axios';
+import DetailModal from './shared/DetailModal';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
 
@@ -11,6 +12,9 @@ const LedgerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [accountTypeData, setAccountTypeData] = useState([]);
+  const [modalData, setModalData] = useState(null);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Fetch actual data from API
   useEffect(() => {
@@ -39,6 +43,13 @@ const LedgerDashboard = () => {
 
     fetchData();
   }, []);
+
+  // Function to view JSON data
+  const handleViewJson = (data, title) => {
+    setModalData(data);
+    setModalTitle(title);
+    setModalOpen(true);
+  };
 
   // Calculate account types from real data
   const calculateAccountTypeData = (accountsData) => {
@@ -179,6 +190,9 @@ const LedgerDashboard = () => {
                       Account Name
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Account Code
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Type
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -202,7 +216,10 @@ const LedgerDashboard = () => {
                         {account.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {account.account_code?.type || 'N/A'}
+                        {account.account_code?.code || account.code || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {account.account_code?.type || account.type || 'N/A'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {account.enriched_ledger?.name || 'N/A'}
@@ -217,6 +234,12 @@ const LedgerDashboard = () => {
                         <button className="text-blue-600 hover:text-blue-800 mr-2">
                           View
                         </button>
+                        <button 
+                          className="text-gray-600 hover:text-gray-800 mr-2"
+                          onClick={() => handleViewJson(account, `Account: ${account.name}`)}
+                        >
+                          JSON
+                        </button>
                         <button className="text-gray-600 hover:text-gray-800">
                           Transactions
                         </button>
@@ -224,7 +247,7 @@ const LedgerDashboard = () => {
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                      <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">
                         No accounts found
                       </td>
                     </tr>
@@ -270,6 +293,12 @@ const LedgerDashboard = () => {
                     </button>
                     <button className="text-sm text-blue-600 hover:text-blue-800">
                       View Transactions
+                    </button>
+                    <button 
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                      onClick={() => handleViewJson(ledger, `Ledger: ${ledger.name}`)}
+                    >
+                      View JSON
                     </button>
                   </div>
                 </div>
@@ -341,6 +370,14 @@ const LedgerDashboard = () => {
           </div>
         </div>
       </footer>
+
+      {/* Detail Modal for JSON viewing */}
+      <DetailModal
+        isOpen={modalOpen}
+        data={modalData}
+        title={modalTitle}
+        onClose={() => setModalOpen(false)}
+      />
     </div>
   );
 };

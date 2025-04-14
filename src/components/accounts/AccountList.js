@@ -59,24 +59,29 @@ const AccountList = ({ accounts, entities, onViewJson }) => {
                     {account.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {account.account_code?.code || 'N/A'}
+                    {account.account_code?.code || account.code || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {account.account_code?.type || 'N/A'}
+                    {account.account_code?.type || account.type || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {entity ? entity.name : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {account.enriched_ledger?.name || 'N/A'}
+                    {account.enriched_ledger?.name || account.ledger_name || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                    {account.enriched_ledger?.r_currency?.currency_code || ''} {' '}
+                    {account.enriched_ledger?.r_currency?.currency_code || account.currency_code || ''} {' '}
                     {typeof account.balance === 'number' 
-                      ? (account.balance / Math.pow(10, account.enriched_ledger?.r_currency?.scale || 2)).toLocaleString()
+                      ? (account.balance / Math.pow(10, account.enriched_ledger?.r_currency?.scale || account.scale || 2)).toLocaleString()
                       : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <button 
+                      className="text-blue-600 hover:text-blue-800 mr-2"
+                    >
+                      View
+                    </button>
                     <button 
                       className="text-gray-600 hover:text-gray-800"
                       onClick={() => onViewJson(account, `Account: ${account.name}`)}
