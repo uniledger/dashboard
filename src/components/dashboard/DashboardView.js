@@ -19,12 +19,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
     netIncome: 0
   });
 
-  // Calculate dashboard summary data
-  const dashboardSummary = {
-    totalAccounts: accounts.length,
-    totalLedgers: ledgers.length,
-    totalEntities: entities.length
-  };
+  // We removed dashboard summary counts since they're not needed
 
   // Process accounts data to create financial statements
   useEffect(() => {
@@ -113,33 +108,16 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
   return (
     <div>
       <PageHeader 
-        title="Financial Overview" 
+        title={`Financial Overview as of ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`}
         refreshButton={true}
         onRefresh={onRefresh}
       />
-      
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <p className="text-sm text-gray-500">Total Entities</p>
-          <p className="text-2xl font-bold text-blue-600">{dashboardSummary.totalEntities}</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <p className="text-sm text-gray-500">Total Ledgers</p>
-          <p className="text-2xl font-bold text-blue-600">{dashboardSummary.totalLedgers}</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <p className="text-sm text-gray-500">Total Accounts</p>
-          <p className="text-2xl font-bold text-blue-600">{dashboardSummary.totalAccounts}</p>
-        </div>
-      </div>
       
       {/* Balance Sheet */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900">Balance Sheet Summary (GBP)</h3>
           <div className="text-right text-sm text-gray-500">
-            <div>{new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}</div>
             <div>Values shown in GBP (÷100)</div>
           </div>
         </div>
@@ -216,7 +194,6 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900">Income Statement Summary (GBP)</h3>
           <div className="text-right text-sm text-gray-500">
-            <div>{new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}</div>
             <div>Values shown in GBP (÷100)</div>
           </div>
         </div>
