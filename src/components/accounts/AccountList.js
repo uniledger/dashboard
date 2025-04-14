@@ -7,7 +7,7 @@ const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
  * Account List component to display all accounts
  * with proper nested data handling and API-based filtering
  */
-const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedger }) => {
+const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedger, onViewAccount }) => {
   const [entities, setEntities] = useState([]);
   const [ledgers, setLedgers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -84,7 +84,14 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
       account.scale || 
       2;
     
-    return `${currencyCode} ${(account.balance / Math.pow(10, scale)).toLocaleString()}`;
+    const balance = account.balance / Math.pow(10, scale);
+    
+    // Format negative numbers with parentheses and no decimals
+    if (balance < 0) {
+      return `${currencyCode} (${Math.abs(Math.round(balance))})`;
+    } else {
+      return `${currencyCode} ${Math.round(balance)}`;
+    }
   };
 
   return (
@@ -125,10 +132,10 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ledger
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Balance
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -139,12 +146,14 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
                 const ledger = getLedgerForAccount(account);
                 const entityId = entity?.entity_id || account.entity_id || (account.enriched_ledger && account.enriched_ledger.entity_id);
                 const ledgerId = ledger?.ledger_id || account.ledger_id || (account.enriched_ledger && account.enriched_ledger.ledger_id);
+                const balance = account.balance / Math.pow(10, 2); // Using default scale 2
+                const isNegative = balance < 0;
                 
                 return (
                   <tr key={account.account_id || account.account_extra_id} className="hover:bg-gray-50">
                     <td 
                       className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline"
-                      onClick={() => onViewJson(account, `Account: ${account.name || 'N/A'}`)}
+                      onClick={() => onViewAccount ? onViewAccount(account) : onViewJson(account, `Account: ${account.name || 'N/A'}`)}
                     >
                       {account.account_id || account.account_extra_id || 'N/A'}
                     </td>
@@ -169,10 +178,10 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
                     >
                       {ledger ? ledger.name : (account.enriched_ledger?.name || account.ledger?.name || account.ledger_name || 'N/A')}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${isNegative ? 'text-red-600' : 'text-gray-900'}`}>
                       {getFormattedBalance(account)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                       <button 
                         className="text-gray-600 hover:text-gray-800"
                         onClick={() => onViewJson(account, `Account: ${account.name || 'N/A'}`)}
