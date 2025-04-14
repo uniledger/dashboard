@@ -111,6 +111,7 @@ const AccountDetail = ({
   // Handler for navigating to ledger detail
   const handleViewLedger = () => {
     const ledgerId = resolvedLedger?.ledger_id || account.ledger_id;
+    console.log('Account detail - View ledger clicked:', ledgerId);
     if (ledgerId && onViewLedger) {
       onViewLedger(ledgerId);
     }

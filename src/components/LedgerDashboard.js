@@ -263,14 +263,26 @@ const LedgerDashboard = () => {
 
   // Handle entity selection
   const handleEntitySelection = (entityId) => {
+    console.log('Entity selected:', entityId);
+    // Set active tab to 'entities' to ensure we're in the right view
+    setActiveTab('entities');
+    // Reset other selections
+    setSelectedLedgerId(null);
+    setSelectedAccountId(null);
+    // Set the selected entity and fetch its details
     setSelectedEntityId(entityId);
     fetchEntityDetail(entityId);
   };
 
   // Handle ledger selection
   const handleLedgerSelection = (ledgerId) => {
+    console.log('Ledger selected:', ledgerId);
     // Set active tab to 'ledgers' to ensure we're in the right view
     setActiveTab('ledgers');
+    // Reset other selections
+    setSelectedEntityId(null);
+    setSelectedAccountId(null);
+    // Set the selected ledger and fetch its details
     setSelectedLedgerId(ledgerId);
     fetchLedgerDetail(ledgerId);
   };
@@ -464,7 +476,6 @@ const LedgerDashboard = () => {
 
         {/* Ledgers Tab - Detail View */}
         {activeTab === 'ledgers' && selectedLedgerId && ledgerDetail && (
-          console.log('Rendering LedgerDetail with ID:', selectedLedgerId),
           <LedgerDetail 
             ledger={ledgerDetail}
             ledgerAccounts={ledgerAccounts}
