@@ -188,7 +188,7 @@ const LedgerDetail = ({
             <p className="text-gray-900">{ledger.name}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Account Owner</p>
+            <p className="text-sm text-gray-500">Ledger Owner</p>
             <p 
               className={`${displayEntity ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-900'}`}
               onClick={() => displayEntity && onViewEntity && onViewEntity(displayEntity.entity_id)}
