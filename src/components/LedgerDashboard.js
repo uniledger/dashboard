@@ -5,6 +5,7 @@ import EntityDetail from './entities/EntityDetail';
 import LedgerList from './ledgers/LedgerList';
 import LedgerDetail from './ledgers/LedgerDetail';
 import AccountList from './accounts/AccountList';
+import AccountDetail from './accounts/AccountDetail';
 import AnalyticsView from './analytics/AnalyticsView';
 import DashboardView from './dashboard/DashboardView';
 

@@ -76,9 +76,9 @@ const AccountDetail = ({
     
     // Format negative numbers with parentheses and no decimals
     if (balance < 0) {
-      return `${currencyCode} (${Math.abs(Math.round(balance))})`;
+      return `(${Math.abs(Math.round(balance))})`;
     } else {
-      return `${currencyCode} ${Math.round(balance)}`;
+      return `${Math.round(balance)}`;
     }
   };
   
