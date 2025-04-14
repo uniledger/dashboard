@@ -150,7 +150,7 @@ const EntityDetail = ({
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <button 
                     className="text-blue-600 hover:text-blue-800 mr-2"
-                    onClick={() => onViewLedger(ledger.ledger_id)}
+                    onClick={() => onViewLedger && onViewLedger(ledger.ledger_id)}
                   >
                     View
                   </button>

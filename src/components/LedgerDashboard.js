@@ -269,6 +269,8 @@ const LedgerDashboard = () => {
 
   // Handle ledger selection
   const handleLedgerSelection = (ledgerId) => {
+    // Set active tab to 'ledgers' to ensure we're in the right view
+    setActiveTab('ledgers');
     setSelectedLedgerId(ledgerId);
     fetchLedgerDetail(ledgerId);
   };
@@ -462,6 +464,7 @@ const LedgerDashboard = () => {
 
         {/* Ledgers Tab - Detail View */}
         {activeTab === 'ledgers' && selectedLedgerId && ledgerDetail && (
+          console.log('Rendering LedgerDetail with ID:', selectedLedgerId),
           <LedgerDetail 
             ledger={ledgerDetail}
             ledgerAccounts={ledgerAccounts}
