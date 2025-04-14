@@ -48,8 +48,10 @@ const LedgerDetail = ({
       return `${item.r_country.name} (${item.r_country.country_code})`;
     }
     
-    // Fallback to just country code
-    return item.country_code || 'N/A';
+    // Look for different country code formats
+    const countryCode = item.country_code || item.country || (item.r_entity && item.r_entity.country_code);
+    
+    return countryCode || 'N/A';
   };
 
   // Helper function for account codes
@@ -67,6 +69,9 @@ const LedgerDetail = ({
   
   // Get entity from ledger or from separate fetch
   const displayEntity = ledger.r_entity || entity;
+  
+  // For troubleshooting country data
+  console.log("Ledger data:", ledger);
   
   return (
     <div>
@@ -161,7 +166,7 @@ const LedgerDetail = ({
               
               return (
                 <tr key={account.account_id || account.account_extra_id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer hover:text-blue-600">
                     {account.account_id || account.account_extra_id || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

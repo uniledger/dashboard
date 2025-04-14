@@ -442,6 +442,8 @@ const LedgerDashboard = () => {
             accounts={accountsList}
             onViewJson={handleViewJson}
             onRefresh={fetchAccountsList}
+            onViewEntity={handleEntitySelection}
+            onViewLedger={handleLedgerSelection}
           />
         )}
 
