@@ -441,6 +441,11 @@ const LedgerDashboard = () => {
               setSelectedLedgerId(ledgerId);
               fetchLedgerDetail(ledgerId);
             }}
+            onViewAccount={(account) => {
+              setActiveTab('accounts');
+              setSelectedAccountId(account.account_id || account.account_extra_id);
+              setAccountDetail(account);
+            }}
             onRefresh={() => fetchEntityDetail(selectedEntityId)}
           />
         )}
