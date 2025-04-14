@@ -8,6 +8,9 @@ import AccountList from './accounts/AccountList';
 import AccountDetail from './accounts/AccountDetail';
 import AnalyticsView from './analytics/AnalyticsView';
 import DashboardView from './dashboard/DashboardView';
+import CurrenciesList from './reference/CurrenciesList';
+import CountriesList from './reference/CountriesList';
+import AccountCodesList from './reference/AccountCodesList';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
 
@@ -33,6 +36,9 @@ const LedgerDashboard = () => {
   const [ledgerAccounts, setLedgerAccounts] = useState([]);
   const [accountsList, setAccountsList] = useState(null);
   const [analyticsData, setAnalyticsData] = useState(null);
+  const [currenciesList, setCurrenciesList] = useState(null);
+  const [countriesList, setCountriesList] = useState(null);
+  const [accountCodesList, setAccountCodesList] = useState(null);
   
   // Tab-specific loading states
   const [dashboardLoading, setDashboardLoading] = useState(false);
@@ -40,6 +46,9 @@ const LedgerDashboard = () => {
   const [ledgersLoading, setLedgersLoading] = useState(false);
   const [accountsLoading, setAccountsLoading] = useState(false);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [currenciesLoading, setCurrenciesLoading] = useState(false);
+  const [countriesLoading, setCountriesLoading] = useState(false);
+  const [accountCodesLoading, setAccountCodesLoading] = useState(false);
   
   // Global error state
   const [error, setError] = useState(null);
@@ -226,6 +235,57 @@ const LedgerDashboard = () => {
     }
   };
 
+  // Fetch currencies list
+  const fetchCurrenciesList = async () => {
+    if (currenciesList !== null) return; // Only fetch if not already loaded
+    
+    setCurrenciesLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/currencies/`);
+      const data = await response.json();
+      setCurrenciesList(data);
+      setCurrenciesLoading(false);
+    } catch (err) {
+      console.error('Error fetching currencies:', err);
+      setError(err.message || 'An error occurred while fetching currencies');
+      setCurrenciesLoading(false);
+    }
+  };
+
+  // Fetch countries list
+  const fetchCountriesList = async () => {
+    if (countriesList !== null) return; // Only fetch if not already loaded
+    
+    setCountriesLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/countries/`);
+      const data = await response.json();
+      setCountriesList(data);
+      setCountriesLoading(false);
+    } catch (err) {
+      console.error('Error fetching countries:', err);
+      setError(err.message || 'An error occurred while fetching countries');
+      setCountriesLoading(false);
+    }
+  };
+
+  // Fetch account codes list
+  const fetchAccountCodesList = async () => {
+    if (accountCodesList !== null) return; // Only fetch if not already loaded
+    
+    setAccountCodesLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/account-codes/`);
+      const data = await response.json();
+      setAccountCodesList(data);
+      setAccountCodesLoading(false);
+    } catch (err) {
+      console.error('Error fetching account codes:', err);
+      setError(err.message || 'An error occurred while fetching account codes');
+      setAccountCodesLoading(false);
+    }
+  };
+
   // Load dashboard data on initial component mount
   useEffect(() => {
     fetchDashboardData();
@@ -257,6 +317,15 @@ const LedgerDashboard = () => {
         break;
       case 'analytics':
         fetchAnalyticsData();
+        break;
+      case 'currencies':
+        fetchCurrenciesList();
+        break;
+      case 'countries':
+        fetchCountriesList();
+        break;
+      case 'account-codes':
+        fetchAccountCodesList();
         break;
       default:
         break;
@@ -308,7 +377,8 @@ const LedgerDashboard = () => {
   };
 
   // Check if any tab is in loading state
-  const isLoading = dashboardLoading || entitiesLoading || ledgersLoading || accountsLoading || analyticsLoading;
+  const isLoading = dashboardLoading || entitiesLoading || ledgersLoading || accountsLoading || analyticsLoading || 
+                   currenciesLoading || countriesLoading || accountCodesLoading;
 
   // Loading state
   if (isLoading) {
@@ -380,22 +450,14 @@ const LedgerDashboard = () => {
       <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         {/* Navigation Tabs */}
         <div className="border-b border-gray-200 mb-6">
-          <nav className="-mb-px flex space-x-8">
+          <nav className="-mb-px flex space-x-6 overflow-x-auto">
             <button
               onClick={() => handleTabChange('dashboard')}
               className={`pb-3 px-1 ${activeTab === 'dashboard' 
                 ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
             >
-              Dashboard
-            </button>
-            <button
-              onClick={() => handleTabChange('entities')}
-              className={`pb-3 px-1 ${activeTab === 'entities' 
-                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-            >
-              Entities
+              Balance Sheet / Income
             </button>
             <button
               onClick={() => {
@@ -419,6 +481,38 @@ const LedgerDashboard = () => {
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
             >
               Accounts
+            </button>
+            <button
+              onClick={() => handleTabChange('entities')}
+              className={`pb-3 px-1 ${activeTab === 'entities' 
+                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >
+              Entities
+            </button>
+            <button
+              onClick={() => handleTabChange('currencies')}
+              className={`pb-3 px-1 ${activeTab === 'currencies' 
+                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >
+              Currencies
+            </button>
+            <button
+              onClick={() => handleTabChange('countries')}
+              className={`pb-3 px-1 ${activeTab === 'countries' 
+                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >
+              Countries
+            </button>
+            <button
+              onClick={() => handleTabChange('account-codes')}
+              className={`pb-3 px-1 ${activeTab === 'account-codes' 
+                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >
+              Account Codes
             </button>
             <button
               onClick={() => handleTabChange('analytics')}
@@ -475,18 +569,17 @@ const LedgerDashboard = () => {
 
         {/* Ledgers Tab - List View */}
         {activeTab === 'ledgers' && !selectedLedgerId && ledgersList && (
-          console.log('Rendering LedgerList, ledgers count:', ledgersList.length),
           <LedgerList 
             ledgers={ledgersList}
             onViewDetails={handleLedgerSelection}
             onViewJson={handleViewJson}
             onRefresh={fetchLedgersList}
+            onViewEntity={handleEntitySelection}
           />
         )}
 
         {/* Ledgers Tab - Detail View */}
         {activeTab === 'ledgers' && selectedLedgerId && ledgerDetail && (
-          console.log('Rendering LedgerDetail for ID:', selectedLedgerId, 'activeTab:', activeTab),
           <LedgerDetail 
             ledger={ledgerDetail}
             ledgerAccounts={ledgerAccounts}
@@ -534,6 +627,30 @@ const LedgerDashboard = () => {
             accounts={analyticsData.accounts}
             entities={analyticsData.entities}
             onRefresh={fetchAnalyticsData}
+          />
+        )}
+
+        {/* Currencies Tab */}
+        {activeTab === 'currencies' && (
+          <CurrenciesList 
+            onViewJson={handleViewJson}
+            onRefresh={fetchCurrenciesList}
+          />
+        )}
+
+        {/* Countries Tab */}
+        {activeTab === 'countries' && (
+          <CountriesList 
+            onViewJson={handleViewJson}
+            onRefresh={fetchCountriesList}
+          />
+        )}
+
+        {/* Account Codes Tab */}
+        {activeTab === 'account-codes' && (
+          <AccountCodesList 
+            onViewJson={handleViewJson}
+            onRefresh={fetchAccountCodesList}
           />
         )}
       </main>
