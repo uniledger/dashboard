@@ -12,21 +12,27 @@ const EntityDetail = ({
   onBack,
   onViewJson,
   onViewLedger,
+  onViewAccount,
   onRefresh
 }) => {
   if (!entity) return null;
   
   // Helper function for country display
-  const getCountryDisplay = (entity) => {
-    if (!entity) return 'N/A';
+  const getCountryDisplay = (item) => {
+    if (!item) return 'N/A';
     
     // Handle when r_country is available
-    if (entity.r_country) {
+    if (item.r_country) {
+      return `${item.r_country.name} (${item.r_country.country_code})`;
+    }
+    
+    // Try entity's country if this is a ledger
+    if (item.entity_id && entity && entity.r_country) {
       return `${entity.r_country.name} (${entity.r_country.country_code})`;
     }
     
     // Fallback to just country code
-    return entity.country_code || 'N/A';
+    return item.country_code || entity.country_code || 'N/A';
   };
 
   // Helper function for account codes
@@ -40,6 +46,19 @@ const EntityDetail = ({
     
     // Handle when it's just the code value
     return account.account_code || 'N/A';
+  };
+  
+  // Format balance
+  const formatBalance = (balance, scale) => {
+    const amount = balance / Math.pow(10, scale);
+    const roundedAmount = Math.round(amount);
+    const formattedAmount = roundedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    
+    if (roundedAmount < 0) {
+      return `(${formattedAmount.replace('-', '')})`;
+    } else {
+      return formattedAmount;
+    }
   };
   
   return (
@@ -101,7 +120,7 @@ const EntityDetail = ({
       
       {/* Entity's Ledgers */}
       <h3 className="text-lg font-medium text-gray-900 mb-3">Ledgers</h3>
-      <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+      <div className="bg-white rounded-lg shadow overflow-x-auto mb-6">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -116,7 +135,12 @@ const EntityDetail = ({
             {entityLedgers && entityLedgers.length > 0 ? entityLedgers.map(ledger => (
               <tr key={ledger.ledger_id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ledger.ledger_id}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ledger.name}</td>
+                <td 
+                  className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 cursor-pointer hover:underline"
+                  onClick={() => onViewLedger(ledger.ledger_id)}
+                >
+                  {ledger.name}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {ledger.r_currency ? `${ledger.r_currency.currency_code} (${ledger.r_currency.type})` : 'N/A'}
                 </td>
@@ -151,7 +175,7 @@ const EntityDetail = ({
       
       {/* Entity's Accounts */}
       <h3 className="text-lg font-medium text-gray-900 mb-3">Accounts</h3>
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -160,8 +184,8 @@ const EntityDetail = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Code</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ledger</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -175,7 +199,10 @@ const EntityDetail = ({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {account.account_id || account.account_extra_id || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td 
+                    className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 cursor-pointer hover:underline"
+                    onClick={() => onViewAccount && onViewAccount(account)}
+                  >
                     {account.name || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -184,16 +211,20 @@ const EntityDetail = ({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {account.account_type || (account.account_code && account.account_code.type) || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td 
+                    className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline"
+                    onClick={() => ledger.ledger_id && onViewLedger && onViewLedger(ledger.ledger_id)}
+                  >
                     {ledger.name || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                    {currency.currency_code || ''} {' '}
-                    {typeof account.balance === 'number' 
-                      ? (account.balance / Math.pow(10, scale)).toLocaleString()
-                      : 'N/A'}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
+                    {typeof account.balance === 'number' ? (
+                      <span className={account.balance < 0 ? 'text-red-600' : 'text-gray-900'}>
+                        {formatBalance(account.balance, scale)}
+                      </span>
+                    ) : 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                     <button 
                       className="text-gray-600 hover:text-gray-800"
                       onClick={() => onViewJson(account, `Account: ${account.name || 'N/A'}`)}
