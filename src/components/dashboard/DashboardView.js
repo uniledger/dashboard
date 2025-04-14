@@ -9,7 +9,8 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
   const [balanceSheetData, setBalanceSheetData] = useState({
     assets: 0,
     liabilities: 0,
-    equity: 0
+    equity: 0,
+    retainedEarnings: 0
   });
   
   const [incomeStatementData, setIncomeStatementData] = useState({
@@ -51,8 +52,6 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
       const balance = account.balance || 0;
       let normalizedBalance = balance;
       
-      // Don't do automatic scaling - use the raw balance
-      
       // Update financial statement data
       switch (accountType) {
         case 'ASSET':
@@ -76,18 +75,22 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
       }
     });
     
-    // Update balance sheet data
+    // Calculate net income
+    const netIncome = revenue - expenses;
+    
+    // Update balance sheet data (include net income in equity)
     setBalanceSheetData({
-      assets,
-      liabilities,
-      equity
+      assets: assets / 100,
+      liabilities: liabilities / 100,
+      equity: equity / 100,
+      retainedEarnings: netIncome / 100  // Include net income as retained earnings
     });
     
     // Update income statement data
     setIncomeStatementData({
-      revenue,
-      expenses,
-      netIncome: revenue - expenses
+      revenue: revenue / 100,
+      expenses: expenses / 100,
+      netIncome: netIncome / 100
     });
   }, [accounts]);
 
@@ -103,6 +106,9 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
       return formattedAmount;
     }
   };
+
+  // Calculate total equity including retained earnings
+  const totalEquity = balanceSheetData.equity + balanceSheetData.retainedEarnings;
 
   return (
     <div>
@@ -176,15 +182,27 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               </thead>
               <tbody className="border-t border-gray-200">
                 <tr>
-                  <td className="py-2 text-gray-700">Total Equity</td>
+                  <td className="py-2 text-gray-700">Contributed Capital</td>
                   <td className="py-2 text-right font-medium text-gray-900">
                     {formatCurrency(balanceSheetData.equity)}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 text-gray-700">Retained Earnings</td>
+                  <td className={`py-2 text-right font-medium ${balanceSheetData.retainedEarnings < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                    {formatCurrency(balanceSheetData.retainedEarnings)}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 text-gray-700">Total Equity</td>
+                  <td className="py-2 text-right font-medium text-gray-900">
+                    {formatCurrency(totalEquity)}
                   </td>
                 </tr>
                 <tr className="border-t-2 border-gray-300">
                   <td className="py-2 font-bold">Total Liabilities & Equity</td>
                   <td className="py-2 text-right font-bold">
-                    {formatCurrency(balanceSheetData.liabilities + balanceSheetData.equity)}
+                    {formatCurrency(balanceSheetData.liabilities + totalEquity)}
                   </td>
                 </tr>
               </tbody>
@@ -243,8 +261,6 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
           </div>
         </div>
       </div>
-      
-
     </div>
   );
 };
