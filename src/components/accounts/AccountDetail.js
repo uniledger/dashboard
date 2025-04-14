@@ -16,6 +16,9 @@ const AccountDetail = ({
   const [entity, setEntity] = useState(null);
   const [ledger, setLedger] = useState(null);
   
+  // Add logging to debug
+  console.log('AccountDetail mounted with account:', account?.account_id);
+  
   // Fetch entity and ledger details if needed
   useEffect(() => {
     const fetchReferenceData = async () => {
@@ -98,6 +101,21 @@ const AccountDetail = ({
       'N/A';
   };
   
+  // Handler for navigating to entity detail
+  const handleViewEntity = () => {
+    if (resolvedEntity?.entity_id && onViewEntity) {
+      onViewEntity(resolvedEntity.entity_id);
+    }
+  };
+  
+  // Handler for navigating to ledger detail
+  const handleViewLedger = () => {
+    const ledgerId = resolvedLedger?.ledger_id || account.ledger_id;
+    if (ledgerId && onViewLedger) {
+      onViewLedger(ledgerId);
+    }
+  };
+  
   return (
     <div>
       {/* Account Header with back button */}
@@ -159,7 +177,7 @@ const AccountDetail = ({
             <p className="text-sm text-gray-500">Account Owner</p>
             <p 
               className={`${resolvedEntity?.entity_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-900'}`}
-              onClick={() => resolvedEntity?.entity_id && onViewEntity && onViewEntity(resolvedEntity.entity_id)}
+              onClick={handleViewEntity}
             >
               {resolvedEntity?.name || 'N/A'}
             </p>
@@ -168,7 +186,7 @@ const AccountDetail = ({
             <p className="text-sm text-gray-500">Ledger</p>
             <p 
               className={`${resolvedLedger?.ledger_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-900'}`}
-              onClick={() => resolvedLedger?.ledger_id && onViewLedger && onViewLedger(resolvedLedger.ledger_id)}
+              onClick={handleViewLedger}
             >
               {resolvedLedger?.name || 'N/A'}
             </p>
@@ -197,7 +215,6 @@ const AccountDetail = ({
         </div>
       </div>
       
-
     </div>
   );
 };
