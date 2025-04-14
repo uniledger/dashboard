@@ -141,7 +141,10 @@ const LedgerDetail = ({
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <button 
-            onClick={onBack}
+            onClick={() => {
+              console.log('Back to ledger list clicked');
+              onBack();
+            }}
             className="mr-3 text-gray-600 hover:text-gray-800"
           >
             ← Back to Ledgers

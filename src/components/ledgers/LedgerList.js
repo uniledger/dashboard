@@ -7,8 +7,7 @@ const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
  * Ledger List component to display all ledgers
  * with API-based filtering
  */
-const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh }) => {
-  const [ledgerStats, setLedgerStats] = useState({});
+const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh, onViewEntity }) => {
   const [loading, setLoading] = useState(true);
   const [entities, setEntities] = useState([]);
 
@@ -19,46 +18,15 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh }) => {
         const response = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/`);
         const data = await response.json();
         setEntities(data);
+        setLoading(false);
       } catch (err) {
         console.error('Error fetching entities:', err);
+        setLoading(false);
       }
     };
 
     fetchEntities();
   }, []);
-
-  // Fetch account counts for each ledger
-  useEffect(() => {
-    const fetchLedgerStats = async () => {
-      setLoading(true);
-      try {
-        const stats = {};
-        
-        // Fetch stats for each ledger
-        for (const ledger of ledgers) {
-          // Get account count
-          const accountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/?ledger_id=${ledger.ledger_id}`);
-          const accountsData = await accountsResponse.json();
-          
-          stats[ledger.ledger_id] = {
-            accountCount: accountsData.length
-          };
-        }
-        
-        setLedgerStats(stats);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching ledger stats:', err);
-        setLoading(false);
-      }
-    };
-
-    if (ledgers && ledgers.length > 0) {
-      fetchLedgerStats();
-    } else {
-      setLoading(false);
-    }
-  }, [ledgers]);
 
   // Helper function for country display
   const getCountryDisplay = (item) => {
@@ -73,6 +41,9 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh }) => {
     return item.country_code || 'N/A';
   };
 
+  // Add debugging for component rendering
+  console.log('LedgerList render, ledgers count:', ledgers?.length || 0);
+      
   return (
     <div>
       <PageHeader 
@@ -91,10 +62,8 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {ledgers && ledgers.length > 0 ? ledgers.map((ledger) => {
             // Find the associated entity
-            const entity = entities.find(e => e.entity_id === ledger.entity_id);
-            
-            // Get statistics
-            const stats = ledgerStats[ledger.ledger_id] || { accountCount: 0 };
+            const entity = entities.find(e => e.entity_id === ledger.entity_id) || ledger.r_entity;
+            const entityId = entity?.entity_id || ledger.entity_id;
             
             return (
               <div key={ledger.ledger_id} className="bg-white rounded-lg shadow p-6">
@@ -111,7 +80,12 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh }) => {
                 <div className="mt-4 grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-500">Entity</p>
-                    <p className="text-gray-900">{entity?.name || ledger.r_entity?.name || 'N/A'}</p>
+                    <p 
+                      className={`text-gray-900 ${entityId ? 'text-blue-600 cursor-pointer hover:underline' : ''}`}
+                      onClick={() => entityId && onViewEntity && onViewEntity(entityId)}
+                    >
+                      {entity?.name || 'N/A'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Currency</p>
@@ -124,13 +98,19 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh }) => {
                     <p className="text-gray-900">{getCountryDisplay(ledger)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Accounts</p>
-                    <p className="text-gray-900">{stats.accountCount}</p>
+                    <p className="text-sm text-gray-500">Created</p>
+                    <p className="text-gray-900">{new Date(ledger.created_at || Date.now()).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <div className="mt-6 flex justify-end space-x-3">
                   <button 
                     className="text-sm text-blue-600 hover:text-blue-800"
+                    onClick={() => onViewDetails(ledger.ledger_id)}
+                  >
+                    View Details
+                  </button>
+                  <button 
+                    className="text-sm text-gray-600 hover:text-gray-800"
                     onClick={() => onViewJson(ledger, `Ledger: ${ledger.name}`)}
                   >
                     View JSON
