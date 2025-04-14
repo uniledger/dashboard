@@ -78,16 +78,16 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
     
     // Update balance sheet data
     setBalanceSheetData({
-      assets: assets / 100,
-      liabilities: liabilities / 100,
-      equity: equity / 100
+      assets,
+      liabilities,
+      equity
     });
     
     // Update income statement data
     setIncomeStatementData({
-      revenue: revenue / 100,
-      expenses: expenses / 100,
-      netIncome: (revenue - expenses) / 100
+      revenue,
+      expenses,
+      netIncome: revenue - expenses
     });
   }, [accounts]);
 
@@ -130,7 +130,13 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
       
       {/* Balance Sheet */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Balance Sheet Summary (GBP)</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium text-gray-900">Balance Sheet Summary (GBP)</h3>
+          <div className="text-right text-sm text-gray-500">
+            <div>{new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}</div>
+            <div>Values shown in GBP (÷100)</div>
+          </div>
+        </div>
         <div className="grid grid-cols-1 gap-6">
           <div>
             <table className="min-w-full">
@@ -189,7 +195,13 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
       
       {/* Income Statement */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Income Statement Summary (GBP)</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium text-gray-900">Income Statement Summary (GBP)</h3>
+          <div className="text-right text-sm text-gray-500">
+            <div>{new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}</div>
+            <div>Values shown in GBP (÷100)</div>
+          </div>
+        </div>
         <div className="grid grid-cols-1 gap-6">
           <div>
             <table className="min-w-full">
