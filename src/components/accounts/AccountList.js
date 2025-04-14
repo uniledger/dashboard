@@ -7,26 +7,33 @@ const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
  * Account List component to display all accounts
  * with proper nested data handling and API-based filtering
  */
-const AccountList = ({ accounts, onViewJson, onRefresh }) => {
+const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedger }) => {
   const [entities, setEntities] = useState([]);
+  const [ledgers, setLedgers] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch entity data for display
+  // Fetch entity and ledger data for display and drilldown
   useEffect(() => {
-    const fetchEntities = async () => {
+    const fetchReferenceData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/`);
-        const data = await response.json();
-        setEntities(data);
+        // Fetch entities
+        const entitiesResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/`);
+        const entitiesData = await entitiesResponse.json();
+        setEntities(entitiesData);
+        
+        // Fetch ledgers
+        const ledgersResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/`);
+        const ledgersData = await ledgersResponse.json();
+        setLedgers(ledgersData);
       } catch (err) {
-        console.error('Error fetching entities:', err);
+        console.error('Error fetching reference data:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchEntities();
+    fetchReferenceData();
   }, []);
 
   // Helper functions for data display
@@ -51,6 +58,17 @@ const AccountList = ({ accounts, onViewJson, onRefresh }) => {
     
     // Find entity in our fetched list
     return entities.find(e => e.entity_id === entityId);
+  };
+  
+  const getLedgerForAccount = (account) => {
+    // Get ledger ID directly
+    const ledgerId = account.ledger_id || 
+      (account.enriched_ledger && account.enriched_ledger.ledger_id);
+    
+    if (!ledgerId) return null;
+    
+    // Find ledger in our fetched list
+    return ledgers.find(l => l.ledger_id === ledgerId);
   };
 
   const getFormattedBalance = (account) => {
@@ -118,10 +136,16 @@ const AccountList = ({ accounts, onViewJson, onRefresh }) => {
             <tbody className="bg-white divide-y divide-gray-200">
               {accounts && accounts.length > 0 ? accounts.map((account) => {
                 const entity = getEntityForAccount(account);
+                const ledger = getLedgerForAccount(account);
+                const entityId = entity?.entity_id || account.entity_id || (account.enriched_ledger && account.enriched_ledger.entity_id);
+                const ledgerId = ledger?.ledger_id || account.ledger_id || (account.enriched_ledger && account.enriched_ledger.ledger_id);
                 
                 return (
                   <tr key={account.account_id || account.account_extra_id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td 
+                      className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline"
+                      onClick={() => onViewJson(account, `Account: ${account.name || 'N/A'}`)}
+                    >
                       {account.account_id || account.account_extra_id || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -133,11 +157,17 @@ const AccountList = ({ accounts, onViewJson, onRefresh }) => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {account.account_type || (account.account_code && account.account_code.type) || account.type || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td 
+                      className={`px-6 py-4 whitespace-nowrap text-sm ${entityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500'}`}
+                      onClick={() => entityId && onViewEntity && onViewEntity(entityId)}
+                    >
                       {entity ? entity.name : (account.entity ? account.entity.name : 'N/A')}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {account.enriched_ledger?.name || account.ledger?.name || account.ledger_name || 'N/A'}
+                    <td 
+                      className={`px-6 py-4 whitespace-nowrap text-sm ${ledgerId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500'}`}
+                      onClick={() => ledgerId && onViewLedger && onViewLedger(ledgerId)}
+                    >
+                      {ledger ? ledger.name : (account.enriched_ledger?.name || account.ledger?.name || account.ledger_name || 'N/A')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                       {getFormattedBalance(account)}

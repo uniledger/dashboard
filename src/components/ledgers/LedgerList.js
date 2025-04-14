@@ -100,7 +100,10 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh }) => {
               <div key={ledger.ledger_id} className="bg-white rounded-lg shadow p-6">
                 <div className="flex justify-between">
                   <h3 className="text-lg font-medium text-gray-900">{ledger.name}</h3>
-                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                  <span 
+                    className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full cursor-pointer hover:bg-blue-200"
+                    onClick={() => onViewDetails(ledger.ledger_id)}
+                  >
                     ID: {ledger.ledger_id}
                   </span>
                 </div>
@@ -126,12 +129,6 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh }) => {
                   </div>
                 </div>
                 <div className="mt-6 flex justify-end space-x-3">
-                  <button 
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                    onClick={() => onViewDetails(ledger.ledger_id)}
-                  >
-                    View Details
-                  </button>
                   <button 
                     className="text-sm text-blue-600 hover:text-blue-800"
                     onClick={() => onViewJson(ledger, `Ledger: ${ledger.name}`)}

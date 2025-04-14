@@ -109,7 +109,10 @@ const EntityList = ({ entities, onViewDetails, onViewJson, onRefresh }) => {
               
               return (
                 <tr key={entity.entity_id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td 
+                    className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline"
+                    onClick={() => onViewDetails(entity.entity_id)}
+                  >
                     {entity.entity_id}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -125,12 +128,6 @@ const EntityList = ({ entities, onViewDetails, onViewJson, onRefresh }) => {
                     {stats.ledgerCount}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <button 
-                      className="text-blue-600 hover:text-blue-800 mr-2"
-                      onClick={() => onViewDetails(entity.entity_id)}
-                    >
-                      View Details
-                    </button>
                     <button 
                       className="text-gray-600 hover:text-gray-800"
                       onClick={() => onViewJson(entity, `Entity: ${entity.name}`)}
