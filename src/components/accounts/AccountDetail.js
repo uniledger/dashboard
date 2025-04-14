@@ -161,7 +161,7 @@ const AccountDetail = ({
           <div>
             <p className="text-sm text-gray-500">Account Owner</p>
             <p 
-              className={`text-gray-900 ${resolvedEntity?.entity_id ? 'text-blue-600 cursor-pointer hover:underline' : ''}`}
+              className={`${resolvedEntity?.entity_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-900'}`}
               onClick={() => resolvedEntity?.entity_id && onViewEntity && onViewEntity(resolvedEntity.entity_id)}
             >
               {resolvedEntity?.name || 'N/A'}
@@ -170,22 +170,22 @@ const AccountDetail = ({
           <div>
             <p className="text-sm text-gray-500">Ledger</p>
             <p 
-              className={`text-gray-900 ${resolvedLedger?.ledger_id ? 'text-blue-600 cursor-pointer hover:underline' : ''}`}
+              className={`${resolvedLedger?.ledger_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-900'}`}
               onClick={() => resolvedLedger?.ledger_id && onViewLedger && onViewLedger(resolvedLedger.ledger_id)}
             >
               {resolvedLedger?.name || 'N/A'}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Balance</p>
-            <p className={`text-gray-900 font-medium text-right ${account.balance < 0 ? 'text-red-600' : ''}`}>
-              {formatBalance()}
-            </p>
-          </div>
-          <div>
             <p className="text-sm text-gray-500">Currency</p>
             <p className="text-gray-900">
               {resolvedLedger?.r_currency?.currency_code || account.currency_code || 'N/A'}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Balance</p>
+            <p className={`text-gray-900 font-medium text-right ${account.balance < 0 ? 'text-red-600' : ''}`}>
+              {formatBalance()}
             </p>
           </div>
           <div>
@@ -200,64 +200,7 @@ const AccountDetail = ({
         </div>
       </div>
       
-      {/* Account Properties */}
-      <h3 className="text-lg font-medium text-gray-900 mb-3">Account Properties</h3>
-      <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {Object.entries(account)
-              .filter(([key]) => !['entity', 'ledger', 'enriched_entity', 'enriched_ledger', 'account_code'].includes(key))
-              .filter(([_, value]) => typeof value !== 'object' || value === null)
-              .map(([key, value]) => (
-                <tr key={key} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{key}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {typeof value === 'object' 
-                      ? (value === null ? 'null' : JSON.stringify(value)) 
-                      : String(value)
-                    }
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
-      </div>
-      
-      {/* Account Code Details (if available) */}
-      {account.account_code && typeof account.account_code === 'object' && (
-        <>
-          <h3 className="text-lg font-medium text-gray-900 mb-3">Account Code Details</h3>
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {Object.entries(account.account_code).map(([key, value]) => (
-                  <tr key={key} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{key}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {typeof value === 'object' 
-                        ? (value === null ? 'null' : JSON.stringify(value)) 
-                        : String(value)
-                      }
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
+
     </div>
   );
 };

@@ -178,7 +178,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
       {/* Balance Sheet */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Balance Sheet Summary (GBP)</h3>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <div>
             <table className="min-w-full">
               <thead>
@@ -231,41 +231,13 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               </tbody>
             </table>
           </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={[
-                  { name: 'Assets', value: balanceSheetData.assets, color: COLORS.ASSET },
-                  { name: 'Liabilities', value: balanceSheetData.liabilities, color: COLORS.LIABILITY },
-                  { name: 'Equity', value: balanceSheetData.equity, color: COLORS.EQUITY }
-                ]}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis tickFormatter={(value) => 
-                  `GBP ${Math.round(value)}`
-                } />
-                <Tooltip formatter={(value) => [formatCurrency(value), 'Amount']} />
-                <Bar dataKey="value" name="Amount">
-                  {[
-                    { name: 'Assets', value: balanceSheetData.assets, color: COLORS.ASSET },
-                    { name: 'Liabilities', value: balanceSheetData.liabilities, color: COLORS.LIABILITY },
-                    { name: 'Equity', value: balanceSheetData.equity, color: COLORS.EQUITY }
-                  ].map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
         </div>
       </div>
       
       {/* Income Statement */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
         <h3 className="text-lg font-medium text-gray-900 mb-4">Income Statement Summary (GBP)</h3>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <div>
             <table className="min-w-full">
               <thead>
@@ -304,90 +276,10 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               </tbody>
             </table>
           </div>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={[
-                  { name: 'Revenue', value: incomeStatementData.revenue, color: COLORS.REVENUE },
-                  { name: 'Expenses', value: incomeStatementData.expenses, color: COLORS.EXPENSE },
-                  { name: 'Net Income', value: incomeStatementData.netIncome, color: incomeStatementData.netIncome >= 0 ? COLORS.EQUITY : COLORS.LIABILITY }
-                ]}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis tickFormatter={(value) => 
-                  `GBP ${Math.round(value)}`
-                } />
-                <Tooltip formatter={(value) => [formatCurrency(value), 'Amount']} />
-                <Bar dataKey="value" name="Amount">
-                  {[
-                    { name: 'Revenue', value: incomeStatementData.revenue, color: COLORS.REVENUE },
-                    { name: 'Expenses', value: incomeStatementData.expenses, color: COLORS.EXPENSE },
-                    { name: 'Net Income', value: incomeStatementData.netIncome, color: incomeStatementData.netIncome >= 0 ? COLORS.EQUITY : COLORS.LIABILITY }
-                  ].map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
         </div>
       </div>
       
-      {/* Account Types Breakdown */}
-      <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Account Types Breakdown</h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={accountTypeData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-              >
-                {accountTypeData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => [formatCurrency(value), 'Total']} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-      
-      {/* Entity Distribution */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Accounts by Entity</h3>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={entityAccountsData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-              >
-                {entityAccountsData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={Object.values(COLORS)[index % Object.values(COLORS).length]} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => [value, 'Accounts']} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+
     </div>
   );
 };
