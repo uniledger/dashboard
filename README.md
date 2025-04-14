@@ -83,6 +83,31 @@ npm start
 
 4. Open [http://localhost:3000](http://localhost:3000) to view the app in your browser
 
+## Favicon & Icons
+
+The project includes a vector-based favicon in SVG format. For production use, you should generate proper bitmap versions:
+
+### Generating Favicon Assets
+
+We've provided an SVG version of the favicon (`public/favicon.svg`), but the ICO and PNG files need to be properly generated:
+
+1. For generating favicon.ico (multi-size ICO file):
+   - Use a tool like [RealFaviconGenerator](https://realfavicongenerator.net/) or [Favicon.io](https://favicon.io/favicon-converter/)
+   - Upload the SVG and download a complete favicon package
+   - Replace the placeholder files in the `public` directory
+
+2. For PNG versions (logo192.png and logo512.png):
+   - Convert the SVG to PNG at 192×192 and 512×512 resolutions
+   - Use design tools like Figma, Sketch, or online converters
+   - Replace the placeholder files in the `public` directory
+
+### Favicon Design
+
+The favicon represents the LedgerRocket Banking API with:
+- Dark blue circular background symbolizing trust and reliability
+- White ledger book with blue lines representing financial records
+- Red rocket element referencing the "LedgerRocket" name
+
 ## Deployment
 
 This project is automatically deployed to AWS S3 when changes are pushed to the main branch. The GitHub Actions workflow handles building the application and deploying it to the S3 bucket.
