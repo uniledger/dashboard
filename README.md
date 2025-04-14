@@ -43,6 +43,13 @@ The dashboard integrates with the LedgerRocket API, specifically:
 - `/api/v1/enriched-ledgers/` - Retrieves all ledger data
 - `/api/v1/enriched-ledgers/{id}/accounts/` - Retrieves accounts for a specific ledger
 
+### Future API Endpoints
+
+The following endpoints will be added in the future:
+
+- `/api/v1/enriched-entities/` - Lists all entities
+- `/api/v1/enriched-entities/{id}/accounts/` - Retrieves accounts for a specific entity
+
 ## Technology Stack
 
 - React
