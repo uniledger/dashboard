@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import PageHeader from '../shared/PageHeader';
 
 // Colors for charts and financial statements
@@ -27,9 +26,6 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
     expenses: 0,
     netIncome: 0
   });
-  
-  const [accountTypeData, setAccountTypeData] = useState([]);
-  const [entityAccountsData, setEntityAccountsData] = useState([]);
 
   // Calculate dashboard summary data
   const dashboardSummary = {
@@ -48,8 +44,6 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
     let revenue = 0;
     let expenses = 0;
     
-    const accountTypeMap = {};
-    
     accounts.forEach(account => {
       // Get account type (normalize to uppercase)
       let accountType = 'OTHER';
@@ -65,9 +59,6 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
       // Normalize balance (if in cents)
       const balance = account.balance || 0;
       const normalizedBalance = balance > 10000 ? balance / 100 : balance;
-      
-      // Update account type totals
-      accountTypeMap[accountType] = (accountTypeMap[accountType] || 0) + normalizedBalance;
       
       // Update financial statement data
       switch (accountType) {
@@ -105,41 +96,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
       expenses,
       netIncome: revenue - expenses
     });
-    
-    // Create account type chart data
-    const typeData = Object.keys(accountTypeMap).map(type => ({
-      name: type,
-      value: accountTypeMap[type],
-      color: COLORS[type] || COLORS.OTHER
-    }));
-    
-    setAccountTypeData(typeData);
-    
-    // Create entity distribution data
-    if (entities && entities.length > 0) {
-      const entityCounts = {};
-      
-      accounts.forEach(account => {
-        const entityId = account.entity_id || 
-          (account.enriched_ledger && account.enriched_ledger.entity_id) ||
-          (account.entity && account.entity.entity_id);
-        
-        if (entityId) {
-          entityCounts[entityId] = (entityCounts[entityId] || 0) + 1;
-        }
-      });
-      
-      const entityData = Object.keys(entityCounts).map(entityId => {
-        const entity = entities.find(e => e.entity_id === entityId);
-        return {
-          name: entity ? entity.name : 'Unknown',
-          value: entityCounts[entityId]
-        };
-      });
-      
-      setEntityAccountsData(entityData);
-    }
-  }, [accounts, entities]);
+  }, [accounts]);
 
   // Format currency for display
   const formatCurrency = (amount) => {
@@ -193,7 +150,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Assets</td>
-                  <td className="py-2 text-right font-medium text-blue-600">
+                  <td className="py-2 text-right font-medium text-gray-900">
                     {formatCurrency(balanceSheetData.assets)}
                   </td>
                 </tr>
@@ -207,7 +164,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Liabilities</td>
-                  <td className="py-2 text-right font-medium text-red-600">
+                  <td className="py-2 text-right font-medium text-gray-900">
                     {formatCurrency(balanceSheetData.liabilities)}
                   </td>
                 </tr>
@@ -221,7 +178,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Equity</td>
-                  <td className="py-2 text-right font-medium text-green-600">
+                  <td className="py-2 text-right font-medium text-gray-900">
                     {formatCurrency(balanceSheetData.equity)}
                   </td>
                 </tr>
@@ -252,7 +209,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Revenue</td>
-                  <td className="py-2 text-right font-medium text-purple-600">
+                  <td className="py-2 text-right font-medium text-gray-900">
                     {formatCurrency(incomeStatementData.revenue)}
                   </td>
                 </tr>
@@ -266,7 +223,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Expenses</td>
-                  <td className="py-2 text-right font-medium text-orange-600">
+                  <td className="py-2 text-right font-medium text-gray-900">
                     {formatCurrency(incomeStatementData.expenses)}
                   </td>
                 </tr>
