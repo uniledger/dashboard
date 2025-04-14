@@ -13,9 +13,11 @@ const LedgerDetail = ({
   onViewJson,
   onRefresh
 }) => {
-  if (!ledger) return null;
-  
+  // Hook declarations need to come before any conditional returns
   const [entity, setEntity] = useState(null);
+  
+  // Early return if no ledger
+  if (!ledger) return null;
 
   // Fetch entity details if needed
   useEffect(() => {
