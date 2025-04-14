@@ -82,6 +82,9 @@ const EntityList = ({ entities, onViewDetails, onViewJson, onRefresh }) => {
                 Entity Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Type
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Country
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -98,7 +101,7 @@ const EntityList = ({ entities, onViewDetails, onViewJson, onRefresh }) => {
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan="6" className="px-6 py-4 text-center">
+                <td colSpan="7" className="px-6 py-4 text-center">
                   <div className="flex justify-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
                   </div>
@@ -117,6 +120,9 @@ const EntityList = ({ entities, onViewDetails, onViewJson, onRefresh }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {entity.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {entity.type || entity.entity_type || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {getCountryDisplay(entity)}
@@ -139,7 +145,7 @@ const EntityList = ({ entities, onViewDetails, onViewJson, onRefresh }) => {
               );
             }) : (
               <tr>
-                <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">
                   No entities found
                 </td>
               </tr>

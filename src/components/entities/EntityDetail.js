@@ -111,6 +111,10 @@ const EntityDetail = ({
             <p className="text-gray-900">{entity.name}</p>
           </div>
           <div>
+            <p className="text-sm text-gray-500">Type</p>
+            <p className="text-gray-900">{entity.type || entity.entity_type || 'N/A'}</p>
+          </div>
+          <div>
             <p className="text-sm text-gray-500">Country</p>
             <p className="text-gray-900">{getCountryDisplay(entity)}</p>
           </div>
