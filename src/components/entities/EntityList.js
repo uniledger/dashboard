@@ -1,16 +1,74 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PageHeader from '../shared/PageHeader';
+
+const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
 
 /**
  * Entity List component to display all entities
  */
-const EntityList = ({ entities, accounts, ledgers, onViewDetails, onViewJson }) => {
+const EntityList = ({ entities, onViewDetails, onViewJson, onRefresh }) => {
+  const [entityStats, setEntityStats] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  // Fetch entity statistics (account and ledger counts)
+  useEffect(() => {
+    const fetchEntityStats = async () => {
+      setLoading(true);
+      try {
+        const stats = {};
+        
+        // Fetch stats for each entity
+        for (const entity of entities) {
+          // Get ledger count
+          const ledgersResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/?entity_id=${entity.entity_id}`);
+          const ledgersData = await ledgersResponse.json();
+          
+          // Get account count
+          const accountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/?entity_id=${entity.entity_id}`);
+          const accountsData = await accountsResponse.json();
+          
+          stats[entity.entity_id] = {
+            ledgerCount: ledgersData.length,
+            accountCount: accountsData.length
+          };
+        }
+        
+        setEntityStats(stats);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching entity stats:', err);
+        setLoading(false);
+      }
+    };
+
+    if (entities && entities.length > 0) {
+      fetchEntityStats();
+    } else {
+      setLoading(false);
+    }
+  }, [entities]);
+
+  // Helper function for country display
+  const getCountryDisplay = (entity) => {
+    if (!entity) return 'N/A';
+    
+    // Handle when r_country is available
+    if (entity.r_country) {
+      return `${entity.r_country.name} (${entity.r_country.country_code})`;
+    }
+    
+    // Fallback to just country code
+    return entity.country_code || 'N/A';
+  };
+
   return (
     <div>
       <PageHeader 
         title="Entities Overview" 
         buttonText="+ New Entity" 
-        onButtonClick={() => console.log('Create new entity')} 
+        onButtonClick={() => console.log('Create new entity')}
+        refreshButton={true}
+        onRefresh={onRefresh}
       />
       
       <div className="bg-white shadow overflow-hidden rounded-lg">
@@ -38,15 +96,16 @@ const EntityList = ({ entities, accounts, ledgers, onViewDetails, onViewJson }) 
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {entities && entities.length > 0 ? entities.map((entity) => {
-              // Count accounts and ledgers for this entity
-              const entityAccounts = accounts.filter(a => 
-                a.entity_id === entity.entity_id || 
-                (a.enriched_ledger && a.enriched_ledger.entity_id === entity.entity_id)
-              );
-              const entityLedgers = ledgers.filter(l => 
-                l.entity_id === entity.entity_id
-              );
+            {loading ? (
+              <tr>
+                <td colSpan="6" className="px-6 py-4 text-center">
+                  <div className="flex justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                  </div>
+                </td>
+              </tr>
+            ) : entities && entities.length > 0 ? entities.map((entity) => {
+              const stats = entityStats[entity.entity_id] || { ledgerCount: 0, accountCount: 0 };
               
               return (
                 <tr key={entity.entity_id} className="hover:bg-gray-50">
@@ -57,13 +116,13 @@ const EntityList = ({ entities, accounts, ledgers, onViewDetails, onViewJson }) 
                     {entity.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {entity.country || 'N/A'}
+                    {getCountryDisplay(entity)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {entityAccounts.length}
+                    {stats.accountCount}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {entityLedgers.length}
+                    {stats.ledgerCount}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <button 

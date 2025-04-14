@@ -19,16 +19,27 @@ const LedgerDashboard = () => {
   const [selectedEntityId, setSelectedEntityId] = useState(null);
   const [selectedLedgerId, setSelectedLedgerId] = useState(null);
   
-  // State for API data
-  const [accounts, setAccounts] = useState([]);
-  const [ledgers, setLedgers] = useState([]);
-  const [entities, setEntities] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  // State for detail views
-  const [entityAccounts, setEntityAccounts] = useState([]);
+  // Tab-specific states replacing global state
+  const [dashboardData, setDashboardData] = useState(null);
+  const [entitiesList, setEntitiesList] = useState(null);
+  const [entityDetail, setEntityDetail] = useState(null);
+  const [entityLedgers, setEntityLedgers] = useState(null);
+  const [entityAccounts, setEntityAccounts] = useState(null);
+  const [ledgersList, setLedgersList] = useState(null);
+  const [ledgerDetail, setLedgerDetail] = useState(null);
   const [ledgerAccounts, setLedgerAccounts] = useState([]);
+  const [accountsList, setAccountsList] = useState(null);
+  const [analyticsData, setAnalyticsData] = useState(null);
+  
+  // Tab-specific loading states
+  const [dashboardLoading, setDashboardLoading] = useState(false);
+  const [entitiesLoading, setEntitiesLoading] = useState(false);
+  const [ledgersLoading, setLedgersLoading] = useState(false);
+  const [accountsLoading, setAccountsLoading] = useState(false);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  
+  // Global error state
+  const [error, setError] = useState(null);
   
   // State for detail modal
   const [detailModal, setDetailModal] = useState({ 
@@ -37,62 +48,208 @@ const LedgerDashboard = () => {
     title: '' 
   });
 
-  // Fetch data from the API
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Fetch enriched accounts
-        const accountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/`);
-        const accountsData = await accountsResponse.json();
-        setAccounts(accountsData);
-        
-        // Fetch enriched ledgers
-        const ledgersResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/`);
-        const ledgersData = await ledgersResponse.json();
-        setLedgers(ledgersData);
-        
-        // Fetch enriched entities
-        const entitiesResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/`);
-        const entitiesData = await entitiesResponse.json();
-        setEntities(entitiesData);
-        
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching data:', err);
-        setError(err.message || 'An error occurred while fetching data');
-        setLoading(false);
-      }
-    };
+  // Fetch dashboard data
+  const fetchDashboardData = async () => {
+    setDashboardLoading(true);
+    try {
+      // Get counts and aggregate data for dashboard view
+      const entitiesResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/`);
+      const entitiesData = await entitiesResponse.json();
+      
+      const ledgersResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/`);
+      const ledgersData = await ledgersResponse.json();
+      
+      const accountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/`);
+      const accountsData = await accountsResponse.json();
+      
+      setDashboardData({
+        entities: entitiesData,
+        ledgers: ledgersData,
+        accounts: accountsData
+      });
+      
+      setDashboardLoading(false);
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError(err.message || 'An error occurred while fetching dashboard data');
+      setDashboardLoading(false);
+    }
+  };
 
-    fetchData();
+  // Fetch entities list
+  const fetchEntitiesList = async () => {
+    if (entitiesList !== null) return; // Only fetch if not already loaded
+    
+    setEntitiesLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/`);
+      const data = await response.json();
+      setEntitiesList(data);
+      setEntitiesLoading(false);
+    } catch (err) {
+      console.error('Error fetching entities:', err);
+      setError(err.message || 'An error occurred while fetching entities');
+      setEntitiesLoading(false);
+    }
+  };
+
+  // Fetch entity detail
+  const fetchEntityDetail = async (entityId) => {
+    setEntitiesLoading(true);
+    try {
+      const entityResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/${entityId}`);
+      const entityData = await entityResponse.json();
+      setEntityDetail(entityData);
+      
+      // Fetch ledgers for the entity
+      const entityLedgersResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/?entity_id=${entityId}`);
+      const entityLedgersData = await entityLedgersResponse.json();
+      setEntityLedgers(entityLedgersData);
+      
+      // Fetch accounts for the entity
+      const entityAccountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/?entity_id=${entityId}`);
+      const entityAccountsData = await entityAccountsResponse.json();
+      setEntityAccounts(entityAccountsData);
+      
+      setEntitiesLoading(false);
+    } catch (err) {
+      console.error('Error fetching entity detail:', err);
+      setError(err.message || 'An error occurred while fetching entity data');
+      setEntitiesLoading(false);
+    }
+  };
+
+  // Fetch ledgers list
+  const fetchLedgersList = async () => {
+    if (ledgersList !== null) return; // Only fetch if not already loaded
+    
+    setLedgersLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/`);
+      const data = await response.json();
+      setLedgersList(data);
+      setLedgersLoading(false);
+    } catch (err) {
+      console.error('Error fetching ledgers:', err);
+      setError(err.message || 'An error occurred while fetching ledgers');
+      setLedgersLoading(false);
+    }
+  };
+
+  // Fetch ledger detail
+  const fetchLedgerDetail = async (ledgerId) => {
+    setLedgersLoading(true);
+    try {
+      const ledgerResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/${ledgerId}`);
+      const ledgerData = await ledgerResponse.json();
+      setLedgerDetail(ledgerData);
+      
+      // Fetch accounts for the ledger
+      const ledgerAccountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/?ledger_id=${ledgerId}`);
+      const ledgerAccountsData = await ledgerAccountsResponse.json();
+      setLedgerAccounts(ledgerAccountsData);
+      
+      setLedgersLoading(false);
+    } catch (err) {
+      console.error('Error fetching ledger detail:', err);
+      setError(err.message || 'An error occurred while fetching ledger data');
+      setLedgersLoading(false);
+    }
+  };
+
+  // Fetch accounts list
+  const fetchAccountsList = async () => {
+    if (accountsList !== null) return; // Only fetch if not already loaded
+    
+    setAccountsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/`);
+      const data = await response.json();
+      setAccountsList(data);
+      setAccountsLoading(false);
+    } catch (err) {
+      console.error('Error fetching accounts:', err);
+      setError(err.message || 'An error occurred while fetching accounts');
+      setAccountsLoading(false);
+    }
+  };
+
+  // Fetch analytics data
+  const fetchAnalyticsData = async () => {
+    if (analyticsData !== null) return; // Only fetch if not already loaded
+    
+    setAnalyticsLoading(true);
+    try {
+      // For analytics, fetch all data needed for reports
+      const accountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/`);
+      const accountsData = await accountsResponse.json();
+      
+      const entitiesResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/`);
+      const entitiesData = await entitiesResponse.json();
+      
+      const ledgersResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/`);
+      const ledgersData = await ledgersResponse.json();
+      
+      setAnalyticsData({
+        accounts: accountsData,
+        entities: entitiesData,
+        ledgers: ledgersData
+      });
+      
+      setAnalyticsLoading(false);
+    } catch (err) {
+      console.error('Error fetching analytics data:', err);
+      setError(err.message || 'An error occurred while fetching analytics data');
+      setAnalyticsLoading(false);
+    }
+  };
+
+  // Load dashboard data on initial component mount
+  useEffect(() => {
+    fetchDashboardData();
   }, []);
 
-  // Set accounts for a specific entity by filtering the existing accounts
-  useEffect(() => {
-    if (!selectedEntityId || loading) return;
+  // Handle tab change
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
     
-    // Filter accounts by entity ID
-    const filteredAccounts = accounts.filter(a => 
-      a.entity_id === selectedEntityId || 
-      (a.enriched_ledger && a.enriched_ledger.entity_id === selectedEntityId)
-    );
-    setEntityAccounts(filteredAccounts);
+    // Reset detail selections
+    setSelectedEntityId(null);
+    setSelectedLedgerId(null);
     
-  }, [selectedEntityId, accounts, loading]);
+    // Load tab-specific data if needed
+    switch(tab) {
+      case 'dashboard':
+        fetchDashboardData();
+        break;
+      case 'entities':
+        fetchEntitiesList();
+        break;
+      case 'ledgers':
+        fetchLedgersList();
+        break;
+      case 'accounts':
+        fetchAccountsList();
+        break;
+      case 'analytics':
+        fetchAnalyticsData();
+        break;
+      default:
+        break;
+    }
+  };
 
-  // Set accounts for a specific ledger by filtering the existing accounts
-  useEffect(() => {
-    if (!selectedLedgerId || loading) return;
-    
-    // Filter accounts by ledger ID
-    const filteredAccounts = accounts.filter(a => 
-      a.ledger_id === selectedLedgerId || 
-      (a.enriched_ledger && a.enriched_ledger.ledger_id === selectedLedgerId)
-    );
-    setLedgerAccounts(filteredAccounts);
-    
-  }, [selectedLedgerId, accounts, loading]);
+  // Handle entity selection
+  const handleEntitySelection = (entityId) => {
+    setSelectedEntityId(entityId);
+    fetchEntityDetail(entityId);
+  };
+
+  // Handle ledger selection
+  const handleLedgerSelection = (ledgerId) => {
+    setSelectedLedgerId(ledgerId);
+    fetchLedgerDetail(ledgerId);
+  };
 
   // Handle opening the detail modal
   const handleViewJson = (data, title) => {
@@ -112,13 +269,16 @@ const LedgerDashboard = () => {
     });
   };
 
+  // Check if any tab is in loading state
+  const isLoading = dashboardLoading || entitiesLoading || ledgersLoading || accountsLoading || analyticsLoading;
+
   // Loading state
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-3 text-gray-600">Loading ledger data...</p>
+          <p className="mt-3 text-gray-600">Loading data...</p>
         </div>
       </div>
     );
@@ -176,11 +336,7 @@ const LedgerDashboard = () => {
         <div className="border-b border-gray-200 mb-6">
           <nav className="-mb-px flex space-x-8">
             <button
-              onClick={() => {
-                setActiveTab('dashboard');
-                setSelectedEntityId(null);
-                setSelectedLedgerId(null);
-              }}
+              onClick={() => handleTabChange('dashboard')}
               className={`pb-3 px-1 ${activeTab === 'dashboard' 
                 ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
@@ -188,11 +344,7 @@ const LedgerDashboard = () => {
               Dashboard
             </button>
             <button
-              onClick={() => {
-                setActiveTab('entities');
-                setSelectedEntityId(null);
-                setSelectedLedgerId(null);
-              }}
+              onClick={() => handleTabChange('entities')}
               className={`pb-3 px-1 ${activeTab === 'entities' 
                 ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
@@ -200,11 +352,7 @@ const LedgerDashboard = () => {
               Entities
             </button>
             <button
-              onClick={() => {
-                setActiveTab('ledgers');
-                setSelectedEntityId(null);
-                setSelectedLedgerId(null);
-              }}
+              onClick={() => handleTabChange('ledgers')}
               className={`pb-3 px-1 ${activeTab === 'ledgers' 
                 ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
@@ -212,11 +360,7 @@ const LedgerDashboard = () => {
               Ledgers
             </button>
             <button
-              onClick={() => {
-                setActiveTab('accounts');
-                setSelectedEntityId(null);
-                setSelectedLedgerId(null);
-              }}
+              onClick={() => handleTabChange('accounts')}
               className={`pb-3 px-1 ${activeTab === 'accounts' 
                 ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
@@ -224,11 +368,7 @@ const LedgerDashboard = () => {
               Accounts
             </button>
             <button
-              onClick={() => {
-                setActiveTab('analytics');
-                setSelectedEntityId(null);
-                setSelectedLedgerId(null);
-              }}
+              onClick={() => handleTabChange('analytics')}
               className={`pb-3 px-1 ${activeTab === 'analytics' 
                 ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
@@ -239,76 +379,78 @@ const LedgerDashboard = () => {
         </div>
 
         {/* Dashboard View */}
-        {activeTab === 'dashboard' && (
+        {activeTab === 'dashboard' && dashboardData && (
           <DashboardView 
-            entities={entities} 
-            ledgers={ledgers} 
-            accounts={accounts} 
+            entities={dashboardData.entities} 
+            ledgers={dashboardData.ledgers} 
+            accounts={dashboardData.accounts}
+            onRefresh={fetchDashboardData}
           />
         )}
 
         {/* Entities Tab - List View */}
-        {activeTab === 'entities' && !selectedEntityId && (
+        {activeTab === 'entities' && !selectedEntityId && entitiesList && (
           <EntityList 
-            entities={entities}
-            accounts={accounts}
-            ledgers={ledgers}
-            onViewDetails={(entityId) => setSelectedEntityId(entityId)}
+            entities={entitiesList}
+            onViewDetails={handleEntitySelection}
             onViewJson={handleViewJson}
+            onRefresh={fetchEntitiesList}
           />
         )}
 
         {/* Entities Tab - Detail View */}
-        {activeTab === 'entities' && selectedEntityId && (
+        {activeTab === 'entities' && selectedEntityId && entityDetail && (
           <EntityDetail 
-            entity={entities.find(e => e.entity_id === selectedEntityId)}
-            entityLedgers={ledgers.filter(l => l.entity_id === selectedEntityId)}
+            entity={entityDetail}
+            entityLedgers={entityLedgers}
             entityAccounts={entityAccounts}
             onBack={() => setSelectedEntityId(null)}
             onViewJson={handleViewJson}
             onViewLedger={(ledgerId) => {
               setActiveTab('ledgers');
               setSelectedLedgerId(ledgerId);
+              fetchLedgerDetail(ledgerId);
             }}
+            onRefresh={() => fetchEntityDetail(selectedEntityId)}
           />
         )}
 
         {/* Ledgers Tab - List View */}
-        {activeTab === 'ledgers' && !selectedLedgerId && (
+        {activeTab === 'ledgers' && !selectedLedgerId && ledgersList && (
           <LedgerList 
-            ledgers={ledgers}
-            entities={entities}
-            accounts={accounts}
-            onViewDetails={(ledgerId) => setSelectedLedgerId(ledgerId)}
+            ledgers={ledgersList}
+            onViewDetails={handleLedgerSelection}
             onViewJson={handleViewJson}
+            onRefresh={fetchLedgersList}
           />
         )}
 
         {/* Ledgers Tab - Detail View */}
-        {activeTab === 'ledgers' && selectedLedgerId && (
+        {activeTab === 'ledgers' && selectedLedgerId && ledgerDetail && (
           <LedgerDetail 
-            ledger={ledgers.find(l => l.ledger_id === selectedLedgerId)}
-            entities={entities}
+            ledger={ledgerDetail}
             ledgerAccounts={ledgerAccounts}
             onBack={() => setSelectedLedgerId(null)}
             onViewJson={handleViewJson}
+            onRefresh={() => fetchLedgerDetail(selectedLedgerId)}
           />
         )}
 
         {/* Accounts Tab */}
-        {activeTab === 'accounts' && (
+        {activeTab === 'accounts' && accountsList && (
           <AccountList 
-            accounts={accounts}
-            entities={entities}
+            accounts={accountsList}
             onViewJson={handleViewJson}
+            onRefresh={fetchAccountsList}
           />
         )}
 
         {/* Analytics Tab */}
-        {activeTab === 'analytics' && (
+        {activeTab === 'analytics' && analyticsData && (
           <AnalyticsView 
-            accounts={accounts}
-            entities={entities}
+            accounts={analyticsData.accounts}
+            entities={analyticsData.entities}
+            onRefresh={fetchAnalyticsData}
           />
         )}
       </main>
