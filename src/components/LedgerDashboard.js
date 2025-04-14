@@ -97,6 +97,7 @@ const LedgerDashboard = () => {
   const fetchEntityDetail = async (entityId) => {
     setEntitiesLoading(true);
     try {
+      // Fetch entity details
       const entityResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/${entityId}`);
       const entityData = await entityResponse.json();
       setEntityDetail(entityData);
@@ -106,33 +107,11 @@ const LedgerDashboard = () => {
       const entityLedgersData = await entityLedgersResponse.json();
       setEntityLedgers(entityLedgersData);
       
-      // First, get all accounts
-      const allAccountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/`);
-      const allAccounts = await allAccountsResponse.json();
-      
-      // Then filter them properly for this entity
-      const entityAccountsFiltered = allAccounts.filter(account => {
-        // Check direct entity_id match
-        if (account.entity_id === entityId) return true;
-        
-        // Check entity_id in enriched_ledger
-        if (account.enriched_ledger && account.enriched_ledger.entity_id === entityId) return true;
-        
-        // Check entity reference
-        if (account.entity && account.entity.entity_id === entityId) return true;
-        
-        // Check ledger relationship
-        if (account.ledger_id) {
-          const matchingLedger = entityLedgersData.find(l => l.ledger_id === account.ledger_id);
-          if (matchingLedger) return true;
-        }
-        
-        return false;
-      });
-      
-      // Set the filtered accounts
-      setEntityAccounts(entityAccountsFiltered);
-      console.log(`Found ${entityAccountsFiltered.length} accounts for entity ${entityId}`);
+      // Fetch accounts for the entity - using the proper endpoint with entity_id filter
+      const entityAccountsResponse = await fetch(`${API_BASE_URL}/api/v1/entities/${entityId}/enriched-accounts/`);
+      const entityAccountsData = await entityAccountsResponse.json();
+      setEntityAccounts(entityAccountsData);
+      console.log(`Fetched ${entityAccountsData.length} accounts for entity ${entityId} using proper endpoint`);
       
       setEntitiesLoading(false);
     } catch (err) {
@@ -163,30 +142,16 @@ const LedgerDashboard = () => {
   const fetchLedgerDetail = async (ledgerId) => {
     setLedgersLoading(true);
     try {
+      // Fetch ledger details
       const ledgerResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/${ledgerId}`);
       const ledgerData = await ledgerResponse.json();
       setLedgerDetail(ledgerData);
       
-      // Fetch accounts for the ledger - similar approach as entity accounts
-      const allAccountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/`);
-      const allAccounts = await allAccountsResponse.json();
-      
-      // Filter for this ledger
-      const ledgerAccountsFiltered = allAccounts.filter(account => {
-        // Direct ledger_id match
-        if (account.ledger_id === ledgerId) return true;
-        
-        // Match in enriched_ledger
-        if (account.enriched_ledger && account.enriched_ledger.ledger_id === ledgerId) return true;
-        
-        // Match via ledger reference
-        if (account.ledger && account.ledger.ledger_id === ledgerId) return true;
-        
-        return false;
-      });
-      
-      setLedgerAccounts(ledgerAccountsFiltered);
-      console.log(`Found ${ledgerAccountsFiltered.length} accounts for ledger ${ledgerId}`);
+      // Fetch accounts for the ledger - using the proper endpoint with ledger_id filter
+      const ledgerAccountsResponse = await fetch(`${API_BASE_URL}/api/v1/ledgers/${ledgerId}/enriched-accounts/`);
+      const ledgerAccountsData = await ledgerAccountsResponse.json();
+      setLedgerAccounts(ledgerAccountsData);
+      console.log(`Fetched ${ledgerAccountsData.length} accounts for ledger ${ledgerId} using proper endpoint`);
       
       setLedgersLoading(false);
     } catch (err) {
