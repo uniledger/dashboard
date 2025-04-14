@@ -47,7 +47,7 @@ const EntityDetail = ({
           </div>
           <div>
             <p className="text-sm text-gray-500">Country</p>
-            <p className="text-gray-900">{entity.country || 'N/A'}</p>
+            <p className="text-gray-900">{entity.r_country?.country_name || entity.country || 'N/A'}</p>
           </div>
           {/* Additional properties can be added here if available in the API */}
         </div>
@@ -67,7 +67,7 @@ const EntityDetail = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {entityLedgers.length > 0 ? entityLedgers.map(ledger => (
+            {entityLedgers && entityLedgers.length > 0 ? entityLedgers.map(ledger => (
               <tr key={ledger.ledger_id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ledger.ledger_id}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ledger.name}</td>
@@ -75,7 +75,7 @@ const EntityDetail = ({
                   {ledger.r_currency?.currency_code || 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {ledger.country || 'N/A'}
+                  {ledger.r_country?.country_name || ledger.country || 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <button 
@@ -119,7 +119,7 @@ const EntityDetail = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {entityAccounts.length > 0 ? entityAccounts.map(account => (
+            {entityAccounts && entityAccounts.length > 0 ? entityAccounts.map(account => (
               <tr key={account.account_extra_id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {account.account_extra_id}
