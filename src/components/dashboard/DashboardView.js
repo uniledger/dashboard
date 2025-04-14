@@ -49,7 +49,9 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
       
       // Normalize balance (if in cents)
       const balance = account.balance || 0;
-      const normalizedBalance = balance > 10000 ? balance / 100 : balance;
+      let normalizedBalance = balance;
+      
+      // Don't do automatic scaling - use the raw balance
       
       // Update financial statement data
       switch (accountType) {
@@ -76,16 +78,16 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
     
     // Update balance sheet data
     setBalanceSheetData({
-      assets,
-      liabilities,
-      equity
+      assets: assets / 100,
+      liabilities: liabilities / 100,
+      equity: equity / 100
     });
     
     // Update income statement data
     setIncomeStatementData({
-      revenue,
-      expenses,
-      netIncome: revenue - expenses
+      revenue: revenue / 100,
+      expenses: expenses / 100,
+      netIncome: (revenue - expenses) / 100
     });
   }, [accounts]);
 
