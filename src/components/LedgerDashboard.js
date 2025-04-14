@@ -345,6 +345,14 @@ const LedgerDashboard = () => {
               >
                 API Documentation
               </a>
+              <a 
+                href="https://ledger.dev.ledgerrocket.com/docs" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              >
+                Swagger UI
+              </a>
               <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
                 Get API Key
               </button>
