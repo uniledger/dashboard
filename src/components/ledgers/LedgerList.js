@@ -97,10 +97,6 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh, onViewEntit
                     <p className="text-sm text-gray-500">Country</p>
                     <p className="text-gray-900">{getCountryDisplay(ledger)}</p>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Created</p>
-                    <p className="text-gray-900">{new Date(ledger.created_at || Date.now()).toLocaleDateString()}</p>
-                  </div>
                 </div>
                 <div className="mt-6 flex justify-end space-x-3">
                   <button 
