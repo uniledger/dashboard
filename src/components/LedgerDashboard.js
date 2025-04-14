@@ -68,27 +68,17 @@ const LedgerDashboard = () => {
     fetchData();
   }, []);
 
-  // Fetch accounts for a specific entity
+  // Set accounts for a specific entity by filtering the existing accounts
   useEffect(() => {
     if (!selectedEntityId || loading) return;
     
-    const fetchEntityAccounts = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/${selectedEntityId}/accounts/`);
-        const data = await response.json();
-        setEntityAccounts(data);
-      } catch (err) {
-        console.error('Error fetching entity accounts:', err);
-        // Fall back to filtering accounts
-        const filteredAccounts = accounts.filter(a => 
-          a.entity_id === selectedEntityId || 
-          (a.enriched_ledger && a.enriched_ledger.entity_id === selectedEntityId)
-        );
-        setEntityAccounts(filteredAccounts);
-      }
-    };
-
-    fetchEntityAccounts();
+    // Filter accounts by entity ID
+    const filteredAccounts = accounts.filter(a => 
+      a.entity_id === selectedEntityId || 
+      (a.enriched_ledger && a.enriched_ledger.entity_id === selectedEntityId)
+    );
+    setEntityAccounts(filteredAccounts);
+    
   }, [selectedEntityId, accounts, loading]);
 
   // Set accounts for a specific ledger by filtering the existing accounts
