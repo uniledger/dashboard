@@ -68,9 +68,6 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
                 Currency Code
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Type
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -84,7 +81,7 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
           <tbody className="bg-white divide-y divide-gray-200">
             {loading ? (
               <tr>
-                <td colSpan="5" className="px-6 py-4 text-center">
+                <td colSpan="4" className="px-6 py-4 text-center">
                   <div className="flex justify-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
                   </div>
@@ -94,9 +91,6 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
               <tr key={currency.currency_id || currency.currency_code} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {currency.currency_code}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {currency.name || 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {currency.type || 'N/A'}
@@ -115,7 +109,7 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
               </tr>
             )) : (
               <tr>
-                <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
                   No currencies found
                 </td>
               </tr>
