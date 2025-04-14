@@ -455,6 +455,12 @@ const LedgerDashboard = () => {
             onBack={() => setSelectedLedgerId(null)}
             onViewJson={handleViewJson}
             onRefresh={() => fetchLedgerDetail(selectedLedgerId)}
+            onViewEntity={handleEntitySelection}
+            onViewAccount={(account) => {
+              setActiveTab('accounts');
+              setSelectedAccountId(account.account_id || account.account_extra_id);
+              setAccountDetail(account);
+            }}
           />
         )}
 
