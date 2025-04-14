@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PageHeader from '../shared/PageHeader';
 
-
 /**
  * Dashboard View component to display a system overview with financial statements
  */
@@ -75,17 +74,17 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
     
     // Update balance sheet data (include net income in equity)
     setBalanceSheetData({
-      assets: assets / 100,
-      liabilities: liabilities / 100,
-      equity: equity / 100,
-      retainedEarnings: netIncome / 100  // Include net income as retained earnings
+      assets: assets / 1000,
+      liabilities: liabilities / 1000,
+      equity: equity / 1000,
+      retainedEarnings: netIncome / 1000  // Include net income as retained earnings
     });
     
     // Update income statement data
     setIncomeStatementData({
-      revenue: revenue / 100,
-      expenses: expenses / 100,
-      netIncome: netIncome / 100
+      revenue: revenue / 1000,
+      expenses: expenses / 1000,
+      netIncome: netIncome / 1000
     });
   }, [accounts]);
 
@@ -118,7 +117,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900">Balance Sheet Summary (GBP)</h3>
           <div className="text-right text-sm text-gray-500">
-            <div>Values shown in GBP (÷100)</div>
+            <div>Values in thousands (GBP)</div>
           </div>
         </div>
         <div className="grid grid-cols-1 gap-6">
@@ -133,7 +132,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Assets</td>
-                  <td className="py-2 text-right font-medium text-gray-900">
+                  <td className={`py-2 text-right font-medium ${balanceSheetData.assets < 0 ? 'text-red-600' : 'text-gray-900'}`}>
                     {formatCurrency(balanceSheetData.assets)}
                   </td>
                 </tr>
@@ -147,7 +146,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Liabilities</td>
-                  <td className="py-2 text-right font-medium text-gray-900">
+                  <td className={`py-2 text-right font-medium ${balanceSheetData.liabilities < 0 ? 'text-red-600' : 'text-gray-900'}`}>
                     {formatCurrency(balanceSheetData.liabilities)}
                   </td>
                 </tr>
@@ -161,7 +160,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Contributed Capital</td>
-                  <td className="py-2 text-right font-medium text-gray-900">
+                  <td className={`py-2 text-right font-medium ${balanceSheetData.equity < 0 ? 'text-red-600' : 'text-gray-900'}`}>
                     {formatCurrency(balanceSheetData.equity)}
                   </td>
                 </tr>
@@ -173,13 +172,13 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
                 </tr>
                 <tr>
                   <td className="py-2 text-gray-700">Total Equity</td>
-                  <td className="py-2 text-right font-medium text-gray-900">
+                  <td className={`py-2 text-right font-medium ${totalEquity < 0 ? 'text-red-600' : 'text-gray-900'}`}>
                     {formatCurrency(totalEquity)}
                   </td>
                 </tr>
                 <tr className="border-t-2 border-gray-300">
                   <td className="py-2 font-bold">Total Liabilities & Equity</td>
-                  <td className="py-2 text-right font-bold">
+                  <td className={`py-2 text-right font-bold ${(balanceSheetData.liabilities + totalEquity) < 0 ? 'text-red-600' : 'text-gray-900'}`}>
                     {formatCurrency(balanceSheetData.liabilities + totalEquity)}
                   </td>
                 </tr>
@@ -194,7 +193,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900">Income Statement Summary (GBP)</h3>
           <div className="text-right text-sm text-gray-500">
-            <div>Values shown in GBP (÷100)</div>
+            <div>Values in thousands (GBP)</div>
           </div>
         </div>
         <div className="grid grid-cols-1 gap-6">
@@ -209,7 +208,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Revenue</td>
-                  <td className="py-2 text-right font-medium text-gray-900">
+                  <td className={`py-2 text-right font-medium ${incomeStatementData.revenue < 0 ? 'text-red-600' : 'text-gray-900'}`}>
                     {formatCurrency(incomeStatementData.revenue)}
                   </td>
                 </tr>
@@ -223,13 +222,13 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Expenses</td>
-                  <td className="py-2 text-right font-medium text-gray-900">
+                  <td className={`py-2 text-right font-medium ${incomeStatementData.expenses < 0 ? 'text-red-600' : 'text-gray-900'}`}>
                     {formatCurrency(incomeStatementData.expenses)}
                   </td>
                 </tr>
                 <tr className="border-t-2 border-gray-300">
                   <td className="py-2 font-bold">Net Income</td>
-                  <td className={`py-2 text-right font-bold ${incomeStatementData.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <td className={`py-2 text-right font-bold ${incomeStatementData.netIncome < 0 ? 'text-red-600' : 'text-gray-900'}`}>
                     {formatCurrency(incomeStatementData.netIncome)}
                   </td>
                 </tr>
