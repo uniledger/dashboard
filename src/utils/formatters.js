@@ -54,8 +54,32 @@ export const getCountryDisplay = (item) => {
     return `${item.r_country.name} (${item.r_country.country_code})`;
   }
   
-  // Fallback to just country code
-  return item.country_code || 'N/A';
+  // Try various country code formats
+  if (item.country_code) {
+    return item.country_code;
+  }
+  
+  if (item.country) {
+    return item.country;
+  }
+  
+  // Try entity property if available
+  if (item.r_entity?.country_code) {
+    return item.r_entity.country_code;
+  }
+  
+  if (item.entity?.country_code) {
+    return item.entity.country_code;
+  }
+  
+  // Extra check for any property containing country info
+  for (const key in item) {
+    if (key.toLowerCase().includes('country') && item[key]) {
+      return item[key];
+    }
+  }
+  
+  return 'N/A';
 };
 
 /**

@@ -29,19 +29,6 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh, onViewEntit
     fetchEntities();
   }, []);
 
-  // Helper function for country display
-  const getCountryDisplay = (item) => {
-    if (!item) return 'N/A';
-    
-    // Handle when r_country is available
-    if (item.r_country) {
-      return `${item.r_country.name} (${item.r_country.country_code})`;
-    }
-    
-    // Fallback to just country code
-    return item.country_code || 'N/A';
-  };
-
   // Add debugging for component rendering
   console.log('LedgerList render, ledgers count:', ledgers?.length || 0);
       
@@ -99,18 +86,12 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh, onViewEntit
                     {ledger.r_currency ? `${ledger.r_currency.currency_code} (${ledger.r_currency.type})` : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {getCountryDisplay(ledger)}
+                    {console.log('Ledger country data:', ledger.country_code, ledger.r_country) || getCountryDisplay(ledger)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {ledger.description || 'No description'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                    <button 
-                      className="text-blue-600 hover:text-blue-800 mr-3"
-                      onClick={() => onViewDetails(ledger.ledger_id)}
-                    >
-                      View Details
-                    </button>
                     <button 
                       className="text-gray-600 hover:text-gray-800"
                       onClick={() => onViewJson(ledger, `Ledger: ${ledger.name}`)}
