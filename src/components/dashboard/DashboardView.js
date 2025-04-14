@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PageHeader from '../shared/PageHeader';
+import { formatBalance } from '../../utils/formatters';
 
 /**
  * Dashboard View component to display a system overview with financial statements

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatBalance, formatAccountCode } from '../../utils/formatters';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
 
@@ -61,36 +62,17 @@ const AccountDetail = ({
   // Resolve ledger from different sources
   const resolvedLedger = account.ledger || account.enriched_ledger || ledger;
   
-  // Format balance
-  const formatBalance = () => {
+  // Format balance using utility function
+  const getDisplayBalance = () => {
     if (typeof account.balance !== 'number') return 'N/A';
     
-    const scale = 
-      (resolvedLedger && resolvedLedger.r_currency && resolvedLedger.r_currency.scale) || 
-      account.scale || 
-      2;
-    
-    const balance = account.balance / Math.pow(10, scale);
-    const roundedAmount = Math.round(balance);
-    const formattedAmount = roundedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    
-    // Format negative numbers with parentheses and no decimals
-    if (roundedAmount < 0) {
-      return `(${formattedAmount.replace('-', '')})`;
-    } else {
-      return formattedAmount;
-    }
+    const currency = (resolvedLedger && resolvedLedger.r_currency);
+    return formatBalance(account.balance, currency, true);
   };
   
   // Get account code display
   const getAccountCodeDisplay = () => {
-    // Handle when account_code is a full object
-    if (account.account_code && typeof account.account_code === 'object') {
-      return `${account.account_code.account_code} - ${account.account_code.name || ''}`;
-    }
-    
-    // Handle when it's just the code value
-    return account.account_code || account.code || 'N/A';
+    return formatAccountCode(account.account_code || account.code);
   };
   
   // Get account type
@@ -201,7 +183,7 @@ const AccountDetail = ({
           <div>
             <p className="text-sm text-gray-500">Balance</p>
             <p className={`text-gray-900 font-medium text-right ${account.balance < 0 ? 'text-red-600' : ''}`}>
-              {formatBalance()}
+              {getDisplayBalance()}
             </p>
           </div>
           <div>

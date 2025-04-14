@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatBalance, getCountryDisplay } from '../../utils/formatters';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
 
@@ -58,37 +59,6 @@ const LedgerDetail = ({
   // Early return if no ledger, but after hooks are declared
   if (!ledger) return null;
   
-  // Helper function for country display
-  const getCountryDisplay = (item) => {
-    if (!item) return 'N/A';
-    
-    // Handle when r_country is available
-    if (item.r_country) {
-      return `${item.r_country.name} (${item.r_country.country_code})`;
-    }
-    
-    // Look for different country code formats
-    const countryCode = item.country_code || item.country || 
-      (item.r_entity && item.r_entity.country_code) ||
-      (entity && entity.country_code);
-    
-    if (countryCode) {
-      return countryCode;
-    }
-    
-    // If we have country info in entity or the ledger's entity
-    if (entity && entity.r_country) {
-      return `${entity.r_country.name} (${entity.r_country.country_code})`;
-    }
-    
-    // Try to get country from the entity reference
-    if (displayEntity && displayEntity.country_code) {
-      return displayEntity.country_code;
-    }
-    
-    return 'N/A';
-  };
-
   // Helper function for account codes
   const getAccountCodeDisplay = (account) => {
     if (!account) return 'N/A';
@@ -112,24 +82,6 @@ const LedgerDetail = ({
     
     // Find entity in our fetched list
     return entities.find(e => e.entity_id === entityId);
-  };
-  
-  // Format balance
-  const getFormattedBalance = (account) => {
-    if (typeof account.balance !== 'number') return 'N/A';
-    
-    const scale = ledger.r_currency?.scale || 2;
-    
-    const balance = account.balance / Math.pow(10, scale);
-    const roundedAmount = Math.round(balance);
-    const formattedAmount = roundedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    
-    // Format negative numbers with parentheses and no decimals
-    if (roundedAmount < 0) {
-      return `(${formattedAmount.replace('-', '')})`;
-    } else {
-      return formattedAmount;
-    }
   };
   
   // Get entity from ledger or from separate fetch
@@ -263,7 +215,7 @@ const LedgerDetail = ({
                     {accountEntity ? accountEntity.name : (account.entity ? account.entity.name : 'N/A')}
                   </td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${isNegative ? 'text-red-600' : 'text-gray-900'}`}>
-                    {getFormattedBalance(account)}
+                    {formatBalance(account.balance, ledger.r_currency, true)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                     <button 

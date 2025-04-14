@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PageHeader from '../shared/PageHeader';
+import { getCountryDisplay } from '../../utils/formatters';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
 
@@ -54,73 +55,81 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh, onViewEntit
         onRefresh={onRefresh}
       />
       
-      {loading ? (
-        <div className="flex justify-center p-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {ledgers && ledgers.length > 0 ? ledgers.map((ledger) => {
-            // Find the associated entity
-            const entity = entities.find(e => e.entity_id === ledger.entity_id) || ledger.r_entity;
-            const entityId = entity?.entity_id || ledger.entity_id;
-            
-            return (
-              <div key={ledger.ledger_id} className="bg-white rounded-lg shadow p-6">
-                <div className="flex justify-between">
-                  <h3 className="text-lg font-medium text-gray-900">{ledger.name}</h3>
-                  <span 
-                    className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full cursor-pointer hover:bg-blue-200"
-                    onClick={() => onViewDetails(ledger.ledger_id)}
-                  >
-                    ID: {ledger.ledger_id}
-                  </span>
-                </div>
-                <p className="text-gray-500 mt-1">{ledger.description || 'No description'}</p>
-                <div className="mt-4 grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Entity</p>
-                    <p 
-                      className={`text-gray-900 ${entityId ? 'text-blue-600 cursor-pointer hover:underline' : ''}`}
-                      onClick={() => entityId && onViewEntity && onViewEntity(entityId)}
+      <div className="bg-white shadow overflow-hidden rounded-lg">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ledger Owner</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Currency</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {loading ? (
+              <tr>
+                <td colSpan="7" className="px-6 py-4 text-center">
+                  <div className="flex justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                  </div>
+                </td>
+              </tr>
+            ) : ledgers && ledgers.length > 0 ? ledgers.map((ledger) => {
+              // Find the associated entity
+              const entity = entities.find(e => e.entity_id === ledger.entity_id) || ledger.r_entity;
+              const entityId = entity?.entity_id || ledger.entity_id;
+              
+              return (
+                <tr key={ledger.ledger_id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline"
+                      onClick={() => onViewDetails(ledger.ledger_id)}>
+                    {ledger.ledger_id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {ledger.name}
+                  </td>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${entityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500'}`}
+                      onClick={() => entityId && onViewEntity && onViewEntity(entityId)}>
+                    {entity?.name || 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {ledger.r_currency ? `${ledger.r_currency.currency_code} (${ledger.r_currency.type})` : 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {getCountryDisplay(ledger)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {ledger.description || 'No description'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                    <button 
+                      className="text-blue-600 hover:text-blue-800 mr-3"
+                      onClick={() => onViewDetails(ledger.ledger_id)}
                     >
-                      {entity?.name || 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Currency</p>
-                    <p className="text-gray-900">
-                      {ledger.r_currency ? `${ledger.r_currency.currency_code} (${ledger.r_currency.type})` : 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Country</p>
-                    <p className="text-gray-900">{getCountryDisplay(ledger)}</p>
-                  </div>
-                </div>
-                <div className="mt-6 flex justify-end space-x-3">
-                  <button 
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                    onClick={() => onViewDetails(ledger.ledger_id)}
-                  >
-                    View Details
-                  </button>
-                  <button 
-                    className="text-sm text-gray-600 hover:text-gray-800"
-                    onClick={() => onViewJson(ledger, `Ledger: ${ledger.name}`)}
-                  >
-                    View JSON
-                  </button>
-                </div>
-              </div>
-            );
-          }) : (
-            <div className="col-span-2 text-center p-12 bg-white rounded-lg shadow">
-              <p className="text-gray-500">No ledgers found</p>
-            </div>
-          )}
-        </div>
-      )}
+                      View Details
+                    </button>
+                    <button 
+                      className="text-gray-600 hover:text-gray-800"
+                      onClick={() => onViewJson(ledger, `Ledger: ${ledger.name}`)}
+                    >
+                      JSON
+                    </button>
+                  </td>
+                </tr>
+              );
+            }) : (
+              <tr>
+                <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">
+                  No ledgers found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
