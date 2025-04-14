@@ -4,7 +4,7 @@ import PageHeader from '../shared/PageHeader';
 /**
  * Account List component to display all accounts
  */
-const AccountList = ({ accounts, entities, onViewJson }) => {
+const AccountList = ({ accounts, entities = [], onViewJson }) => {
   return (
     <div>
       <PageHeader 
@@ -30,9 +30,6 @@ const AccountList = ({ accounts, entities, onViewJson }) => {
                 Type
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Entity
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Ledger
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -45,10 +42,7 @@ const AccountList = ({ accounts, entities, onViewJson }) => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {accounts && accounts.length > 0 ? accounts.map((account) => {
-              // Find entity from ledger or direct relationship
-              const entityId = account.entity_id || 
-                (account.enriched_ledger && account.enriched_ledger.entity_id);
-              const entity = entities.find(e => e.entity_id === entityId);
+              // No entity lookup here - removed this line
               
               return (
                 <tr key={account.account_extra_id} className="hover:bg-gray-50">
@@ -63,9 +57,6 @@ const AccountList = ({ accounts, entities, onViewJson }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {account.account_code?.type || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {entity ? entity.name : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {account.enriched_ledger?.name || 'N/A'}
@@ -88,7 +79,7 @@ const AccountList = ({ accounts, entities, onViewJson }) => {
               );
             }) : (
               <tr>
-                <td colSpan="8" className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">
                   No accounts found
                 </td>
               </tr>
