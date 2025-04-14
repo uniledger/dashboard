@@ -1,5 +1,6 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import PageHeader from '../shared/PageHeader';
 
 // Colors for charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
@@ -7,7 +8,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'
 /**
  * Dashboard View component to display a system overview
  */
-const DashboardView = ({ entities, ledgers, accounts }) => {
+const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
   // Calculate dashboard summary data
   const dashboardSummary = {
     totalAccounts: accounts.length,
@@ -44,7 +45,11 @@ const DashboardView = ({ entities, ledgers, accounts }) => {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">System Overview</h2>
+      <PageHeader 
+        title="System Overview" 
+        refreshButton={true}
+        onRefresh={onRefresh}
+      />
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
