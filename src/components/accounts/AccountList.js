@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PageHeader from '../shared/PageHeader';
+import { formatBalance, formatAccountCode } from '../../utils/formatters';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
 
@@ -40,13 +41,7 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
   const getAccountCodeDisplay = (account) => {
     if (!account) return 'N/A';
     
-    // Handle when account_code is a full object
-    if (account.account_code && typeof account.account_code === 'object') {
-      return `${account.account_code.account_code} - ${account.account_code.name || ''}`;
-    }
-    
-    // Handle when it's just the code value
-    return account.account_code || account.code || 'N/A';
+    return formatAccountCode(account.account_code || account.code);
   };
 
   const getEntityForAccount = (account) => {
@@ -74,21 +69,12 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
   const getFormattedBalance = (account) => {
     if (typeof account.balance !== 'number') return 'N/A';
     
-    const scale = 
-      (account.enriched_ledger && account.enriched_ledger.r_currency && account.enriched_ledger.r_currency.scale) || 
-      account.scale || 
-      2;
+    // Get the currency from the account's ledger
+    const ledger = getLedgerForAccount(account);
+    const currency = (ledger && ledger.r_currency) || 
+                    (account.enriched_ledger && account.enriched_ledger.r_currency);
     
-    const balance = account.balance / Math.pow(10, scale);
-    const roundedAmount = Math.round(balance);
-    const formattedAmount = roundedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    
-    // Format negative numbers with parentheses and no decimals
-    if (roundedAmount < 0) {
-      return `(${formattedAmount.replace('-', '')})`;
-    } else {
-      return formattedAmount;
-    }
+    return formatBalance(account.balance, currency, true);
   };
 
   const getCurrencyCode = (account) => {
