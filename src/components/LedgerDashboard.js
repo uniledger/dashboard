@@ -18,6 +18,8 @@ const LedgerDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedEntityId, setSelectedEntityId] = useState(null);
   const [selectedLedgerId, setSelectedLedgerId] = useState(null);
+  const [selectedAccountId, setSelectedAccountId] = useState(null);
+  const [accountDetail, setAccountDetail] = useState(null);
   
   // Tab-specific states replacing global state
   const [dashboardData, setDashboardData] = useState(null);
@@ -158,6 +160,21 @@ const LedgerDashboard = () => {
       console.error('Error fetching ledger detail:', err);
       setError(err.message || 'An error occurred while fetching ledger data');
       setLedgersLoading(false);
+    }
+  };
+  
+  // Fetch account detail
+  const fetchAccountDetail = async (accountId) => {
+    setAccountsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/${accountId}`);
+      const data = await response.json();
+      setAccountDetail(data);
+      setAccountsLoading(false);
+    } catch (err) {
+      console.error('Error fetching account detail:', err);
+      setError(err.message || 'An error occurred while fetching account data');
+      setAccountsLoading(false);
     }
   };
 
@@ -442,13 +459,28 @@ const LedgerDashboard = () => {
 
         {/* Accounts Tab */}
         {activeTab === 'accounts' && accountsList && (
-          <AccountList 
-            accounts={accountsList}
-            onViewJson={handleViewJson}
-            onRefresh={fetchAccountsList}
-            onViewEntity={handleEntitySelection}
-            onViewLedger={handleLedgerSelection}
-          />
+          !selectedAccountId ? (
+            <AccountList 
+              accounts={accountsList}
+              onViewJson={handleViewJson}
+              onRefresh={fetchAccountsList}
+              onViewEntity={handleEntitySelection}
+              onViewLedger={handleLedgerSelection}
+              onViewAccount={(account) => {
+                setSelectedAccountId(account.account_id || account.account_extra_id);
+                setAccountDetail(account);
+              }}
+            />
+          ) : (
+            <AccountDetail
+              account={accountDetail}
+              onBack={() => setSelectedAccountId(null)}
+              onViewJson={handleViewJson}
+              onRefresh={() => fetchAccountDetail(selectedAccountId)}
+              onViewEntity={handleEntitySelection}
+              onViewLedger={handleLedgerSelection}
+            />
+          )
         )}
 
         {/* Analytics Tab */}

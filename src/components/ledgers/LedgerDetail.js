@@ -11,10 +11,13 @@ const LedgerDetail = ({
   ledgerAccounts,
   onBack,
   onViewJson,
-  onRefresh
+  onRefresh,
+  onViewEntity,
+  onViewAccount
 }) => {
   // All hooks must be at the top level
   const [entity, setEntity] = useState(null);
+  const [entities, setEntities] = useState([]);
   
   // Use useEffect for fetching entity details
   useEffect(() => {
@@ -35,6 +38,21 @@ const LedgerDetail = ({
 
     fetchEntity();
   }, [ledger]);
+  
+  // Fetch all entities for linking accounts to their owners
+  useEffect(() => {
+    const fetchEntities = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/`);
+        const data = await response.json();
+        setEntities(data);
+      } catch (err) {
+        console.error('Error fetching entities:', err);
+      }
+    };
+    
+    fetchEntities();
+  }, []);
 
   // Early return if no ledger, but after hooks are declared
   if (!ledger) return null;
@@ -49,9 +67,25 @@ const LedgerDetail = ({
     }
     
     // Look for different country code formats
-    const countryCode = item.country_code || item.country || (item.r_entity && item.r_entity.country_code);
+    const countryCode = item.country_code || item.country || 
+      (item.r_entity && item.r_entity.country_code) ||
+      (entity && entity.country_code);
     
-    return countryCode || 'N/A';
+    if (countryCode) {
+      return countryCode;
+    }
+    
+    // If we have country info in entity or the ledger's entity
+    if (entity && entity.r_country) {
+      return `${entity.r_country.name} (${entity.r_country.country_code})`;
+    }
+    
+    // Try to get country from the entity reference
+    if (displayEntity && displayEntity.country_code) {
+      return displayEntity.country_code;
+    }
+    
+    return 'N/A';
   };
 
   // Helper function for account codes
@@ -67,11 +101,37 @@ const LedgerDetail = ({
     return account.account_code || 'N/A';
   };
   
+  // Helper function to find entity for an account
+  const getEntityForAccount = (account) => {
+    // Get entity ID from account or its ledger
+    const entityId = account.entity_id || 
+      (account.enriched_ledger && account.enriched_ledger.entity_id);
+    
+    if (!entityId) return null;
+    
+    // Find entity in our fetched list
+    return entities.find(e => e.entity_id === entityId);
+  };
+  
+  // Format balance
+  const getFormattedBalance = (account) => {
+    if (typeof account.balance !== 'number') return 'N/A';
+    
+    const currencyCode = ledger.r_currency?.currency_code || '';
+    const scale = ledger.r_currency?.scale || 2;
+    
+    const balance = account.balance / Math.pow(10, scale);
+    
+    // Format negative numbers with parentheses and no decimals
+    if (balance < 0) {
+      return `${currencyCode} (${Math.abs(Math.round(balance))})`;
+    } else {
+      return `${currencyCode} ${Math.round(balance)}`;
+    }
+  };
+  
   // Get entity from ledger or from separate fetch
   const displayEntity = ledger.r_entity || entity;
-  
-  // For troubleshooting country data
-  console.log("Ledger data:", ledger);
   
   return (
     <div>
@@ -123,8 +183,13 @@ const LedgerDetail = ({
             <p className="text-gray-900">{ledger.name}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Entity</p>
-            <p className="text-gray-900">{displayEntity?.name || 'N/A'}</p>
+            <p className="text-sm text-gray-500">Account Owner</p>
+            <p 
+              className={`text-gray-900 ${displayEntity ? 'text-blue-600 cursor-pointer hover:underline' : ''}`}
+              onClick={() => displayEntity && onViewEntity && onViewEntity(displayEntity.entity_id)}
+            >
+              {displayEntity?.name || 'N/A'}
+            </p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Currency</p>
@@ -155,18 +220,24 @@ const LedgerDetail = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Code</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Owner</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {ledgerAccounts && ledgerAccounts.length > 0 ? ledgerAccounts.map(account => {
-              const currency = ledger.r_currency || {};
-              const scale = currency.scale || 2;
+              const accountEntity = getEntityForAccount(account);
+              const accountEntityId = accountEntity?.entity_id || account.entity_id;
+              const balance = account.balance / Math.pow(10, ledger.r_currency?.scale || 2);
+              const isNegative = balance < 0;
               
               return (
                 <tr key={account.account_id || account.account_extra_id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer hover:text-blue-600">
+                  <td 
+                    className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline"
+                    onClick={() => onViewAccount ? onViewAccount(account) : onViewJson(account, `Account: ${account.name || 'N/A'}`)}
+                  >
                     {account.account_id || account.account_extra_id || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -178,13 +249,16 @@ const LedgerDetail = ({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {account.account_type || (account.account_code && account.account_code.type) || 'N/A'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                    {currency.currency_code || ''} {' '}
-                    {typeof account.balance === 'number' 
-                      ? (account.balance / Math.pow(10, scale)).toLocaleString()
-                      : 'N/A'}
+                  <td 
+                    className={`px-6 py-4 whitespace-nowrap text-sm ${accountEntityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500'}`}
+                    onClick={() => accountEntityId && onViewEntity && onViewEntity(accountEntityId)}
+                  >
+                    {accountEntity ? accountEntity.name : (account.entity ? account.entity.name : 'N/A')}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${isNegative ? 'text-red-600' : 'text-gray-900'}`}>
+                    {getFormattedBalance(account)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                     <button 
                       className="text-gray-600 hover:text-gray-800"
                       onClick={() => onViewJson(account, `Account: ${account.name || 'N/A'}`)}
@@ -196,7 +270,7 @@ const LedgerDetail = ({
               );
             }) : (
               <tr>
-                <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">
                   No accounts found for this ledger
                 </td>
               </tr>
