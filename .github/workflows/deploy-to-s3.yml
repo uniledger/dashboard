@@ -39,10 +39,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       
-      - name: Deploy to S3
+      - name: Deploy to S3 with no-cache headers
         run: |
-          aws s3 sync build/ s3://ledgerrocket-dashboard --delete
-          echo "Deployment completed"
+          aws s3 sync build/ s3://ledgerrocket-dashboard/ --delete --cache-control "no-cache, no-store, must-revalidate" --acl public-read
+          echo "Deployment completed with no-cache headers"
       
       - name: Invalidate CloudFront cache (if configured)
         if: env.CLOUDFRONT_DISTRIBUTION_ID != ''
