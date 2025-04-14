@@ -15,6 +15,7 @@ const LedgerDetail = ({
   onViewEntity,
   onViewAccount
 }) => {
+  console.log('LedgerDetail mounted with ledger:', ledger?.ledger_id);
   // All hooks must be at the top level
   const [entity, setEntity] = useState(null);
   const [entities, setEntities] = useState([]);
