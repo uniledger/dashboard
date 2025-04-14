@@ -143,12 +143,12 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
 
   // Format currency for display
   const formatCurrency = (amount) => {
-    return amount.toLocaleString('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
+    // Format with GBP
+    if (amount < 0) {
+      return `GBP (${Math.abs(Math.round(amount))})`;
+    } else {
+      return `GBP ${Math.round(amount)}`;
+    }
   };
 
   return (
@@ -177,7 +177,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
       
       {/* Balance Sheet */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Balance Sheet Summary</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Balance Sheet Summary (GBP)</h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <table className="min-w-full">
@@ -244,12 +244,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis tickFormatter={(value) => 
-                  value.toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                  })
+                  `GBP ${Math.round(value)}`
                 } />
                 <Tooltip formatter={(value) => [formatCurrency(value), 'Amount']} />
                 <Bar dataKey="value" name="Amount">
@@ -269,7 +264,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
       
       {/* Income Statement */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Income Statement Summary</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Income Statement Summary (GBP)</h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <table className="min-w-full">
@@ -322,12 +317,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis tickFormatter={(value) => 
-                  value.toLocaleString('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                  })
+                  `GBP ${Math.round(value)}`
                 } />
                 <Tooltip formatter={(value) => [formatCurrency(value), 'Amount']} />
                 <Bar dataKey="value" name="Amount">

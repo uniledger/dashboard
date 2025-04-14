@@ -74,11 +74,6 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
   const getFormattedBalance = (account) => {
     if (typeof account.balance !== 'number') return 'N/A';
     
-    const currencyCode = 
-      (account.enriched_ledger && account.enriched_ledger.r_currency && account.enriched_ledger.r_currency.currency_code) || 
-      account.currency_code || 
-      '';
-    
     const scale = 
       (account.enriched_ledger && account.enriched_ledger.r_currency && account.enriched_ledger.r_currency.scale) || 
       account.scale || 
@@ -88,10 +83,16 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
     
     // Format negative numbers with parentheses and no decimals
     if (balance < 0) {
-      return `${currencyCode} (${Math.abs(Math.round(balance))})`;
+      return `(${Math.abs(Math.round(balance))})`;
     } else {
-      return `${currencyCode} ${Math.round(balance)}`;
+      return `${Math.round(balance)}`;
     }
+  };
+
+  const getCurrencyCode = (account) => {
+    return (account.enriched_ledger && account.enriched_ledger.r_currency && account.enriched_ledger.r_currency.currency_code) || 
+      account.currency_code || 
+      'N/A';
   };
 
   return (
@@ -127,10 +128,13 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
                   Type
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Entity
+                  Account Owner
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ledger
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Currency
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Balance
@@ -148,6 +152,7 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
                 const ledgerId = ledger?.ledger_id || account.ledger_id || (account.enriched_ledger && account.enriched_ledger.ledger_id);
                 const balance = account.balance / Math.pow(10, 2); // Using default scale 2
                 const isNegative = balance < 0;
+                const currencyCode = getCurrencyCode(account);
                 
                 return (
                   <tr key={account.account_id || account.account_extra_id} className="hover:bg-gray-50">
@@ -178,6 +183,9 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
                     >
                       {ledger ? ledger.name : (account.enriched_ledger?.name || account.ledger?.name || account.ledger_name || 'N/A')}
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {currencyCode}
+                    </td>
                     <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium text-right ${isNegative ? 'text-red-600' : 'text-gray-900'}`}>
                       {getFormattedBalance(account)}
                     </td>
@@ -193,7 +201,7 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
                 );
               }) : (
                 <tr>
-                  <td colSpan="8" className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan="9" className="px-6 py-4 text-center text-sm text-gray-500">
                     No accounts found
                   </td>
                 </tr>

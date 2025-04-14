@@ -117,16 +117,15 @@ const LedgerDetail = ({
   const getFormattedBalance = (account) => {
     if (typeof account.balance !== 'number') return 'N/A';
     
-    const currencyCode = ledger.r_currency?.currency_code || '';
     const scale = ledger.r_currency?.scale || 2;
     
     const balance = account.balance / Math.pow(10, scale);
     
     // Format negative numbers with parentheses and no decimals
     if (balance < 0) {
-      return `${currencyCode} (${Math.abs(Math.round(balance))})`;
+      return `(${Math.abs(Math.round(balance))})`;
     } else {
-      return `${currencyCode} ${Math.round(balance)}`;
+      return `${Math.round(balance)}`;
     }
   };
   
