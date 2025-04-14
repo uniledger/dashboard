@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="#1a365d" />
+  
+  <!-- Ledger book icon (simplified) -->
+  <rect x="20" y="18" width="24" height="28" rx="2" fill="#f0f9ff" />
+  
+  <!-- Ledger book pages -->
+  <rect x="22" y="22" width="20" height="2" fill="#3b82f6" />
+  <rect x="22" y="28" width="20" height="2" fill="#3b82f6" />
+  <rect x="22" y="34" width="20" height="2" fill="#3b82f6" />
+  <rect x="22" y="40" width="14" height="2" fill="#3b82f6" />
+  
+  <!-- Rocket element -->
+  <path d="M44,22 L38,30 L44,38 L50,30 Z" fill="#ef4444" />
+  <path d="M44,22 L44,38 L50,30 Z" fill="#b91c1c" />
+  
+  <!-- Rocket flame -->
+  <path d="M42,36 L44,42 L46,36 Z" fill="#f97316" />
+</svg>
