@@ -13,31 +13,32 @@ const LedgerDetail = ({
   onViewJson,
   onRefresh
 }) => {
-  // Hook declarations need to come before any conditional returns
+  // All hooks must be at the top level
   const [entity, setEntity] = useState(null);
   
-  // Early return if no ledger
-  if (!ledger) return null;
-
-  // Fetch entity details if needed
+  // Use useEffect for fetching entity details
   useEffect(() => {
+    // Skip if no ledger or if ledger already has entity data
+    if (!ledger || !ledger.entity_id || ledger.r_entity) {
+      return;
+    }
+    
     const fetchEntity = async () => {
-      if (ledger && ledger.entity_id) {
-        try {
-          const response = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/${ledger.entity_id}`);
-          const data = await response.json();
-          setEntity(data);
-        } catch (err) {
-          console.error('Error fetching entity details:', err);
-        }
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/${ledger.entity_id}`);
+        const data = await response.json();
+        setEntity(data);
+      } catch (err) {
+        console.error('Error fetching entity details:', err);
       }
     };
 
-    if (!ledger.r_entity) {
-      fetchEntity();
-    }
+    fetchEntity();
   }, [ledger]);
 
+  // Early return if no ledger, but after hooks are declared
+  if (!ledger) return null;
+  
   // Helper function for country display
   const getCountryDisplay = (item) => {
     if (!item) return 'N/A';
