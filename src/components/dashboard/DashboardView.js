@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PageHeader from '../shared/PageHeader';
 
-// Colors for charts and financial statements
-const COLORS = {
-  ASSET: '#4299E1',      // Blue
-  LIABILITY: '#F56565',  // Red
-  EQUITY: '#68D391',     // Green
-  REVENUE: '#9F7AEA',    // Purple
-  EXPENSE: '#F6AD55',    // Orange
-  OTHER: '#CBD5E0'       // Gray
-};
 
 /**
  * Dashboard View component to display a system overview with financial statements
