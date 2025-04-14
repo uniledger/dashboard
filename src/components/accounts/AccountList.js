@@ -80,12 +80,14 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
       2;
     
     const balance = account.balance / Math.pow(10, scale);
+    const roundedAmount = Math.round(balance);
+    const formattedAmount = roundedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     
     // Format negative numbers with parentheses and no decimals
-    if (balance < 0) {
-      return `(${Math.abs(Math.round(balance))})`;
+    if (roundedAmount < 0) {
+      return `(${formattedAmount.replace('-', '')})`;
     } else {
-      return `${Math.round(balance)}`;
+      return formattedAmount;
     }
   };
 
@@ -105,7 +107,7 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
         onRefresh={onRefresh}
       />
       
-      <div className="bg-white shadow overflow-hidden rounded-lg">
+      <div className="bg-white shadow overflow-x-auto rounded-lg">
         {loading ? (
           <div className="px-6 py-4 text-center">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mx-auto"></div>

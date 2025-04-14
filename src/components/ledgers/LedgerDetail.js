@@ -120,12 +120,14 @@ const LedgerDetail = ({
     const scale = ledger.r_currency?.scale || 2;
     
     const balance = account.balance / Math.pow(10, scale);
+    const roundedAmount = Math.round(balance);
+    const formattedAmount = roundedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     
     // Format negative numbers with parentheses and no decimals
-    if (balance < 0) {
-      return `(${Math.abs(Math.round(balance))})`;
+    if (roundedAmount < 0) {
+      return `(${formattedAmount.replace('-', '')})`;
     } else {
-      return `${Math.round(balance)}`;
+      return formattedAmount;
     }
   };
   
@@ -211,7 +213,7 @@ const LedgerDetail = ({
       
       {/* Ledger's Accounts */}
       <h3 className="text-lg font-medium text-gray-900 mb-3">Accounts in this Ledger</h3>
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
