@@ -7,6 +7,7 @@ import LedgerDetail from './ledgers/LedgerDetail';
 import AccountList from './accounts/AccountList';
 import AccountDetail from './accounts/AccountDetail';
 import DashboardView from './dashboard/DashboardView';
+import AccountsByTypeView from './dashboard/AccountsByTypeView';
 import CurrenciesList from './reference/CurrenciesList';
 import CountriesList from './reference/CountriesList';
 import AccountCodesList from './reference/AccountCodesList';
@@ -31,6 +32,12 @@ const LedgerDashboard = () => {
   
   // State for sidebar collapse
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  // State for accounts filter
+  const [accountsFilter, setAccountsFilter] = useState({
+    active: false,
+    type: ''
+  });
   
   // Tab-specific states replacing global state
   const [dashboardData, setDashboardData] = useState(null);
@@ -356,6 +363,12 @@ const LedgerDashboard = () => {
     setSelectedLedgerId(null);
     setSelectedAccountId(null);
     
+    // Reset accounts filter
+    setAccountsFilter({
+      active: false,
+      type: ''
+    });
+    
     // Load tab-specific data if needed
     switch(tab) {
       case 'dashboard':
@@ -413,6 +426,19 @@ const LedgerDashboard = () => {
     // Set the selected ledger and fetch its details
     setSelectedLedgerId(ledgerId);
     fetchLedgerDetail(ledgerId);
+  };
+  
+  // Handle drilling down to accounts by type
+  const handleDrillToAccounts = (accountType) => {
+    // First make sure accounts are loaded
+    fetchAccountsList().then(() => {
+      // Then set the filter and change tab
+      setAccountsFilter({
+        active: true,
+        type: accountType
+      });
+      setActiveTab('accounts');
+    });
   };
 
   // Handle opening the detail modal
@@ -524,6 +550,7 @@ const LedgerDashboard = () => {
                 ledgers={dashboardData.ledgers} 
                 accounts={dashboardData.accounts}
                 onRefresh={fetchDashboardData}
+                onDrillToAccounts={handleDrillToAccounts}
               />
             )}
 
@@ -591,9 +618,29 @@ const LedgerDashboard = () => {
             {activeTab === 'accounts' && accountsList && (
               !selectedAccountId ? (
                 <AccountList 
-                  accounts={accountsList}
+                  accounts={accountsList.filter(account => {
+                    if (!accountsFilter.active) return true;
+                    
+                    // Extract account type
+                    let accountType = 'OTHER';
+                    if (account.account_type) {
+                      accountType = account.account_type.toUpperCase();
+                    } else if (account.account_code && account.account_code.type) {
+                      accountType = account.account_code.type.toUpperCase();
+                    } else if (typeof account.account_code === 'object' && account.account_code.type) {
+                      accountType = account.account_code.type.toUpperCase();
+                    }
+                    
+                    return accountType === accountsFilter.type;
+                  })}
+                  accountTypeFilter={accountsFilter.active ? accountsFilter.type : null}
                   onViewJson={handleViewJson}
-                  onRefresh={fetchAccountsList}
+                  onRefresh={() => {
+                    fetchAccountsList();
+                    // Clear filter after refresh
+                    setAccountsFilter({ active: false, type: '' });
+                  }}
+                  onClearFilter={() => setAccountsFilter({ active: false, type: '' })}
                   onViewEntity={handleEntitySelection}
                   onViewLedger={handleLedgerSelection}
                   onViewAccount={(account) => {

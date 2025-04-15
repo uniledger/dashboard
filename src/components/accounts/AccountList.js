@@ -8,7 +8,7 @@ const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
  * Account List component to display all accounts
  * with proper nested data handling and API-based filtering
  */
-const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedger, onViewAccount }) => {
+const AccountList = ({ accounts, accountTypeFilter, onViewJson, onRefresh, onViewEntity, onViewLedger, onViewAccount, onClearFilter }) => {
   const [entities, setEntities] = useState([]);
   const [ledgers, setLedgers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -86,12 +86,28 @@ const AccountList = ({ accounts, onViewJson, onRefresh, onViewEntity, onViewLedg
   return (
     <div>
       <PageHeader 
-        title="Accounts Overview" 
+        title={accountTypeFilter ? `${accountTypeFilter.charAt(0) + accountTypeFilter.slice(1).toLowerCase()} Accounts` : "Accounts Overview"} 
         buttonText="+ New Account" 
         onButtonClick={() => console.log('Create new account')}
         refreshButton={true}
         onRefresh={onRefresh}
       />
+      
+      {/* Filter Banner */}
+      {accountTypeFilter && (
+        <div className="bg-blue-50 p-4 rounded-lg mb-4 flex justify-between items-center">
+          <div>
+            <p className="text-blue-700 font-medium">Filtered by account type: <span className="font-bold">{accountTypeFilter}</span></p>
+            <p className="text-sm text-blue-600">Showing {accounts.length} {accountTypeFilter.toLowerCase()} accounts</p>
+          </div>
+          <button 
+            onClick={onClearFilter}
+            className="px-3 py-1 bg-white border border-blue-300 rounded-md text-blue-600 hover:bg-blue-50 text-sm"
+          >
+            Clear Filter
+          </button>
+        </div>
+      )}
       
       <div className="bg-white shadow overflow-x-auto rounded-lg">
         {loading ? (
