@@ -260,15 +260,44 @@ const LedgerDashboard = () => {
     }
   };
   
-  // Only fetch account balances for account list
+  // Only fetch account balances for account list - returns a Promise
   const fetchAccountBalances = async () => {
+    console.log('Refreshing account balances only');
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/`);
       const data = await response.json();
       setAccountsList(data);
+      return data;
     } catch (err) {
       console.error('Error refreshing account balances:', err);
-      // Don't update error state on auto-refresh
+      return null;
+    }
+  };
+
+  // Only refresh the dashboard accounts data without triggering a full reload
+  const refreshBalancesOnly = async () => {
+    const updatedAccounts = await fetchAccountBalances();
+    if (updatedAccounts) {
+      // Update the dashboard data with the new account balances
+      setDashboardData(prev => ({
+        ...prev,
+        accounts: updatedAccounts
+      }));
+      
+      // If on ledger detail view, refresh ledger accounts
+      if (selectedLedgerId) {
+        fetchLedgerAccounts(selectedLedgerId);
+      }
+      
+      // If on entity detail view, refresh entity accounts
+      if (selectedEntityId) {
+        fetchEntityAccounts(selectedEntityId);
+      }
+      
+      // If on account detail view, refresh the selected account
+      if (selectedAccountId) {
+        fetchAccountDetail(selectedAccountId);
+      }
     }
   };
 
@@ -327,25 +356,10 @@ const LedgerDashboard = () => {
   useInterval(() => {
     if (!autoRefreshEnabled) return;
 
-    console.log('Auto-refreshing data...');
+    console.log('Auto-refreshing balances...');
     
-    // Refresh based on what's currently displayed
-    if (activeTab === 'dashboard') {
-      // Just fetch account balance data
-      fetchDashboardAccounts();
-    } else if (activeTab === 'accounts' && selectedAccountId) {
-      // Refresh the selected account detail
-      fetchAccountDetail(selectedAccountId);
-    } else if (activeTab === 'accounts' && !selectedAccountId) {
-      // Refresh the accounts list
-      fetchAccountBalances();
-    } else if (activeTab === 'ledgers' && selectedLedgerId) {
-      // Refresh accounts for the selected ledger
-      fetchLedgerAccounts(selectedLedgerId);
-    } else if (activeTab === 'entities' && selectedEntityId) {
-      // Refresh accounts for the selected entity
-      fetchEntityAccounts(selectedEntityId);
-    }
+    // Use the targeted refresh function that only updates balances
+    refreshBalancesOnly();
   }, refreshInterval);
 
   // Load dashboard data on initial component mount
@@ -532,9 +546,9 @@ const LedgerDashboard = () => {
                   className={`px-2 py-1 text-xs rounded-md ${autoRefreshEnabled 
                     ? 'bg-green-100 text-green-800 border border-green-200' 
                     : 'bg-gray-100 text-gray-800 border border-gray-200'}`}
-                  title={autoRefreshEnabled ? "Auto-refresh is on" : "Auto-refresh is off"}
+                  title={autoRefreshEnabled ? "Auto-refresh balances is on" : "Auto-refresh balances is off"}
                 >
-                  {autoRefreshEnabled ? "Auto-Refresh: ON" : "Auto-Refresh: OFF"}
+                  {autoRefreshEnabled ? "Auto-Refresh Balances: ON" : "Auto-Refresh Balances: OFF"}
                 </button>
               </div>
             </div>
@@ -542,14 +556,14 @@ const LedgerDashboard = () => {
         </header>
 
         <main className="flex-1 overflow-auto">
-          <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="max-w-full px-2 py-3">
             {/* Dashboard View */}
             {activeTab === 'dashboard' && dashboardData && (
               <DashboardView 
                 entities={dashboardData.entities} 
                 ledgers={dashboardData.ledgers} 
                 accounts={dashboardData.accounts}
-                onRefresh={fetchDashboardData}
+                onRefresh={refreshBalancesOnly}
                 onDrillToAccounts={handleDrillToAccounts}
               />
             )}
@@ -560,7 +574,7 @@ const LedgerDashboard = () => {
                 entities={entitiesList}
                 onViewDetails={handleEntitySelection}
                 onViewJson={handleViewJson}
-                onRefresh={fetchEntitiesList}
+                onRefresh={refreshBalancesOnly}
               />
             )}
 
@@ -582,7 +596,10 @@ const LedgerDashboard = () => {
                   setSelectedAccountId(account.account_id || account.account_extra_id);
                   setAccountDetail(account);
                 }}
-                onRefresh={() => fetchEntityDetail(selectedEntityId)}
+                onRefresh={() => {
+                  refreshBalancesOnly();
+                  fetchEntityDetail(selectedEntityId);
+                }}
               />
             )}
 
@@ -592,7 +609,7 @@ const LedgerDashboard = () => {
                 ledgers={ledgersList}
                 onViewDetails={handleLedgerSelection}
                 onViewJson={handleViewJson}
-                onRefresh={fetchLedgersList}
+                onRefresh={refreshBalancesOnly}
                 onViewEntity={handleEntitySelection}
               />
             )}
@@ -604,7 +621,10 @@ const LedgerDashboard = () => {
                 ledgerAccounts={ledgerAccounts}
                 onBack={() => setSelectedLedgerId(null)}
                 onViewJson={handleViewJson}
-                onRefresh={() => fetchLedgerDetail(selectedLedgerId)}
+                onRefresh={() => {
+                  refreshBalancesOnly();
+                  fetchLedgerDetail(selectedLedgerId);
+                }}
                 onViewEntity={handleEntitySelection}
                 onViewAccount={(account) => {
                   setActiveTab('accounts');
@@ -636,7 +656,7 @@ const LedgerDashboard = () => {
                   accountTypeFilter={accountsFilter.active ? accountsFilter.type : null}
                   onViewJson={handleViewJson}
                   onRefresh={() => {
-                    fetchAccountsList();
+                    refreshBalancesOnly();
                     // Clear filter after refresh
                     setAccountsFilter({ active: false, type: '' });
                   }}
@@ -653,7 +673,10 @@ const LedgerDashboard = () => {
                   account={accountDetail}
                   onBack={() => setSelectedAccountId(null)}
                   onViewJson={handleViewJson}
-                  onRefresh={() => fetchAccountDetail(selectedAccountId)}
+                  onRefresh={() => {
+                    refreshBalancesOnly();
+                    fetchAccountDetail(selectedAccountId);
+                  }}
                   onViewEntity={handleEntitySelection}
                   onViewLedger={handleLedgerSelection}
                 />

@@ -22,7 +22,7 @@ const PageHeader = ({ title, backButton, refreshButton, onBack, onRefresh }) => 
           onClick={onRefresh}
           className="px-3 py-1 rounded border border-gray-200 text-sm text-gray-600 hover:bg-gray-50"
         >
-          Refresh
+          Auto Refresh Balances
         </button>
       )}
     </div>

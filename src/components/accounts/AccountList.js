@@ -44,15 +44,30 @@ const AccountList = ({ accounts, accountTypeFilter, onViewJson, onRefresh, onVie
     return formatAccountCode(account.account_code || account.code);
   };
 
+  // Helper function to find entity for an account with improved debugging
   const getEntityForAccount = (account) => {
+    // Debug the input account structure
+    console.log("Account entity resolution (AccountList):", {
+      account_name: account.name,
+      account_id: account.account_id,
+      entity_id: account.entity_id,
+      enriched_ledger_entity_id: account.enriched_ledger?.entity_id
+    });
+    
     // Get entity ID from account or its ledger
     const entityId = account.entity_id || 
-      (account.enriched_ledger && account.enriched_ledger.entity_id);
+      (account.enriched_ledger && account.enriched_ledger.entity_id) ||
+      (account.entity && account.entity.entity_id);
     
-    if (!entityId) return null;
+    if (!entityId) {
+      console.log("No entity ID found for account:", account.name);
+      return null;
+    }
     
     // Find entity in our fetched list
-    return entities.find(e => e.entity_id === entityId);
+    const foundEntity = entities.find(e => e.entity_id === entityId);
+    console.log("Entity lookup result:", foundEntity ? foundEntity.name : "Not found");
+    return foundEntity;
   };
   
   const getLedgerForAccount = (account) => {
@@ -149,10 +164,28 @@ const AccountList = ({ accounts, accountTypeFilter, onViewJson, onRefresh, onVie
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {accounts && accounts.length > 0 ? accounts.map((account) => {
+              {accounts && accounts.length > 0 ? accounts
+                // Sort accounts by account code (prefix of account name)
+                .sort((a, b) => {
+                  // Extract account code from account_code or name
+                  const getCode = (account) => {
+                    if (account.account_code && typeof account.account_code === 'object') {
+                      return String(account.account_code.account_code || '');
+                    } else if (typeof account.account_code === 'string') {
+                      return account.account_code;
+                    } else if (account.name && account.name.includes('-')) {
+                      return account.name.split('-')[0].trim();
+                    }
+                    return '';
+                  };
+                  const codeA = getCode(a);
+                  const codeB = getCode(b);
+                  return (codeA || '').toString().localeCompare((codeB || '').toString());
+                })
+                .map((account) => {
                 const entity = getEntityForAccount(account);
                 const ledger = getLedgerForAccount(account);
-                const entityId = entity?.entity_id || account.entity_id || (account.enriched_ledger && account.enriched_ledger.entity_id);
+                const entityId = entity?.entity_id || account.entity_id || (account.enriched_ledger && account.enriched_ledger.entity_id) || (account.entity && account.entity.entity_id);
                 const ledgerId = ledger?.ledger_id || account.ledger_id || (account.enriched_ledger && account.enriched_ledger.ledger_id);
                 const balance = account.balance / Math.pow(10, 2); // Using default scale 2
                 const isNegative = balance < 0;
@@ -177,7 +210,13 @@ const AccountList = ({ accounts, accountTypeFilter, onViewJson, onRefresh, onVie
                     </td>
                     <td 
                       className={`px-6 py-4 whitespace-nowrap text-sm ${entityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500'}`}
-                      onClick={() => entityId && onViewEntity && onViewEntity(entityId)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent other click handlers from firing
+                        if (entityId && onViewEntity) {
+                          console.log("Clicking entity owner in AccountList:", entityId);
+                          onViewEntity(entityId);
+                        }
+                      }}
                     >
                       {entity ? entity.name : (account.entity ? account.entity.name : 'N/A')}
                     </td>

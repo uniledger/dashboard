@@ -72,16 +72,30 @@ const LedgerDetail = ({
     return account.account_code || 'N/A';
   };
   
-  // Helper function to find entity for an account
+  // Helper function to find entity for an account with improved debugging
   const getEntityForAccount = (account) => {
+    // Debug the input account structure
+    console.log("Account entity resolution:", {
+      account_name: account.name,
+      account_id: account.account_id,
+      entity_id: account.entity_id,
+      enriched_ledger_entity_id: account.enriched_ledger?.entity_id
+    });
+    
     // Get entity ID from account or its ledger
     const entityId = account.entity_id || 
-      (account.enriched_ledger && account.enriched_ledger.entity_id);
+      (account.enriched_ledger && account.enriched_ledger.entity_id) ||
+      (account.entity && account.entity.entity_id);
     
-    if (!entityId) return null;
+    if (!entityId) {
+      console.log("No entity ID found for account:", account.name);
+      return null;
+    }
     
     // Find entity in our fetched list
-    return entities.find(e => e.entity_id === entityId);
+    const foundEntity = entities.find(e => e.entity_id === entityId);
+    console.log("Entity lookup result:", foundEntity ? foundEntity.name : "Not found");
+    return foundEntity;
   };
   
   // Get entity from ledger or from separate fetch
@@ -129,7 +143,7 @@ const LedgerDetail = ({
       </div>
       
       {/* Ledger Details Card */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
+      <div className="bg-white rounded-lg shadow p-4 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <p className="text-sm text-gray-500">ID</p>
@@ -168,7 +182,7 @@ const LedgerDetail = ({
       </div>
       
       {/* Ledger's Accounts */}
-      <h3 className="text-lg font-medium text-gray-900 mb-3">Accounts in this Ledger</h3>
+      <h3 className="text-lg font-medium text-gray-900 mb-2">Accounts in this Ledger</h3>
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -183,9 +197,29 @@ const LedgerDetail = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {ledgerAccounts && ledgerAccounts.length > 0 ? ledgerAccounts.map(account => {
+            {ledgerAccounts && ledgerAccounts.length > 0 ? ledgerAccounts
+              // Sort accounts by account code
+              .sort((a, b) => {
+                // Extract account code from account_code or name
+                const getCode = (account) => {
+                  if (account.account_code && typeof account.account_code === 'object') {
+                    return String(account.account_code.account_code || '');
+                  } else if (typeof account.account_code === 'string') {
+                    return account.account_code;
+                  } else if (account.name && account.name.includes('-')) {
+                    return account.name.split('-')[0].trim();
+                  }
+                  return '';
+                };
+                const codeA = getCode(a);
+                const codeB = getCode(b);
+                return (codeA || '').toString().localeCompare((codeB || '').toString());
+              })
+              .map(account => {
               const accountEntity = getEntityForAccount(account);
-              const accountEntityId = accountEntity?.entity_id || account.entity_id;
+              // Debug the entity ID
+              console.log("Account:", account.name, "Entity ID:", account.entity_id, "Entity from lookup:", accountEntity);
+              const accountEntityId = accountEntity?.entity_id || account.entity_id || (account.enriched_ledger && account.enriched_ledger.entity_id);
               const balance = account.balance / Math.pow(10, ledger.r_currency?.scale || 2);
               const isNegative = balance < 0;
               
@@ -208,7 +242,13 @@ const LedgerDetail = ({
                   </td>
                   <td 
                     className={`px-6 py-4 whitespace-nowrap text-sm ${accountEntityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500'}`}
-                    onClick={() => accountEntityId && onViewEntity && onViewEntity(accountEntityId)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent other click handlers from firing
+                      if (accountEntityId && onViewEntity) {
+                        console.log("Clicking entity owner:", accountEntityId);
+                        onViewEntity(accountEntityId);
+                      }
+                    }}
                   >
                     {accountEntity ? accountEntity.name : (account.entity ? account.entity.name : 'N/A')}
                   </td>

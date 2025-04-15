@@ -4,7 +4,54 @@ import { v4 as uuidv4 } from 'uuid'; // You may need to add this dependency
 /**
  * Component for creating and submitting events based on templates
  */
-const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent }) => {
+const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJson }) => {
+  // Helper function to get the ledger ID for a transfer
+  const getLedgerId = (transfer) => {
+    // Try all possible property paths where ledger ID might be found
+    return transfer.ledger_id || 
+           transfer.ledgerId || 
+           transfer.ledger?.ledger_id || 
+           transfer.ledger || 
+           // Fall back to the event's ledger ID if available
+           eventData.ledger_id;
+  };
+
+  // Helper function to format IDs properly (especially for uint128 values)
+  const formatId = (id) => {
+    if (id === undefined || id === null) return 'N/A';
+    
+    // Check if it's a string already
+    if (typeof id === 'string') return id;
+    
+    // If it's a number in scientific notation (like 8.954231552487467e+37)
+    // try to convert it to a full string representation
+    try {
+      // Convert to string first to handle scientific notation correctly
+      const idStr = id.toString();
+      
+      // Check if it's in scientific notation
+      if (idStr.includes('e+')) {
+        // Use BigInt for accurate conversion of large integers
+        if (typeof BigInt !== 'undefined') {
+          // For scientific notation, we need to convert it manually
+          const [mantissa, exponent] = idStr.split('e+');
+          const mantissaInt = parseFloat(mantissa);
+          const exponentInt = parseInt(exponent, 10);
+          
+          // Create a string with the correct number of digits
+          const mantissaStr = mantissaInt.toString().replace('.', '');
+          const zerosToAdd = exponentInt - (mantissaStr.length - 1);
+          return mantissaStr + '0'.repeat(Math.max(0, zerosToAdd));
+        }
+      }
+      
+      // For regular numbers, just use toString
+      return idStr;
+    } catch (err) {
+      console.warn('Error formatting ID:', err);
+      return id.toString();
+    }
+  };
   // Extract accounts that are allowed based on the template constraints
   // For now, we'll just use all accounts since we don't have specific constraints
   
@@ -199,20 +246,31 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent }) => {
                       <thead className="bg-gray-50">
                         <tr>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ledger ID</th>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                           <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {eventResponse.transfers.map((transfer, index) => (
                           <tr key={index}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transfer.id}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transfer.debit_account_id}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transfer.credit_account_id}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatId(transfer.id)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatId(getLedgerId(transfer))}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatId(transfer.debit_account_id)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatId(transfer.credit_account_id)}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transfer.amount}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transfer.code}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
+                              <button
+                                onClick={() => onViewJson && onViewJson(transfer, `Transfer: ${formatId(transfer.id)}`)}
+                                className="text-blue-500 hover:text-blue-700"
+                              >
+                                View JSON
+                              </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
