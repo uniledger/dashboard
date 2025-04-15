@@ -2,14 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ProcessedEventsList from './ProcessedEventsList';
 import ProcessedEventDetail from './ProcessedEventDetail';
 
-// Helper function to create CORS-compatible fetch requests
-const corsFetch = async (url, options = {}) => {
-  const corsProxyUrl = 'https://corsproxy.io/?';
-  const encodedUrl = encodeURIComponent(url);
-  const proxyUrl = `${corsProxyUrl}${encodedUrl}`;
-  
-  return fetch(proxyUrl, options);
-};
+// Direct fetch without CORS proxy
 
 const TRANSACTIONS_API_BASE_URL = 'https://transactions.dev.ledgerrocket.com';
 
@@ -34,7 +27,7 @@ const ProcessedEventsView = ({ onViewJson }) => {
     setError(null);
     
     try {
-      const response = await corsFetch(`${TRANSACTIONS_API_BASE_URL}/api/v1/processed-events/`);
+      const response = await fetch(`${TRANSACTIONS_API_BASE_URL}/api/v1/processed-events/`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch processed events: ${response.status} ${response.statusText}`);

@@ -2,14 +2,7 @@ import React, { useState, useEffect } from 'react';
 import RulesList from './RulesList';
 import RuleDetail from './RuleDetail';
 
-// Helper function to create CORS-compatible fetch requests
-const corsFetch = async (url, options = {}) => {
-  const corsProxyUrl = 'https://corsproxy.io/?';
-  const encodedUrl = encodeURIComponent(url);
-  const proxyUrl = `${corsProxyUrl}${encodedUrl}`;
-  
-  return fetch(proxyUrl, options);
-};
+// Direct fetch without CORS proxy
 
 const TRANSACTIONS_API_BASE_URL = 'https://transactions.dev.ledgerrocket.com';
 
@@ -34,7 +27,7 @@ const RulesView = ({ onViewJson }) => {
     setError(null);
     
     try {
-      const response = await corsFetch(`${TRANSACTIONS_API_BASE_URL}/api/v1/rules/`);
+      const response = await fetch(`${TRANSACTIONS_API_BASE_URL}/api/v1/rules/`);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch rules: ${response.status} ${response.statusText}`);
