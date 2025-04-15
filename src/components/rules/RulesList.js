@@ -49,7 +49,7 @@ const RulesList = ({ rules, onSelectRule, onViewJson, onRefresh }) => {
               <div className="px-4 py-4 sm:px-6">
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col">
-                    <p className="text-sm font-medium text-blue-600 truncate">
+                  <p className="text-sm font-medium text-blue-600 truncate cursor-pointer hover:underline" onClick={() => onSelectRule(rule)}>
                       Rule ID: {rule.rule_id}
                     </p>
                     <p className="text-sm text-gray-500">
@@ -62,12 +62,6 @@ const RulesList = ({ rules, onSelectRule, onViewJson, onRefresh }) => {
                       className="px-3 py-1 border border-gray-300 text-xs rounded-md hover:bg-gray-50"
                     >
                       View JSON
-                    </button>
-                    <button
-                      onClick={() => onSelectRule(rule)}
-                      className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-md hover:bg-blue-200"
-                    >
-                      View Details
                     </button>
                   </div>
                 </div>
