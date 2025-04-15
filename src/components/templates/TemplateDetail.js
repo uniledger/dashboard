@@ -6,6 +6,14 @@ import React from 'react';
 const TemplateDetail = ({ template, onBack, onViewJson, onUseTemplate }) => {
   if (!template) return null;
 
+  // Helper function to format field names by removing underscores and capitalizing each word
+  const formatFieldName = (fieldName) => {
+    return fieldName
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   return (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
       <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
@@ -41,19 +49,19 @@ const TemplateDetail = ({ template, onBack, onViewJson, onUseTemplate }) => {
       <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
         <dl className="sm:divide-y sm:divide-gray-200">
           <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">Template ID</dt>
+            <dt className="text-sm font-medium text-gray-500">{formatFieldName('template_id')}</dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{template.template_id}</dd>
           </div>
           <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">Description</dt>
+            <dt className="text-sm font-medium text-gray-500">{formatFieldName('description')}</dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{template.description}</dd>
           </div>
           <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">Product Type</dt>
+            <dt className="text-sm font-medium text-gray-500">{formatFieldName('product_type')}</dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{template.product}</dd>
           </div>
           <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">Created</dt>
+            <dt className="text-sm font-medium text-gray-500">{formatFieldName('created')}</dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
               {new Date(template.created_date * 1000).toLocaleString()} by {template.created_by}
             </dd>
@@ -61,20 +69,20 @@ const TemplateDetail = ({ template, onBack, onViewJson, onUseTemplate }) => {
           
           {/* Variables */}
           <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">Variables</dt>
+            <dt className="text-sm font-medium text-gray-500">{formatFieldName('variables')}</dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{formatFieldName('name')}</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{formatFieldName('value')}</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {template.variables.map((variable, index) => (
                       <tr key={index}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{variable.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatFieldName(variable.name)}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{variable.value}</td>
                       </tr>
                     ))}
@@ -91,21 +99,21 @@ const TemplateDetail = ({ template, onBack, onViewJson, onUseTemplate }) => {
           
           {/* Validations */}
           <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">Validations</dt>
+            <dt className="text-sm font-medium text-gray-500">{formatFieldName('validations')}</dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expression</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{formatFieldName('name')}</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{formatFieldName('expression')}</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{formatFieldName('description')}</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {template.validations.map((validation, index) => (
                       <tr key={index}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{validation.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{formatFieldName(validation.name)}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{validation.expression}</td>
                         <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">{validation.description}</td>
                       </tr>
@@ -123,17 +131,17 @@ const TemplateDetail = ({ template, onBack, onViewJson, onUseTemplate }) => {
           
           {/* Template Legs */}
           <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">Template Legs</dt>
+            <dt className="text-sm font-medium text-gray-500">{formatFieldName('template_legs')}</dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Leg #</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Debit Account</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credit Account</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{formatFieldName('leg_number')}</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{formatFieldName('debit_account')}</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{formatFieldName('credit_account')}</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{formatFieldName('code')}</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{formatFieldName('amount')}</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
