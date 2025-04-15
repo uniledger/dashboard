@@ -80,17 +80,7 @@ const TemplatesList = ({ templates, onSelectTemplate, onViewJson, onRefresh }) =
                     </p>
                   </div>
                 </div>
-                {/* Show tags for template legs */}
-                <div className="mt-2 flex flex-wrap">
-                  {template.legs.map((leg, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 mr-2 mb-1"
-                    >
-                      Leg #{leg.leg_number}: {leg.code}
-                    </span>
-                  ))}
-                </div>
+                {/* Removed template legs section */}
               </div>
             </div>
           </li>
