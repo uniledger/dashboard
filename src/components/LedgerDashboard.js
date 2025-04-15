@@ -475,53 +475,49 @@ const LedgerDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">LedgerRocket Banking API Demo</h1>
-            <div className="flex space-x-4">
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <a 
-                    href="https://ledger.dev.ledgerrocket.com/openapi.json" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  >
-                    Ledger API
-                  </a>
-                  <a 
-                    href="https://transactions.dev.ledgerrocket.com/openapi.json" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                  >
-                    Transactions API
-                  </a>
-                </div>
-                <div className="flex gap-2">
-                  <a 
-                    href="https://ledger.dev.ledgerrocket.com/docs" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  >
-                    Ledger Swagger
-                  </a>
-                  <a 
-                    href="https://transactions.dev.ledgerrocket.com/docs" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                  >
-                    Transactions Swagger
-                  </a>
-                </div>
+            <div className="flex space-x-4 items-center text-sm">
+              <div className="flex space-x-2">
+                <a 
+                  href="https://ledger.dev.ledgerrocket.com/openapi.json" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  Ledger API
+                </a>
+                <span className="text-gray-400">|</span>
+                <a 
+                  href="https://transactions.dev.ledgerrocket.com/openapi.json" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  Transactions API
+                </a>
+                <span className="text-gray-400">|</span>
+                <a 
+                  href="https://ledger.dev.ledgerrocket.com/docs" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  Ledger Docs
+                </a>
+                <span className="text-gray-400">|</span>
+                <a 
+                  href="https://transactions.dev.ledgerrocket.com/docs" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800"
+                >
+                  Transactions Docs
+                </a>
               </div>
-              <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                Get API Key
-              </button>
               <button 
                 onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
-                className={`px-4 py-2 border rounded-md ${autoRefreshEnabled 
-                  ? 'bg-green-600 text-white border-green-700 hover:bg-green-700' 
-                  : 'bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300'}`}
+                className={`px-2 py-1 text-xs rounded-md ${autoRefreshEnabled 
+                  ? 'bg-green-100 text-green-800 border border-green-200' 
+                  : 'bg-gray-100 text-gray-800 border border-gray-200'}`}
                 title={autoRefreshEnabled ? "Auto-refresh is on" : "Auto-refresh is off"}
               >
                 {autoRefreshEnabled ? "Auto-Refresh: ON" : "Auto-Refresh: OFF"}
