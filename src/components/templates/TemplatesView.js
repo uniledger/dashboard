@@ -3,6 +3,8 @@ import TemplatesList from './TemplatesList';
 import TemplateDetail from './TemplateDetail';
 import EventForm from './EventForm';
 
+// Direct fetch without CORS proxy
+
 const TRANSACTIONS_API_BASE_URL = 'https://transactions.dev.ledgerrocket.com';
 const LEDGER_API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
 
