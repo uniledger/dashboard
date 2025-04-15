@@ -22,22 +22,22 @@ const icons = {
 const Sidebar = ({ activeTab, onTabChange, collapsed, setCollapsed }) => {
   // Define navigation items with icons and categories
   const mainTabs = [
-    { id: 'dashboard', name: 'Balance Sheet', icon: BarChart2 },
-    { id: 'ledgers', name: 'Ledgers', icon: Book },
-    { id: 'accounts', name: 'Accounts', icon: Briefcase },
-    { id: 'entities', name: 'Entities', icon: Users },
+    { id: 'dashboard', name: 'Balance Sheet', icon: 'BarChart2' },
+    { id: 'ledgers', name: 'Ledgers', icon: 'Book' },
+    { id: 'accounts', name: 'Accounts', icon: 'Briefcase' },
+    { id: 'entities', name: 'Entities', icon: 'Users' },
   ];
 
   const referenceTabs = [
-    { id: 'currencies', name: 'Currencies', icon: DollarSign },
-    { id: 'countries', name: 'Countries', icon: Globe },
-    { id: 'account-codes', name: 'Account Codes', icon: Tag },
+    { id: 'currencies', name: 'Currencies', icon: 'DollarSign' },
+    { id: 'countries', name: 'Countries', icon: 'Globe' },
+    { id: 'account-codes', name: 'Account Codes', icon: 'Tag' },
   ];
 
   const transactionTabs = [
-    { id: 'templates', name: 'Templates', icon: FileText },
-    { id: 'processed-events', name: 'Processed Events', icon: CheckSquare },
-    { id: 'rules', name: 'Rules', icon: Shield },
+    { id: 'templates', name: 'Templates', icon: 'FileText' },
+    { id: 'processed-events', name: 'Processed Events', icon: 'CheckSquare' },
+    { id: 'rules', name: 'Rules', icon: 'Shield' },
   ];
 
   // Render navigation item
