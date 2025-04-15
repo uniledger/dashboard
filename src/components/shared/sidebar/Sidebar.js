@@ -1,18 +1,20 @@
 import React from 'react';
-import { 
-  BarChart2, 
-  Book, 
-  Briefcase, 
-  Users, 
-  DollarSign, 
-  Globe, 
-  Tag, 
-  FileText, 
-  CheckSquare, 
-  Shield, 
-  ChevronLeft,
-  ChevronRight
-} from 'react-icons/fi';
+
+// Using unicode emojis instead of icon libraries to avoid dependencies
+const icons = {
+  BarChart2: '📊',
+  Book: '📘',
+  Briefcase: '💼',
+  Users: '👥',
+  DollarSign: '💱',
+  Globe: '🌎',
+  Tag: '🏷️',
+  FileText: '📄',
+  CheckSquare: '✅',
+  Shield: '🛡️',
+  ChevronLeft: '◀️',
+  ChevronRight: '▶️'
+};
 
 /**
  * Sidebar navigation component
@@ -40,7 +42,7 @@ const Sidebar = ({ activeTab, onTabChange, collapsed, setCollapsed }) => {
 
   // Render navigation item
   const renderNavItem = (tab) => {
-    const Icon = tab.icon;
+    const icon = icons[tab.icon];
     
     return (
       <button
@@ -52,7 +54,7 @@ const Sidebar = ({ activeTab, onTabChange, collapsed, setCollapsed }) => {
             : 'text-gray-600 hover:bg-gray-50'
         }`}
       >
-        <Icon className={`${collapsed ? '' : 'mr-3'} w-5 h-5`} />
+        <span className={`${collapsed ? '' : 'mr-3'} text-lg`}>{icon}</span>
         {!collapsed && <span className="text-sm">{tab.name}</span>}
       </button>
     );
@@ -88,7 +90,7 @@ const Sidebar = ({ activeTab, onTabChange, collapsed, setCollapsed }) => {
           onClick={() => setCollapsed(!collapsed)}
           className="p-1 rounded-md text-gray-500 hover:bg-gray-200 ml-auto"
         >
-          {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+          <span className="text-lg">{collapsed ? icons.ChevronRight : icons.ChevronLeft}</span>
         </button>
       </div>
       
