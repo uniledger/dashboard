@@ -5,7 +5,7 @@ import { formatBalance } from '../../utils/formatters';
 /**
  * Dashboard View component to display a system overview with financial statements
  */
-const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
+const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccounts }) => {
   const [balanceSheetData, setBalanceSheetData] = useState({
     assets: 0,
     liabilities: 0,
@@ -18,8 +18,6 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
     expenses: 0,
     netIncome: 0
   });
-
-  // We removed dashboard summary counts since they're not needed
 
   // Process accounts data to create financial statements
   useEffect(() => {
@@ -133,7 +131,11 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Assets</td>
-                  <td className={`py-2 text-right font-medium ${balanceSheetData.assets < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                  <td 
+                    className={`py-2 text-right font-medium cursor-pointer hover:underline ${balanceSheetData.assets < 0 ? 'text-red-600' : 'text-gray-900'}`}
+                    onClick={() => onDrillToAccounts('ASSET')}
+                    title="Click to view all asset accounts"
+                  >
                     {formatCurrency(-balanceSheetData.assets)}
                   </td>
                 </tr>
@@ -147,7 +149,11 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Liabilities</td>
-                  <td className={`py-2 text-right font-medium ${balanceSheetData.liabilities < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                  <td 
+                    className={`py-2 text-right font-medium cursor-pointer hover:underline ${balanceSheetData.liabilities < 0 ? 'text-red-600' : 'text-gray-900'}`}
+                    onClick={() => onDrillToAccounts('LIABILITY')}
+                    title="Click to view all liability accounts"
+                  >
                     {formatCurrency(balanceSheetData.liabilities)}
                   </td>
                 </tr>
@@ -161,7 +167,11 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Contributed Capital</td>
-                  <td className={`py-2 text-right font-medium ${balanceSheetData.equity < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                  <td 
+                    className={`py-2 text-right font-medium cursor-pointer hover:underline ${balanceSheetData.equity < 0 ? 'text-red-600' : 'text-gray-900'}`}
+                    onClick={() => onDrillToAccounts('EQUITY')}
+                    title="Click to view all equity accounts"
+                  >
                     {formatCurrency(balanceSheetData.equity)}
                   </td>
                 </tr>
@@ -209,7 +219,11 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Revenue</td>
-                  <td className={`py-2 text-right font-medium ${incomeStatementData.revenue < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                  <td 
+                    className={`py-2 text-right font-medium cursor-pointer hover:underline ${incomeStatementData.revenue < 0 ? 'text-red-600' : 'text-gray-900'}`}
+                    onClick={() => onDrillToAccounts('REVENUE')}
+                    title="Click to view all revenue accounts"
+                  >
                     {formatCurrency(incomeStatementData.revenue)}
                   </td>
                 </tr>
@@ -223,7 +237,11 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Expenses</td>
-                  <td className={`py-2 text-right font-medium ${incomeStatementData.expenses < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                  <td 
+                    className={`py-2 text-right font-medium cursor-pointer hover:underline ${incomeStatementData.expenses < 0 ? 'text-red-600' : 'text-gray-900'}`}
+                    onClick={() => onDrillToAccounts('EXPENSE')}
+                    title="Click to view all expense accounts"
+                  >
                     {formatCurrency(incomeStatementData.expenses)}
                   </td>
                 </tr>
