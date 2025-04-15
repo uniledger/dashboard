@@ -11,6 +11,8 @@ import CurrenciesList from './reference/CurrenciesList';
 import CountriesList from './reference/CountriesList';
 import AccountCodesList from './reference/AccountCodesList';
 import TemplatesView from './templates/TemplatesView';
+import ProcessedEventsView from './processed-events/ProcessedEventsView';
+import RulesView from './rules/RulesView';
 import useInterval from '../utils/useInterval';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
@@ -474,22 +476,44 @@ const LedgerDashboard = () => {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">LedgerRocket Banking API Demo</h1>
             <div className="flex space-x-4">
-              <a 
-                href="https://ledger.dev.ledgerrocket.com/openapi.json" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                API Documentation
-              </a>
-              <a 
-                href="https://ledger.dev.ledgerrocket.com/docs" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-              >
-                Swagger UI
-              </a>
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <a 
+                    href="https://ledger.dev.ledgerrocket.com/openapi.json" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Ledger API
+                  </a>
+                  <a 
+                    href="https://transactions.dev.ledgerrocket.com/openapi.json" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                  >
+                    Transactions API
+                  </a>
+                </div>
+                <div className="flex gap-2">
+                  <a 
+                    href="https://ledger.dev.ledgerrocket.com/docs" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Ledger Swagger
+                  </a>
+                  <a 
+                    href="https://transactions.dev.ledgerrocket.com/docs" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                  >
+                    Transactions Swagger
+                  </a>
+                </div>
+              </div>
               <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
                 Get API Key
               </button>
@@ -580,7 +604,23 @@ const LedgerDashboard = () => {
                 ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
             >
-              Templates & Events
+              Templates
+            </button>
+            <button
+              onClick={() => handleTabChange('processed-events')}
+              className={`pb-3 px-1 ${activeTab === 'processed-events' 
+                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >
+              Processed Events
+            </button>
+            <button
+              onClick={() => handleTabChange('rules')}
+              className={`pb-3 px-1 ${activeTab === 'rules' 
+                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
+                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
+            >
+              Rules
             </button>
           </nav>
         </div>
@@ -705,7 +745,7 @@ const LedgerDashboard = () => {
           />
         )}
         
-        {/* Templates & Events Tab */}
+        {/* Templates Tab */}
         {activeTab === 'templates' && (
           <TemplatesView 
             ledgers={ledgersList || []}
@@ -715,6 +755,20 @@ const LedgerDashboard = () => {
               fetchLedgersList();
               fetchAccountsList();
             }}
+          />
+        )}
+        
+        {/* Processed Events Tab */}
+        {activeTab === 'processed-events' && (
+          <ProcessedEventsView 
+            onViewJson={handleViewJson}
+          />
+        )}
+        
+        {/* Rules Tab */}
+        {activeTab === 'rules' && (
+          <RulesView 
+            onViewJson={handleViewJson}
           />
         )}
       </main>
