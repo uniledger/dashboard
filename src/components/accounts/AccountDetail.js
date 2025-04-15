@@ -166,7 +166,7 @@ const AccountDetail = ({
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Ledger</p>
+            <p className="text-sm text-gray-500">Ledgers Owned</p>
             <p 
               className={`${resolvedLedger?.ledger_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-900'}`}
               onClick={handleViewLedger}
@@ -186,15 +186,7 @@ const AccountDetail = ({
               {getDisplayBalance()}
             </p>
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Created At</p>
-            <p className="text-gray-900">
-              {account.created_at 
-                ? new Date(account.created_at).toLocaleString()
-                : 'N/A'
-              }
-            </p>
-          </div>
+
         </div>
       </div>
       
