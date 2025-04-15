@@ -1,1 +1,16 @@
 /* Any additional app-specific styles can go here */
+
+/* Hide scrollbar in Firefox */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar in Chrome/Safari */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Sidebar transition */
+.sidebar-transition {
+  transition: width 0.3s ease-in-out;
+}

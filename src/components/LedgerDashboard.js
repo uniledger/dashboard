@@ -13,6 +13,7 @@ import AccountCodesList from './reference/AccountCodesList';
 import TemplatesView from './templates/TemplatesView';
 import ProcessedEventsView from './processed-events/ProcessedEventsView';
 import RulesView from './rules/RulesView';
+import Sidebar from './shared/sidebar';
 import useInterval from '../utils/useInterval';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
@@ -27,6 +28,9 @@ const LedgerDashboard = () => {
   const [selectedLedgerId, setSelectedLedgerId] = useState(null);
   const [selectedAccountId, setSelectedAccountId] = useState(null);
   const [accountDetail, setAccountDetail] = useState(null);
+  
+  // State for sidebar collapse
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
   // Tab-specific states replacing global state
   const [dashboardData, setDashboardData] = useState(null);
@@ -463,7 +467,7 @@ const LedgerDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex">
       <DetailModal 
         isOpen={detailModal.isOpen}
         data={detailModal.data}
@@ -471,311 +475,242 @@ const LedgerDashboard = () => {
         onClose={handleCloseModal}
       />
       
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">🚀 Ledger Rocket - Backoffice</h1>
-            <div className="flex items-center">
-              <button 
-                onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
-                className={`px-2 py-1 text-xs rounded-md ${autoRefreshEnabled 
-                  ? 'bg-green-100 text-green-800 border border-green-200' 
-                  : 'bg-gray-100 text-gray-800 border border-gray-200'}`}
-                title={autoRefreshEnabled ? "Auto-refresh is on" : "Auto-refresh is off"}
-              >
-                {autoRefreshEnabled ? "Auto-Refresh: ON" : "Auto-Refresh: OFF"}
-              </button>
+      {/* Sidebar Navigation */}
+      <Sidebar 
+        activeTab={activeTab} 
+        onTabChange={handleTabChange} 
+        collapsed={sidebarCollapsed} 
+        setCollapsed={setSidebarCollapsed}
+      />
+      
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="bg-white shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center">
+              <h1 className="text-xl font-semibold text-gray-900">
+                {activeTab === 'dashboard' && '📊 Balance Sheet / Income'}
+                {activeTab === 'ledgers' && '📘 Ledgers'}
+                {activeTab === 'accounts' && '💼 Accounts'}
+                {activeTab === 'entities' && '👥 Entities'}
+                {activeTab === 'currencies' && '💱 Currencies'}
+                {activeTab === 'countries' && '🌎 Countries'}
+                {activeTab === 'account-codes' && '🏷️ Account Codes'}
+                {activeTab === 'templates' && '📄 Templates'}
+                {activeTab === 'processed-events' && '✅ Processed Events'}
+                {activeTab === 'rules' && '🛡️ Rules'}
+              </h1>
+              <div className="flex items-center">
+                <button 
+                  onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+                  className={`px-2 py-1 text-xs rounded-md ${autoRefreshEnabled 
+                    ? 'bg-green-100 text-green-800 border border-green-200' 
+                    : 'bg-gray-100 text-gray-800 border border-gray-200'}`}
+                  title={autoRefreshEnabled ? "Auto-refresh is on" : "Auto-refresh is off"}
+                >
+                  {autoRefreshEnabled ? "Auto-Refresh: ON" : "Auto-Refresh: OFF"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        {/* Navigation Tabs */}
-        <div className="border-b border-gray-200 mb-6">
-          <nav className="-mb-px flex space-x-6 overflow-x-auto">
-            <button
-              onClick={() => handleTabChange('dashboard')}
-              className={`pb-3 px-1 ${activeTab === 'dashboard' 
-                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-            >
-              Balance Sheet / Income
-            </button>
-            <button
-              onClick={() => {
-                console.log('Ledgers tab clicked - reset all detail state');
-                // This is a direct tab change, so reset ALL detail state
-                setSelectedLedgerId(null);
-                setSelectedEntityId(null);
-                setSelectedAccountId(null);
-                handleTabChange('ledgers');
-              }}
-              className={`pb-3 px-1 ${activeTab === 'ledgers' 
-                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-            >
-              Ledgers
-            </button>
-            <button
-              onClick={() => handleTabChange('accounts')}
-              className={`pb-3 px-1 ${activeTab === 'accounts' 
-                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-            >
-              Accounts
-            </button>
-            <button
-              onClick={() => handleTabChange('entities')}
-              className={`pb-3 px-1 ${activeTab === 'entities' 
-                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-            >
-              Entities
-            </button>
-            <button
-              onClick={() => handleTabChange('currencies')}
-              className={`pb-3 px-1 ${activeTab === 'currencies' 
-                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-            >
-              Currencies
-            </button>
-            <button
-              onClick={() => handleTabChange('countries')}
-              className={`pb-3 px-1 ${activeTab === 'countries' 
-                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-            >
-              Countries
-            </button>
-            <button
-              onClick={() => handleTabChange('account-codes')}
-              className={`pb-3 px-1 ${activeTab === 'account-codes' 
-                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-            >
-              Account Codes
-            </button>
-            <button
-              onClick={() => handleTabChange('templates')}
-              className={`pb-3 px-1 ${activeTab === 'templates' 
-                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-            >
-              Templates
-            </button>
-            <button
-              onClick={() => handleTabChange('processed-events')}
-              className={`pb-3 px-1 ${activeTab === 'processed-events' 
-                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-            >
-              Processed Events
-            </button>
-            <button
-              onClick={() => handleTabChange('rules')}
-              className={`pb-3 px-1 ${activeTab === 'rules' 
-                ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
-                : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
-            >
-              Rules
-            </button>
-          </nav>
-        </div>
+        <main className="flex-1 overflow-auto">
+          <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            {/* Dashboard View */}
+            {activeTab === 'dashboard' && dashboardData && (
+              <DashboardView 
+                entities={dashboardData.entities} 
+                ledgers={dashboardData.ledgers} 
+                accounts={dashboardData.accounts}
+                onRefresh={fetchDashboardData}
+              />
+            )}
 
-        {/* Dashboard View */}
-        {activeTab === 'dashboard' && dashboardData && (
-          <DashboardView 
-            entities={dashboardData.entities} 
-            ledgers={dashboardData.ledgers} 
-            accounts={dashboardData.accounts}
-            onRefresh={fetchDashboardData}
-          />
-        )}
+            {/* Entities Tab - List View */}
+            {activeTab === 'entities' && !selectedEntityId && entitiesList && (
+              <EntityList 
+                entities={entitiesList}
+                onViewDetails={handleEntitySelection}
+                onViewJson={handleViewJson}
+                onRefresh={fetchEntitiesList}
+              />
+            )}
 
-        {/* Entities Tab - List View */}
-        {activeTab === 'entities' && !selectedEntityId && entitiesList && (
-          <EntityList 
-            entities={entitiesList}
-            onViewDetails={handleEntitySelection}
-            onViewJson={handleViewJson}
-            onRefresh={fetchEntitiesList}
-          />
-        )}
+            {/* Entities Tab - Detail View */}
+            {activeTab === 'entities' && selectedEntityId && entityDetail && (
+              <EntityDetail 
+                entity={entityDetail}
+                entityLedgers={entityLedgers}
+                entityAccounts={entityAccounts}
+                onBack={() => setSelectedEntityId(null)}
+                onViewJson={handleViewJson}
+                onViewLedger={(ledgerId) => {
+                  setActiveTab('ledgers');
+                  setSelectedLedgerId(ledgerId);
+                  fetchLedgerDetail(ledgerId);
+                }}
+                onViewAccount={(account) => {
+                  setActiveTab('accounts');
+                  setSelectedAccountId(account.account_id || account.account_extra_id);
+                  setAccountDetail(account);
+                }}
+                onRefresh={() => fetchEntityDetail(selectedEntityId)}
+              />
+            )}
 
-        {/* Entities Tab - Detail View */}
-        {activeTab === 'entities' && selectedEntityId && entityDetail && (
-          <EntityDetail 
-            entity={entityDetail}
-            entityLedgers={entityLedgers}
-            entityAccounts={entityAccounts}
-            onBack={() => setSelectedEntityId(null)}
-            onViewJson={handleViewJson}
-            onViewLedger={(ledgerId) => {
-              setActiveTab('ledgers');
-              setSelectedLedgerId(ledgerId);
-              fetchLedgerDetail(ledgerId);
-            }}
-            onViewAccount={(account) => {
-              setActiveTab('accounts');
-              setSelectedAccountId(account.account_id || account.account_extra_id);
-              setAccountDetail(account);
-            }}
-            onRefresh={() => fetchEntityDetail(selectedEntityId)}
-          />
-        )}
+            {/* Ledgers Tab - List View */}
+            {activeTab === 'ledgers' && !selectedLedgerId && ledgersList && (
+              <LedgerList 
+                ledgers={ledgersList}
+                onViewDetails={handleLedgerSelection}
+                onViewJson={handleViewJson}
+                onRefresh={fetchLedgersList}
+                onViewEntity={handleEntitySelection}
+              />
+            )}
 
-        {/* Ledgers Tab - List View */}
-        {activeTab === 'ledgers' && !selectedLedgerId && ledgersList && (
-          <LedgerList 
-            ledgers={ledgersList}
-            onViewDetails={handleLedgerSelection}
-            onViewJson={handleViewJson}
-            onRefresh={fetchLedgersList}
-            onViewEntity={handleEntitySelection}
-          />
-        )}
+            {/* Ledgers Tab - Detail View */}
+            {activeTab === 'ledgers' && selectedLedgerId && ledgerDetail && (
+              <LedgerDetail 
+                ledger={ledgerDetail}
+                ledgerAccounts={ledgerAccounts}
+                onBack={() => setSelectedLedgerId(null)}
+                onViewJson={handleViewJson}
+                onRefresh={() => fetchLedgerDetail(selectedLedgerId)}
+                onViewEntity={handleEntitySelection}
+                onViewAccount={(account) => {
+                  setActiveTab('accounts');
+                  setSelectedAccountId(account.account_id || account.account_extra_id);
+                  setAccountDetail(account);
+                }}
+              />
+            )}
 
-        {/* Ledgers Tab - Detail View */}
-        {activeTab === 'ledgers' && selectedLedgerId && ledgerDetail && (
-          <LedgerDetail 
-            ledger={ledgerDetail}
-            ledgerAccounts={ledgerAccounts}
-            onBack={() => setSelectedLedgerId(null)}
-            onViewJson={handleViewJson}
-            onRefresh={() => fetchLedgerDetail(selectedLedgerId)}
-            onViewEntity={handleEntitySelection}
-            onViewAccount={(account) => {
-              setActiveTab('accounts');
-              setSelectedAccountId(account.account_id || account.account_extra_id);
-              setAccountDetail(account);
-            }}
-          />
-        )}
+            {/* Accounts Tab */}
+            {activeTab === 'accounts' && accountsList && (
+              !selectedAccountId ? (
+                <AccountList 
+                  accounts={accountsList}
+                  onViewJson={handleViewJson}
+                  onRefresh={fetchAccountsList}
+                  onViewEntity={handleEntitySelection}
+                  onViewLedger={handleLedgerSelection}
+                  onViewAccount={(account) => {
+                    setSelectedAccountId(account.account_id || account.account_extra_id);
+                    setAccountDetail(account);
+                  }}
+                />
+              ) : (
+                <AccountDetail
+                  account={accountDetail}
+                  onBack={() => setSelectedAccountId(null)}
+                  onViewJson={handleViewJson}
+                  onRefresh={() => fetchAccountDetail(selectedAccountId)}
+                  onViewEntity={handleEntitySelection}
+                  onViewLedger={handleLedgerSelection}
+                />
+              )
+            )}
 
-        {/* Accounts Tab */}
-        {activeTab === 'accounts' && accountsList && (
-          !selectedAccountId ? (
-            <AccountList 
-              accounts={accountsList}
-              onViewJson={handleViewJson}
-              onRefresh={fetchAccountsList}
-              onViewEntity={handleEntitySelection}
-              onViewLedger={handleLedgerSelection}
-              onViewAccount={(account) => {
-                setSelectedAccountId(account.account_id || account.account_extra_id);
-                setAccountDetail(account);
-              }}
-            />
-          ) : (
-            <AccountDetail
-              account={accountDetail}
-              onBack={() => setSelectedAccountId(null)}
-              onViewJson={handleViewJson}
-              onRefresh={() => fetchAccountDetail(selectedAccountId)}
-              onViewEntity={handleEntitySelection}
-              onViewLedger={handleLedgerSelection}
-            />
-          )
-        )}
+            {/* Currencies Tab */}
+            {activeTab === 'currencies' && (
+              <CurrenciesList 
+                onViewJson={handleViewJson}
+                onRefresh={fetchCurrenciesList}
+              />
+            )}
 
-        {/* Currencies Tab */}
-        {activeTab === 'currencies' && (
-          <CurrenciesList 
-            onViewJson={handleViewJson}
-            onRefresh={fetchCurrenciesList}
-          />
-        )}
+            {/* Countries Tab */}
+            {activeTab === 'countries' && (
+              <CountriesList 
+                onViewJson={handleViewJson}
+                onRefresh={fetchCountriesList}
+              />
+            )}
 
-        {/* Countries Tab */}
-        {activeTab === 'countries' && (
-          <CountriesList 
-            onViewJson={handleViewJson}
-            onRefresh={fetchCountriesList}
-          />
-        )}
+            {/* Account Codes Tab */}
+            {activeTab === 'account-codes' && (
+              <AccountCodesList 
+                onViewJson={handleViewJson}
+                onRefresh={fetchAccountCodesList}
+              />
+            )}
+            
+            {/* Templates Tab */}
+            {activeTab === 'templates' && (
+              <TemplatesView 
+                ledgers={ledgersList || []}
+                accounts={accountsList || []}
+                onViewJson={handleViewJson}
+                onRefresh={() => {
+                  fetchLedgersList();
+                  fetchAccountsList();
+                }}
+              />
+            )}
+            
+            {/* Processed Events Tab */}
+            {activeTab === 'processed-events' && (
+              <ProcessedEventsView 
+                onViewJson={handleViewJson}
+              />
+            )}
+            
+            {/* Rules Tab */}
+            {activeTab === 'rules' && (
+              <RulesView 
+                onViewJson={handleViewJson}
+              />
+            )}
+          </div>
+        </main>
 
-        {/* Account Codes Tab */}
-        {activeTab === 'account-codes' && (
-          <AccountCodesList 
-            onViewJson={handleViewJson}
-            onRefresh={fetchAccountCodesList}
-          />
-        )}
-        
-        {/* Templates Tab */}
-        {activeTab === 'templates' && (
-          <TemplatesView 
-            ledgers={ledgersList || []}
-            accounts={accountsList || []}
-            onViewJson={handleViewJson}
-            onRefresh={() => {
-              fetchLedgersList();
-              fetchAccountsList();
-            }}
-          />
-        )}
-        
-        {/* Processed Events Tab */}
-        {activeTab === 'processed-events' && (
-          <ProcessedEventsView 
-            onViewJson={handleViewJson}
-          />
-        )}
-        
-        {/* Rules Tab */}
-        {activeTab === 'rules' && (
-          <RulesView 
-            onViewJson={handleViewJson}
-          />
-        )}
-      </main>
-
-      <footer className="bg-white mt-12 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <p className="text-gray-500 text-sm">© 2025 LedgerRocket. All rights reserved.</p>
-            <div className="flex space-x-2 text-sm">
-              <a 
-                href="https://ledger.dev.ledgerrocket.com/openapi.json" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-gray-500 hover:text-gray-700"
-              >
-                Ledger API
-              </a>
-              <span className="text-gray-400">|</span>
-              <a 
-                href="https://transactions.dev.ledgerrocket.com/openapi.json" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-gray-500 hover:text-gray-700"
-              >
-                Transactions API
-              </a>
-              <span className="text-gray-400">|</span>
-              <a 
-                href="https://ledger.dev.ledgerrocket.com/docs" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-gray-500 hover:text-gray-700"
-              >
-                Ledger Docs
-              </a>
-              <span className="text-gray-400">|</span>
-              <a 
-                href="https://transactions.dev.ledgerrocket.com/docs" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-gray-500 hover:text-gray-700"
-              >
-                Transactions Docs
-              </a>
+        <footer className="bg-white border-t border-gray-200">
+          <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center">
+              <p className="text-gray-500 text-sm">© 2025 LedgerRocket. All rights reserved.</p>
+              <div className="flex space-x-2 text-sm">
+                <a 
+                  href="https://ledger.dev.ledgerrocket.com/openapi.json" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Ledger API
+                </a>
+                <span className="text-gray-400">|</span>
+                <a 
+                  href="https://transactions.dev.ledgerrocket.com/openapi.json" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Transactions API
+                </a>
+                <span className="text-gray-400">|</span>
+                <a 
+                  href="https://ledger.dev.ledgerrocket.com/docs" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Ledger Docs
+                </a>
+                <span className="text-gray-400">|</span>
+                <a 
+                  href="https://transactions.dev.ledgerrocket.com/docs" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Transactions Docs
+                </a>
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 };
