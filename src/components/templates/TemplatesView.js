@@ -137,6 +137,7 @@ const TemplatesView = ({ ledgers, accounts, onViewJson, onRefresh }) => {
           accounts={accounts}
           onBack={() => setView('detail')}
           onSubmitEvent={handleSubmitEvent}
+          onViewJson={onViewJson}
         />
       )}
     </div>

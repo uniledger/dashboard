@@ -90,7 +90,7 @@ const EntityDetail = ({
       </div>
       
       {/* Entity Details Card */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
+      <div className="bg-white rounded-lg shadow p-4 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <p className="text-sm text-gray-500">ID</p>
@@ -113,8 +113,8 @@ const EntityDetail = ({
       </div>
       
       {/* Entity's Ledgers */}
-      <h3 className="text-lg font-medium text-gray-900 mb-3">Ledgers Owned</h3>
-      <div className="bg-white rounded-lg shadow overflow-x-auto mb-6">
+      <h3 className="text-lg font-medium text-gray-900 mb-2">Ledgers Owned</h3>
+      <div className="bg-white rounded-lg shadow overflow-x-auto mb-4">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -164,7 +164,7 @@ const EntityDetail = ({
       </div>
       
       {/* Entity's Accounts */}
-      <h3 className="text-lg font-medium text-gray-900 mb-3">Accounts</h3>
+      <h3 className="text-lg font-medium text-gray-900 mb-2">Accounts</h3>
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -179,7 +179,25 @@ const EntityDetail = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {entityAccounts && entityAccounts.length > 0 ? entityAccounts.map(account => {
+            {entityAccounts && entityAccounts.length > 0 ? entityAccounts
+              // Sort accounts by account code (prefix of account name)
+              .sort((a, b) => {
+                // Extract account code from account_code or name
+                const getCode = (account) => {
+                  if (account.account_code && typeof account.account_code === 'object') {
+                    return String(account.account_code.account_code || '');
+                  } else if (typeof account.account_code === 'string') {
+                    return account.account_code;
+                  } else if (account.name && account.name.includes('-')) {
+                    return account.name.split('-')[0].trim();
+                  }
+                  return '';
+                };
+                const codeA = getCode(a);
+                const codeB = getCode(b);
+                return (codeA || '').toString().localeCompare((codeB || '').toString());
+              })
+              .map(account => {
               const ledger = account.enriched_ledger || {};
               const currency = ledger.r_currency || {};
               const scale = currency.scale || 2;
