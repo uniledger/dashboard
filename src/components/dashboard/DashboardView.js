@@ -134,7 +134,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh }) => {
                 <tr>
                   <td className="py-2 text-gray-700">Total Assets</td>
                   <td className={`py-2 text-right font-medium ${balanceSheetData.assets < 0 ? 'text-red-600' : 'text-gray-900'}`}>
-                    {formatCurrency(balanceSheetData.assets)}
+                    {formatCurrency(-balanceSheetData.assets)}
                   </td>
                 </tr>
               </tbody>
