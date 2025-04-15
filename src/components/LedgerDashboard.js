@@ -475,44 +475,7 @@ const LedgerDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">LedgerRocket Banking API Demo</h1>
-            <div className="flex space-x-4 items-center text-sm">
-              <div className="flex space-x-2">
-                <a 
-                  href="https://ledger.dev.ledgerrocket.com/openapi.json" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  Ledger API
-                </a>
-                <span className="text-gray-400">|</span>
-                <a 
-                  href="https://transactions.dev.ledgerrocket.com/openapi.json" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  Transactions API
-                </a>
-                <span className="text-gray-400">|</span>
-                <a 
-                  href="https://ledger.dev.ledgerrocket.com/docs" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  Ledger Docs
-                </a>
-                <span className="text-gray-400">|</span>
-                <a 
-                  href="https://transactions.dev.ledgerrocket.com/docs" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  Transactions Docs
-                </a>
-              </div>
+            <div className="flex items-center">
               <button 
                 onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
                 className={`px-2 py-1 text-xs rounded-md ${autoRefreshEnabled 
@@ -771,12 +734,51 @@ const LedgerDashboard = () => {
 
       <footer className="bg-white mt-12 border-t border-gray-200">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col space-y-2">
             <p className="text-gray-500 text-sm">© 2025 LedgerRocket. All rights reserved.</p>
-            <div className="flex space-x-6">
-              <button className="text-gray-500 hover:text-gray-700 text-sm">Documentation</button>
-              <button className="text-gray-500 hover:text-gray-700 text-sm">API Reference</button>
-              <button className="text-gray-500 hover:text-gray-700 text-sm">Support</button>
+            <div className="flex justify-between items-center">
+              <div className="flex space-x-2 text-sm">
+                <a 
+                  href="https://ledger.dev.ledgerrocket.com/openapi.json" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Ledger API
+                </a>
+                <span className="text-gray-400">|</span>
+                <a 
+                  href="https://transactions.dev.ledgerrocket.com/openapi.json" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Transactions API
+                </a>
+                <span className="text-gray-400">|</span>
+                <a 
+                  href="https://ledger.dev.ledgerrocket.com/docs" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Ledger Docs
+                </a>
+                <span className="text-gray-400">|</span>
+                <a 
+                  href="https://transactions.dev.ledgerrocket.com/docs" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Transactions Docs
+                </a>
+              </div>
+              <div className="flex space-x-6">
+                <button className="text-gray-500 hover:text-gray-700 text-sm">Documentation</button>
+                <button className="text-gray-500 hover:text-gray-700 text-sm">API Reference</button>
+                <button className="text-gray-500 hover:text-gray-700 text-sm">Support</button>
+              </div>
             </div>
           </div>
         </div>
