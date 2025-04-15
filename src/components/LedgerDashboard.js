@@ -6,11 +6,12 @@ import LedgerList from './ledgers/LedgerList';
 import LedgerDetail from './ledgers/LedgerDetail';
 import AccountList from './accounts/AccountList';
 import AccountDetail from './accounts/AccountDetail';
-import AnalyticsView from './analytics/AnalyticsView';
 import DashboardView from './dashboard/DashboardView';
 import CurrenciesList from './reference/CurrenciesList';
 import CountriesList from './reference/CountriesList';
 import AccountCodesList from './reference/AccountCodesList';
+import TemplatesView from './templates/TemplatesView';
+import useInterval from '../utils/useInterval';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
 
@@ -35,17 +36,19 @@ const LedgerDashboard = () => {
   const [ledgerDetail, setLedgerDetail] = useState(null);
   const [ledgerAccounts, setLedgerAccounts] = useState([]);
   const [accountsList, setAccountsList] = useState(null);
-  const [analyticsData, setAnalyticsData] = useState(null);
   const [currenciesList, setCurrenciesList] = useState(null);
   const [countriesList, setCountriesList] = useState(null);
   const [accountCodesList, setAccountCodesList] = useState(null);
+  
+  // State for auto-refresh
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+  const [refreshInterval, setRefreshInterval] = useState(10000); // 10 seconds
   
   // Tab-specific loading states
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [entitiesLoading, setEntitiesLoading] = useState(false);
   const [ledgersLoading, setLedgersLoading] = useState(false);
   const [accountsLoading, setAccountsLoading] = useState(false);
-  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [currenciesLoading, setCurrenciesLoading] = useState(false);
   const [countriesLoading, setCountriesLoading] = useState(false);
   const [accountCodesLoading, setAccountCodesLoading] = useState(false);
@@ -88,6 +91,25 @@ const LedgerDashboard = () => {
     }
   };
 
+  // Fetch only accounts data for dashboard
+  const fetchDashboardAccounts = async () => {
+    try {
+      const accountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/`);
+      const accountsData = await accountsResponse.json();
+      
+      setDashboardData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          accounts: accountsData
+        };
+      });
+    } catch (err) {
+      console.error('Error refreshing dashboard accounts:', err);
+      // Don't update error state on auto-refresh to avoid disrupting the UI
+    }
+  };
+
   // Fetch entities list
   const fetchEntitiesList = async () => {
     if (entitiesList !== null) return; // Only fetch if not already loaded
@@ -120,16 +142,26 @@ const LedgerDashboard = () => {
       setEntityLedgers(entityLedgersData);
       
       // Fetch accounts for the entity - using the proper endpoint with entity_id filter
-      const entityAccountsResponse = await fetch(`${API_BASE_URL}/api/v1/entities/${entityId}/enriched-accounts/`);
-      const entityAccountsData = await entityAccountsResponse.json();
-      setEntityAccounts(entityAccountsData);
-      console.log(`Fetched ${entityAccountsData.length} accounts for entity ${entityId} using proper endpoint`);
+      await fetchEntityAccounts(entityId);
       
       setEntitiesLoading(false);
     } catch (err) {
       console.error('Error fetching entity detail:', err);
       setError(err.message || 'An error occurred while fetching entity data');
       setEntitiesLoading(false);
+    }
+  };
+  
+  // Only fetch accounts for a specific entity
+  const fetchEntityAccounts = async (entityId) => {
+    try {
+      const entityAccountsResponse = await fetch(`${API_BASE_URL}/api/v1/entities/${entityId}/enriched-accounts/`);
+      const entityAccountsData = await entityAccountsResponse.json();
+      setEntityAccounts(entityAccountsData);
+      console.log(`Fetched ${entityAccountsData.length} accounts for entity ${entityId} using proper endpoint`);
+    } catch (err) {
+      console.error('Error refreshing entity accounts:', err);
+      // Don't update error state on auto-refresh
     }
   };
 
@@ -160,16 +192,26 @@ const LedgerDashboard = () => {
       setLedgerDetail(ledgerData);
       
       // Fetch accounts for the ledger - using the proper endpoint with ledger_id filter
-      const ledgerAccountsResponse = await fetch(`${API_BASE_URL}/api/v1/ledgers/${ledgerId}/enriched-accounts/`);
-      const ledgerAccountsData = await ledgerAccountsResponse.json();
-      setLedgerAccounts(ledgerAccountsData);
-      console.log(`Fetched ${ledgerAccountsData.length} accounts for ledger ${ledgerId} using proper endpoint`);
+      await fetchLedgerAccounts(ledgerId);
       
       setLedgersLoading(false);
     } catch (err) {
       console.error('Error fetching ledger detail:', err);
       setError(err.message || 'An error occurred while fetching ledger data');
       setLedgersLoading(false);
+    }
+  };
+  
+  // Only fetch accounts for a specific ledger
+  const fetchLedgerAccounts = async (ledgerId) => {
+    try {
+      const ledgerAccountsResponse = await fetch(`${API_BASE_URL}/api/v1/ledgers/${ledgerId}/enriched-accounts/`);
+      const ledgerAccountsData = await ledgerAccountsResponse.json();
+      setLedgerAccounts(ledgerAccountsData);
+      console.log(`Fetched ${ledgerAccountsData.length} accounts for ledger ${ledgerId} using proper endpoint`);
+    } catch (err) {
+      console.error('Error refreshing ledger accounts:', err);
+      // Don't update error state on auto-refresh
     }
   };
   
@@ -204,34 +246,16 @@ const LedgerDashboard = () => {
       setAccountsLoading(false);
     }
   };
-
-  // Fetch analytics data
-  const fetchAnalyticsData = async () => {
-    if (analyticsData !== null) return; // Only fetch if not already loaded
-    
-    setAnalyticsLoading(true);
+  
+  // Only fetch account balances for account list
+  const fetchAccountBalances = async () => {
     try {
-      // For analytics, fetch all data needed for reports
-      const accountsResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/`);
-      const accountsData = await accountsResponse.json();
-      
-      const entitiesResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/`);
-      const entitiesData = await entitiesResponse.json();
-      
-      const ledgersResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/`);
-      const ledgersData = await ledgersResponse.json();
-      
-      setAnalyticsData({
-        accounts: accountsData,
-        entities: entitiesData,
-        ledgers: ledgersData
-      });
-      
-      setAnalyticsLoading(false);
+      const response = await fetch(`${API_BASE_URL}/api/v1/enriched-accounts/`);
+      const data = await response.json();
+      setAccountsList(data);
     } catch (err) {
-      console.error('Error fetching analytics data:', err);
-      setError(err.message || 'An error occurred while fetching analytics data');
-      setAnalyticsLoading(false);
+      console.error('Error refreshing account balances:', err);
+      // Don't update error state on auto-refresh
     }
   };
 
@@ -286,6 +310,31 @@ const LedgerDashboard = () => {
     }
   };
 
+  // Auto-refresh hook - update account balances, entity details, or ledger details
+  useInterval(() => {
+    if (!autoRefreshEnabled) return;
+
+    console.log('Auto-refreshing data...');
+    
+    // Refresh based on what's currently displayed
+    if (activeTab === 'dashboard') {
+      // Just fetch account balance data
+      fetchDashboardAccounts();
+    } else if (activeTab === 'accounts' && selectedAccountId) {
+      // Refresh the selected account detail
+      fetchAccountDetail(selectedAccountId);
+    } else if (activeTab === 'accounts' && !selectedAccountId) {
+      // Refresh the accounts list
+      fetchAccountBalances();
+    } else if (activeTab === 'ledgers' && selectedLedgerId) {
+      // Refresh accounts for the selected ledger
+      fetchLedgerAccounts(selectedLedgerId);
+    } else if (activeTab === 'entities' && selectedEntityId) {
+      // Refresh accounts for the selected entity
+      fetchEntityAccounts(selectedEntityId);
+    }
+  }, refreshInterval);
+
   // Load dashboard data on initial component mount
   useEffect(() => {
     fetchDashboardData();
@@ -315,9 +364,6 @@ const LedgerDashboard = () => {
       case 'accounts':
         fetchAccountsList();
         break;
-      case 'analytics':
-        fetchAnalyticsData();
-        break;
       case 'currencies':
         fetchCurrenciesList();
         break;
@@ -326,6 +372,11 @@ const LedgerDashboard = () => {
         break;
       case 'account-codes':
         fetchAccountCodesList();
+        break;
+      case 'templates':
+        // Make sure ledgers and accounts are loaded for the templates view
+        fetchLedgersList();
+        fetchAccountsList();
         break;
       default:
         break;
@@ -377,7 +428,7 @@ const LedgerDashboard = () => {
   };
 
   // Check if any tab is in loading state
-  const isLoading = dashboardLoading || entitiesLoading || ledgersLoading || accountsLoading || analyticsLoading || 
+  const isLoading = dashboardLoading || entitiesLoading || ledgersLoading || accountsLoading ||
                    currenciesLoading || countriesLoading || accountCodesLoading;
 
   // Loading state
@@ -441,6 +492,15 @@ const LedgerDashboard = () => {
               </a>
               <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
                 Get API Key
+              </button>
+              <button 
+                onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}
+                className={`px-4 py-2 border rounded-md ${autoRefreshEnabled 
+                  ? 'bg-green-600 text-white border-green-700 hover:bg-green-700' 
+                  : 'bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300'}`}
+                title={autoRefreshEnabled ? "Auto-refresh is on" : "Auto-refresh is off"}
+              >
+                {autoRefreshEnabled ? "Auto-Refresh: ON" : "Auto-Refresh: OFF"}
               </button>
             </div>
           </div>
@@ -515,12 +575,12 @@ const LedgerDashboard = () => {
               Account Codes
             </button>
             <button
-              onClick={() => handleTabChange('analytics')}
-              className={`pb-3 px-1 ${activeTab === 'analytics' 
+              onClick={() => handleTabChange('templates')}
+              className={`pb-3 px-1 ${activeTab === 'templates' 
                 ? 'border-b-2 border-blue-500 text-blue-600 font-medium' 
                 : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
             >
-              Analytics
+              Templates & Events
             </button>
           </nav>
         </div>
@@ -621,15 +681,6 @@ const LedgerDashboard = () => {
           )
         )}
 
-        {/* Analytics Tab */}
-        {activeTab === 'analytics' && analyticsData && (
-          <AnalyticsView 
-            accounts={analyticsData.accounts}
-            entities={analyticsData.entities}
-            onRefresh={fetchAnalyticsData}
-          />
-        )}
-
         {/* Currencies Tab */}
         {activeTab === 'currencies' && (
           <CurrenciesList 
@@ -651,6 +702,19 @@ const LedgerDashboard = () => {
           <AccountCodesList 
             onViewJson={handleViewJson}
             onRefresh={fetchAccountCodesList}
+          />
+        )}
+        
+        {/* Templates & Events Tab */}
+        {activeTab === 'templates' && (
+          <TemplatesView 
+            ledgers={ledgersList || []}
+            accounts={accountsList || []}
+            onViewJson={handleViewJson}
+            onRefresh={() => {
+              fetchLedgersList();
+              fetchAccountsList();
+            }}
           />
         )}
       </main>

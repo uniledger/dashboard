@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PageHeader from '../shared/PageHeader';
+import { getCountryDisplay } from '../../utils/formatters';
 
 /**
  * Entity Detail component to display a single entity with its ledgers and accounts
@@ -15,25 +16,14 @@ const EntityDetail = ({
   onViewAccount,
   onRefresh
 }) => {
-  if (!entity) return null;
+  // Log a ledger to inspect structure
+  useEffect(() => {
+    if (entityLedgers && entityLedgers.length > 0) {
+      console.log('Full ledger structure:', entityLedgers[0]);
+    }
+  }, [entityLedgers]);
   
-  // Helper function for country display
-  const getCountryDisplay = (item) => {
-    if (!item) return 'N/A';
-    
-    // Handle when r_country is available
-    if (item.r_country) {
-      return `${item.r_country.name} (${item.r_country.country_code})`;
-    }
-    
-    // Try entity's country if this is a ledger
-    if (item.entity_id && entity && entity.r_country) {
-      return `${entity.r_country.name} (${entity.r_country.country_code})`;
-    }
-    
-    // Fallback to just country code
-    return item.country_code || entity.country_code || 'N/A';
-  };
+  if (!entity) return null;
 
   // Helper function for account codes
   const getAccountCodeDisplay = (account) => {
@@ -123,7 +113,7 @@ const EntityDetail = ({
       </div>
       
       {/* Entity's Ledgers */}
-      <h3 className="text-lg font-medium text-gray-900 mb-3">Ledgers</h3>
+      <h3 className="text-lg font-medium text-gray-900 mb-3">Ledgers Owned</h3>
       <div className="bg-white rounded-lg shadow overflow-x-auto mb-6">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -132,32 +122,28 @@ const EntityDetail = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Currency</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {entityLedgers && entityLedgers.length > 0 ? entityLedgers.map(ledger => (
               <tr key={ledger.ledger_id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ledger.ledger_id}</td>
                 <td 
-                  className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 cursor-pointer hover:underline"
+                  className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline"
                   onClick={() => onViewLedger(ledger.ledger_id)}
                 >
+                  {ledger.ledger_id}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                   {ledger.name}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {ledger.r_currency ? `${ledger.r_currency.currency_code} (${ledger.r_currency.type})` : 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {getCountryDisplay(ledger)}
+                  {getCountryDisplay(ledger, entity)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <button 
-                    className="text-blue-600 hover:text-blue-800 mr-2"
-                    onClick={() => onViewLedger && onViewLedger(ledger.ledger_id)}
-                  >
-                    View
-                  </button>
                   <button 
                     className="text-gray-600 hover:text-gray-800"
                     onClick={() => onViewJson(ledger, `Ledger: ${ledger.name}`)}
@@ -168,7 +154,7 @@ const EntityDetail = ({
               </tr>
             )) : (
               <tr>
-                <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
                   No ledgers found for this entity
                 </td>
               </tr>
@@ -200,13 +186,13 @@ const EntityDetail = ({
               
               return (
                 <tr key={account.account_id || account.account_extra_id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {account.account_id || account.account_extra_id || 'N/A'}
-                  </td>
                   <td 
-                    className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 cursor-pointer hover:underline"
+                    className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline"
                     onClick={() => onViewAccount && onViewAccount(account)}
                   >
+                    {account.account_id || account.account_extra_id || 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {account.name || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
