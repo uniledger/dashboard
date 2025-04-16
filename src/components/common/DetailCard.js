@@ -2,9 +2,9 @@ import React from 'react';
 
 /**
  * Reusable detail card component for showing entity, ledger, account, etc. details
- * with a modern card-type layout
+ * Compact grid layout similar to the original ledger detail view
  * @param {Object} props - Component props
- * @param {string} props.title - Card title
+ * @param {string} props.title - Card title (only shown if subtitle not provided)
  * @param {string} props.subtitle - Card subtitle
  * @param {Array} props.sections - Array of section objects with label and content
  * @param {React.ReactNode} props.actions - Optional action buttons to display
@@ -39,39 +39,31 @@ const DetailCard = ({ title, subtitle, sections, actions }) => {
   
   return (
     <div>
-      {/* Header section */}
-      <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h2 className="text-2xl font-semibold text-gray-900">{title}</h2>
-            {subtitle && (
-              <p className="mt-1 text-lg text-gray-600">{subtitle}</p>
-            )}
-          </div>
-          {actions && (
-            <div className="flex space-x-3">{actions}</div>
-          )}
-        </div>
+      {/* Header section - only show actions, not the title (that's in page header) */}
+      <div className="flex justify-end mb-4">
+        {actions && (
+          <div className="flex space-x-3">{actions}</div>
+        )}
       </div>
       
-      {/* Basic fields in card grid */}
+      {/* Basic fields in compact grid */}
       {basicSections.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          {basicSections.map((section, index) => (
-            <div 
-              key={`basic-section-${index}`}
-              className="bg-white shadow-sm rounded-lg p-6 hover:shadow-md transition-shadow duration-300"
-            >
-              <div className="mb-2">
-                <h3 className="text-sm font-medium text-blue-600 uppercase tracking-wider">
+        <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 divide-gray-100">
+            {basicSections.map((section, index) => (
+              <div 
+                key={`basic-section-${index}`}
+                className={`p-4 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
+              >
+                <p className="text-sm font-medium text-gray-500 mb-1">
                   {section.label}
-                </h3>
+                </p>
+                <div className="text-sm text-gray-900">
+                  {section.content}
+                </div>
               </div>
-              <div className="text-gray-900">
-                {section.content}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
       
@@ -81,14 +73,14 @@ const DetailCard = ({ title, subtitle, sections, actions }) => {
           {tableSections.map((section, index) => (
             <div 
               key={`table-section-${index}`}
-              className="bg-white shadow-sm rounded-lg p-6"
+              className="bg-white shadow rounded-lg overflow-hidden"
             >
-              <div className="mb-4">
-                <h3 className="text-sm font-medium text-blue-600 uppercase tracking-wider">
+              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                <h3 className="text-sm font-medium text-gray-700">
                   {section.label}
                 </h3>
               </div>
-              <div>
+              <div className="p-0">
                 {section.content}
               </div>
             </div>
