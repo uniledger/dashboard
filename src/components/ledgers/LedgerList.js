@@ -33,13 +33,7 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh, onViewEntit
       
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <button 
-          className="px-3 py-1 bg-white border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50 text-sm"
-          onClick={() => console.log('Create new ledger')}
-        >
-          + New Ledger
-        </button>
+      <div className="flex justify-end items-center mb-4">
         <button
           onClick={onRefresh}
           className="px-3 py-1 rounded border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 flex items-center"

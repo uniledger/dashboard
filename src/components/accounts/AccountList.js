@@ -112,12 +112,6 @@ const AccountList = ({ accounts, accountTypeFilter, onViewJson, onRefresh, onVie
               </svg>
             </button>
           )}
-          <button 
-            className="px-3 py-1 bg-white border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50 text-sm"
-            onClick={() => console.log('Create new account')}
-          >
-            + New Account
-          </button>
         </div>
         <button
           onClick={onRefresh}
