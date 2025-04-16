@@ -10,11 +10,13 @@ import EventForm from './EventForm';
  */
 const TemplatesPage = ({ onViewJson }) => {
   const { 
+    templates,
     selectedTemplate,
     fetchTemplates,
     submitEvent,
     clearSelectedTemplate,
-    selectTemplate
+    selectTemplate,
+    loading
   } = useTransactions();
 
   const [view, setView] = useState('list'); // 'list', 'detail', or 'event-form'
@@ -75,8 +77,11 @@ const TemplatesPage = ({ onViewJson }) => {
 
   return (
     <TemplatesList 
+      templates={templates}
       onViewJson={handleViewJson}
       onSelectTemplate={handleSelectTemplate}
+      onRefresh={fetchTemplates}
+      loading={loading.templates}
     />
   );
 };
