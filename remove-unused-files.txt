@@ -1,0 +1,7 @@
+The following files can be safely removed as they're no longer needed after refactoring:
+
+1. src/components/templates/TemplatesView.js - Redundant since the application has been updated to use TemplatesPage.js instead
+
+To remove these files, run:
+git rm src/components/templates/TemplatesView.js
+git commit -m "Remove unused TemplatesView.js file after refactoring"
