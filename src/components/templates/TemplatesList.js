@@ -1,99 +1,59 @@
 import React, { useState } from 'react';
+import { StandardList } from '../common';
 
 /**
  * Component to display a list of templates
  */
 const TemplatesList = ({ templates, onSelectTemplate, onViewJson, onRefresh }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  // Filter templates based on search query
-  const filteredTemplates = templates.filter(template => 
-    template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    template.product.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Define columns for StandardList
+  const columns = [
+    {
+      key: 'template_id',
+      header: 'ID',
+      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
+    },
+    {
+      key: 'name',
+      header: 'Template Name',
+      cellClassName: 'font-medium text-gray-900',
+    },
+    {
+      key: 'product',
+      header: 'Type',
+      cellClassName: 'text-gray-500',
+    },
+    {
+      key: 'description',
+      header: 'Description',
+      cellClassName: 'text-gray-500',
+      render: (item) => {
+        return item.description.length > 100 
+          ? `${item.description.substring(0, 100)}...` 
+          : item.description;
+      }
+    },
+    {
+      key: 'created_date',
+      header: 'Created',
+      cellClassName: 'text-gray-500',
+      render: (item) => {
+        return new Date(item.created_date * 1000).toLocaleDateString();
+      }
+    }
+  ];
 
   return (
-    <div className="bg-white shadow overflow-hidden sm:rounded-md">
-      <div className="px-4 py-5 border-b border-gray-200 sm:px-6">
-        <div className="flex justify-between items-center flex-wrap sm:flex-nowrap">
-          <div>
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Templates</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Browse available transaction templates
-            </p>
-          </div>
-          <div className="flex-shrink-0 flex items-center space-x-2">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search templates..."
-                className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={onRefresh}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-            >
-              Refresh
-            </button>
-          </div>
-        </div>
-      </div>
-      <ul className="divide-y divide-gray-200">
-        {filteredTemplates.map((template) => (
-          <li key={template.template_id}>
-            <div className="block hover:bg-gray-50">
-              <div className="px-4 py-4 sm:px-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <p className="text-sm font-medium text-blue-600 truncate cursor-pointer hover:underline" onClick={() => onSelectTemplate(template)}>
-                      {template.name}
-                    </p>
-                    <p className="text-sm text-gray-500 cursor-pointer hover:underline" onClick={() => onSelectTemplate(template)}>
-                      ID: {template.template_id} | Type: {template.product}
-                    </p>
-                  </div>
-                  <div className="flex flex-shrink-0 space-x-2">
-                    <button
-                      onClick={() => onViewJson(template, `Template ${template.template_id}`)}
-                      className="px-3 py-1 border border-gray-300 text-xs rounded-md hover:bg-gray-50"
-                    >
-                      View JSON
-                    </button>
-                  </div>
-                </div>
-                <div className="mt-2 sm:flex sm:justify-between">
-                  <div className="sm:flex">
-                    <p className="flex items-center text-sm text-gray-500">
-                      {template.description.length > 150 
-                        ? `${template.description.substring(0, 150)}...` 
-                        : template.description}
-                    </p>
-                  </div>
-                  <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                    <p>
-                      Created: {new Date(template.created_date * 1000).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                {/* Removed template legs section */}
-              </div>
-            </div>
-          </li>
-        ))}
-        {filteredTemplates.length === 0 && (
-          <li>
-            <div className="px-4 py-4 sm:px-6 text-center text-gray-500">
-              No templates found.
-            </div>
-          </li>
-        )}
-      </ul>
-    </div>
+    <StandardList
+      data={templates}
+      columns={columns}
+      title="Templates"
+      idField="template_id"
+      onItemClick={onSelectTemplate}
+      onViewJson={onViewJson}
+      onRefresh={onRefresh}
+      searchPlaceholder="Search templates..."
+      emptyMessage="No templates found"
+    />
   );
 };
 
