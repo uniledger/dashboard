@@ -58,6 +58,7 @@ const TemplatesPage = ({ onViewJson }) => {
   if (view === 'event-form' && selectedTemplate) {
     return (
       <EventForm 
+        template={selectedTemplate}
         onBack={handleBackToDetail}
         onViewJson={handleViewJson}
         onSubmitEvent={submitEvent}
@@ -68,6 +69,7 @@ const TemplatesPage = ({ onViewJson }) => {
   if ((view === 'detail' || selectedTemplate) && view !== 'event-form') {
     return (
       <TemplateDetail 
+        template={selectedTemplate}
         onViewJson={handleViewJson}
         onUseTemplate={handleUseTemplate}
         onBack={handleBackToList}
