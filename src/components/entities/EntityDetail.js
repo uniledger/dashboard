@@ -16,13 +16,6 @@ const EntityDetail = ({
   onViewAccount,
   onRefresh
 }) => {
-  // Log a ledger to inspect structure
-  useEffect(() => {
-    if (entityLedgers && entityLedgers.length > 0) {
-      console.log('Full ledger structure:', entityLedgers[0]);
-    }
-  }, [entityLedgers]);
-  
   if (!entity) return null;
 
   // Helper function for account codes
@@ -103,10 +96,10 @@ const EntityDetail = ({
   
   return (
     <div>
-      {/* Entity Details Card using DetailCard component */}
+      {/* Entity Details Card using DetailCard component - no title/subtitle */}
       <DetailCard
-        title="Entity Details"
-        subtitle={entity.name}
+        title={null}
+        subtitle={null}
         sections={basicInfoSections}
         actions={detailActions}
       />
