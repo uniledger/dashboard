@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import PageHeader from '../shared/PageHeader';
+import { DetailCard, ActionButton } from '../common';
 import { getCountryDisplay } from '../../utils/formatters';
 
 /**
@@ -51,69 +51,68 @@ const EntityDetail = ({
     }
   };
   
+  // Define sections for the basic info in the detail card
+  const basicInfoSections = [
+    {
+      label: 'Entity ID',
+      content: entity.entity_id
+    },
+    {
+      label: 'Name',
+      content: entity.name
+    },
+    {
+      label: 'Type',
+      content: entity.type || entity.entity_type || 'N/A'
+    },
+    {
+      label: 'Country',
+      content: getCountryDisplay(entity)
+    }
+  ];
+  
+  // Define detail card actions
+  const detailActions = (
+    <>
+      <ActionButton
+        variant="outline"
+        onClick={() => onViewJson && onViewJson(entity, `Entity: ${entity.name}`)}
+      >
+        View JSON
+      </ActionButton>
+      <ActionButton
+        variant="outline"
+        onClick={onRefresh}
+        icon={
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        }
+      >
+        Refresh
+      </ActionButton>
+      <ActionButton
+        variant="secondary"
+        onClick={onBack}
+      >
+        Back
+      </ActionButton>
+    </>
+  );
+  
   return (
     <div>
-      {/* Entity Header with back button */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <button 
-            onClick={onBack}
-            className="mr-3 text-gray-600 hover:text-gray-800"
-          >
-            ← Back to Entities
-          </button>
-          <h2 className="text-xl font-semibold text-gray-800">
-            {entity.name}
-          </h2>
-        </div>
-        <div className="flex space-x-2">
-          <button 
-            onClick={onRefresh}
-            className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-            title="Refresh data"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-          <button 
-            className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center"
-            onClick={() => onViewJson(entity, `Entity: ${entity.name}`)}
-          >
-            <span>View Full JSON</span>
-            <svg className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-            </svg>
-          </button>
-        </div>
-      </div>
-      
-      {/* Entity Details Card */}
-      <div className="bg-white rounded-lg shadow p-4 mb-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm text-gray-500">ID</p>
-            <p className="text-gray-900">{entity.entity_id}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Name</p>
-            <p className="text-gray-900">{entity.name}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Type</p>
-            <p className="text-gray-900">{entity.type || entity.entity_type || 'N/A'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Country</p>
-            <p className="text-gray-900">{getCountryDisplay(entity)}</p>
-          </div>
-          {/* Additional properties can be added here if available in the API */}
-        </div>
-      </div>
+      {/* Entity Details Card using DetailCard component */}
+      <DetailCard
+        title="Entity Details"
+        subtitle={entity.name}
+        sections={basicInfoSections}
+        actions={detailActions}
+      />
       
       {/* Entity's Ledgers */}
-      <h3 className="text-lg font-medium text-gray-900 mb-2">Ledgers Owned</h3>
+      <h3 className="text-lg font-medium text-gray-900 mt-6 mb-2">Ledgers Owned</h3>
       <div className="bg-white rounded-lg shadow overflow-x-auto mb-4">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -122,7 +121,7 @@ const EntityDetail = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Currency</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
-
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -143,7 +142,7 @@ const EntityDetail = ({
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {getCountryDisplay(ledger, entity)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                   <button 
                     className="text-gray-600 hover:text-gray-800"
                     onClick={() => onViewJson(ledger, `Ledger: ${ledger.name}`)}
@@ -154,7 +153,7 @@ const EntityDetail = ({
               </tr>
             )) : (
               <tr>
-                <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
+                <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
                   No ledgers found for this entity
                 </td>
               </tr>
