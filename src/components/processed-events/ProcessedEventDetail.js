@@ -21,6 +21,20 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
   const originalEvent = event.metadata && event.metadata.original_event_json 
     ? event.metadata.original_event_json 
     : event.original_event || null;
+    
+  // Try to parse the originalEvent if it's a string
+  const parsedOriginalEvent = React.useMemo(() => {
+    if (!originalEvent) return null;
+    if (typeof originalEvent === 'string') {
+      try {
+        return JSON.parse(originalEvent);
+      } catch (err) {
+        console.error('Error parsing original event JSON:', err);
+        return null;
+      }
+    }
+    return originalEvent;
+  }, [originalEvent]);
 
   return (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -46,12 +60,9 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
           >
             View JSON
           </button>
-          {originalEvent && (
+          {parsedOriginalEvent && (
             <button
-              onClick={() => onViewJson(
-                typeof originalEvent === 'string' ? JSON.parse(originalEvent) : originalEvent, 
-                `Original Event ${event.event_id}`
-              )}
+              onClick={() => onViewJson(parsedOriginalEvent, `Original Event ${event.event_id}`)}
               className="px-4 py-2 border border-blue-300 bg-blue-50 rounded-md text-sm font-medium text-blue-700 hover:bg-blue-100"
             >
               View Event JSON

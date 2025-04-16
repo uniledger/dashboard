@@ -179,7 +179,16 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
     setError(null);
     
     try {
-      const response = await onSubmitEvent(eventData);
+      // Store the original event data
+      const eventDataToSubmit = {
+        ...eventData,
+        metadata: {
+          ...eventData.metadata,
+          original_event_json: JSON.stringify(eventData)
+        }
+      };
+      
+      const response = await onSubmitEvent(eventDataToSubmit);
       setEventResponse(response);
       setIsLoading(false);
     } catch (err) {
@@ -226,15 +235,24 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
         {eventResponse && (
           <div className="mt-4 p-4 border rounded-md bg-gray-50">
             <div className="flex justify-between items-start">
+            <div className="flex items-center space-x-4">
               <h4 className="text-md font-medium text-gray-900">Event Response</h4>
-              <button
-                type="button"
-                onClick={resetForm}
-                className="text-sm text-blue-600 hover:text-blue-500"
-              >
-                Create Another Event
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => onViewJson && onViewJson(eventData, 'Original Event JSON')}
+                className="text-sm text-blue-600 hover:text-blue-500 px-2 py-1 border border-blue-200 rounded"
+            >
+                View Event JSON
+                </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="text-sm text-blue-600 hover:text-blue-500"
+                >
+                  Create Another Event
+                </button>
+              </div>
             <div className="mt-2">
               <p className="text-sm text-gray-600">Status: {eventResponse.status}</p>
               
