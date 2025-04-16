@@ -7,7 +7,8 @@ import { DetailCard, ActionButton } from '../common';
 const RuleDetail = ({ rule, onBack, onViewJson }) => {
   if (!rule) return null;
 
-  // Define sections for the detail card
+  // Define sections for the detail card - we don't need to include rule ID
+  // in the sections since it's already in the subtitle
   const sections = [
     {
       label: 'Rule ID',
@@ -53,10 +54,13 @@ const RuleDetail = ({ rule, onBack, onViewJson }) => {
     </>
   );
 
+  // Check if rule has a name field, otherwise use description as the subtitle
+  const subtitle = rule.description || `Rule ${rule.rule_id}`;
+
   return (
     <DetailCard
       title="Rule Details"
-      subtitle={`Rule ID: ${rule.rule_id}`}
+      subtitle={subtitle}
       sections={sections}
       actions={actions}
     />
