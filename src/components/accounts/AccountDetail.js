@@ -1,195 +1,188 @@
-import React, { useState, useEffect } from 'react';
-import { formatBalance, formatAccountCode } from '../../utils/formatters';
-
-const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
+import React, { useEffect } from 'react';
+import { 
+  DetailCard, 
+  ActionButton, 
+  ErrorAlert, 
+  LoadingSpinner 
+} from '../common';
+import useAccounts from '../../hooks/useAccounts';
+import { formatBalance, formatAccountCode, getAccountType } from '../../utils/formatters';
 
 /**
  * Account Detail component to display detailed information about a single account
  */
 const AccountDetail = ({ 
   account, 
-  onBack, 
   onViewJson, 
-  onRefresh,
-  onViewEntity,
-  onViewLedger
+  onBack, 
+  onRefresh, 
+  onViewEntity, 
+  onViewLedger 
 }) => {
-  const [entity, setEntity] = useState(null);
-  const [ledger, setLedger] = useState(null);
+  const { loading, error } = useAccounts();
   
-  // Add logging to debug
-  console.log('AccountDetail mounted with account:', account?.account_id);
+  if (loading && !account) {
+    return (
+      <div className="h-64 flex items-center justify-center">
+        <LoadingSpinner size="lg" message="Loading account details..." />
+      </div>
+    );
+  }
   
-  // Fetch entity and ledger details if needed
-  useEffect(() => {
-    const fetchReferenceData = async () => {
-      try {
-        // Get entity ID either directly or from the ledger
-        const entityId = account.entity_id || 
-          (account.enriched_ledger && account.enriched_ledger.entity_id);
-          
-        // Get ledger ID
-        const ledgerId = account.ledger_id || 
-          (account.enriched_ledger && account.enriched_ledger.ledger_id);
-        
-        // Fetch entity details if not available
-        if (entityId && !account.entity && !account.enriched_entity) {
-          const entityResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/${entityId}`);
-          const entityData = await entityResponse.json();
-          setEntity(entityData);
-        }
-        
-        // Fetch ledger details if not available
-        if (ledgerId && !account.ledger && !account.enriched_ledger) {
-          const ledgerResponse = await fetch(`${API_BASE_URL}/api/v1/enriched-ledgers/${ledgerId}`);
-          const ledgerData = await ledgerResponse.json();
-          setLedger(ledgerData);
-        }
-      } catch (err) {
-        console.error('Error fetching reference data:', err);
-      }
-    };
-    
-    fetchReferenceData();
-  }, [account]);
+  if (error) {
+    return (
+      <div className="mb-6">
+        <ErrorAlert error={error} onRetry={onRefresh} />
+        <div className="mt-4">
+          <ActionButton
+            variant="primary"
+            onClick={onBack}
+          >
+            Back to Accounts List
+          </ActionButton>
+        </div>
+      </div>
+    );
+  }
   
-  if (!account) return null;
+  if (!account) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">No account selected.</p>
+        <div className="mt-4">
+          <ActionButton
+            variant="primary"
+            onClick={onBack}
+          >
+            Back to Accounts List
+          </ActionButton>
+        </div>
+      </div>
+    );
+  }
   
-  // Resolve entity from different sources
-  const resolvedEntity = account.entity || account.enriched_entity || entity || 
+  // Extract entity and ledger information
+  const entity = account.entity || account.enriched_entity || 
     (account.enriched_ledger && account.enriched_ledger.entity);
-  
-  // Resolve ledger from different sources
-  const resolvedLedger = account.ledger || account.enriched_ledger || ledger;
-  
-  // Format balance using utility function
-  const getDisplayBalance = () => {
-    if (typeof account.balance !== 'number') return 'N/A';
     
-    const currency = (resolvedLedger && resolvedLedger.r_currency);
-    return formatBalance(account.balance, currency, true);
-  };
+  const ledger = account.ledger || account.enriched_ledger;
   
-  // Get account code display
-  const getAccountCodeDisplay = () => {
-    return formatAccountCode(account.account_code || account.code);
-  };
+  // Extract currency information
+  const currency = (ledger && ledger.r_currency) || account.currency;
   
-  // Get account type
-  const getAccountType = () => {
-    return account.account_type || 
-      (account.account_code && account.account_code.type) || 
-      account.type || 
-      'N/A';
-  };
-  
-  // Handler for navigating to entity detail
+  // Handle viewing entity
   const handleViewEntity = () => {
-    if (resolvedEntity?.entity_id && onViewEntity) {
-      onViewEntity(resolvedEntity.entity_id);
+    if (entity && entity.entity_id && onViewEntity) {
+      onViewEntity(entity.entity_id);
     }
   };
   
-  // Handler for navigating to ledger detail
+  // Handle viewing ledger
   const handleViewLedger = () => {
-    const ledgerId = resolvedLedger?.ledger_id || account.ledger_id;
-    console.log('Account detail - View ledger clicked:', ledgerId);
-    if (ledgerId && onViewLedger) {
-      onViewLedger(ledgerId);
+    if (ledger && ledger.ledger_id && onViewLedger) {
+      onViewLedger(ledger.ledger_id);
     }
   };
+  
+  // Define sections for the basic info in the detail card
+  const basicInfoSections = [
+    {
+      label: 'Account ID',
+      content: account.account_id || account.account_extra_id || 'N/A'
+    },
+    {
+      label: 'Account Type',
+      content: getAccountType(account)
+    },
+    {
+      label: 'Account Code',
+      content: formatAccountCode(account.account_code || account.code)
+    },
+    {
+      label: 'Entity',
+      content: entity ? (
+        <button 
+          className="text-blue-600 hover:text-blue-800 hover:underline"
+          onClick={handleViewEntity}
+        >
+          {entity.name || entity.entity_id}
+        </button>
+      ) : 'N/A'
+    },
+    {
+      label: 'Ledger',
+      content: ledger ? (
+        <button 
+          className="text-blue-600 hover:text-blue-800 hover:underline"
+          onClick={handleViewLedger}
+        >
+          {ledger.name || ledger.ledger_id}
+        </button>
+      ) : 'N/A'
+    },
+    {
+      label: 'Currency',
+      content: (currency && currency.currency_code) || 
+        account.currency_code || 
+        (ledger && ledger.currency_code) || 
+        'N/A'
+    },
+    {
+      label: 'Current Balance',
+      content: (
+        <span className={typeof account.balance === 'number' && account.balance < 0 ? 'text-red-600 font-medium' : 'font-medium'}>
+          {formatBalance(account.balance, currency, true)}
+        </span>
+      )
+    }
+  ];
+  
+  // Add creation info if available
+  if (account.date_created) {
+    basicInfoSections.push({
+      label: 'Created',
+      content: new Date(account.date_created).toLocaleString()
+    });
+  }
+  
+  // Define detail card actions
+  const detailActions = (
+    <>
+      <ActionButton
+        variant="outline"
+        onClick={() => onViewJson && onViewJson(account, `Account: ${account.name || account.account_id}`)}
+      >
+        View JSON
+      </ActionButton>
+      <ActionButton
+        variant="outline"
+        onClick={onRefresh}
+        icon={
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        }
+      >
+        Refresh
+      </ActionButton>
+      <ActionButton
+        variant="secondary"
+        onClick={onBack}
+      >
+        Back
+      </ActionButton>
+    </>
+  );
   
   return (
     <div>
-      {/* Account Header with back button */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <button 
-            onClick={onBack}
-            className="mr-3 text-gray-600 hover:text-gray-800"
-          >
-            ← Back to Accounts
-          </button>
-          <h2 className="text-xl font-semibold text-gray-800">
-            {account.name || `Account ${account.account_id || account.account_extra_id}`}
-          </h2>
-        </div>
-        <div className="flex space-x-2">
-          <button 
-            onClick={onRefresh}
-            className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-            title="Refresh data"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-          <button 
-            className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center"
-            onClick={() => onViewJson(account, `Account: ${account.name || 'Detail'}`)}
-          >
-            <span>View Full JSON</span>
-            <svg className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-            </svg>
-          </button>
-        </div>
-      </div>
-      
-      {/* Account Details Card */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm text-gray-500">ID</p>
-            <p className="text-gray-900">{account.account_id || account.account_extra_id || 'N/A'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Name</p>
-            <p className="text-gray-900">{account.name || 'N/A'}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Account Code</p>
-            <p className="text-gray-900">{getAccountCodeDisplay()}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Type</p>
-            <p className="text-gray-900">{getAccountType()}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Account Owner</p>
-            <p 
-              className={`${resolvedEntity?.entity_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-900'}`}
-              onClick={handleViewEntity}
-            >
-              {resolvedEntity?.name || 'N/A'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Ledgers Owned</p>
-            <p 
-              className={`${resolvedLedger?.ledger_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-900'}`}
-              onClick={handleViewLedger}
-            >
-              {resolvedLedger?.name || 'N/A'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Currency</p>
-            <p className="text-gray-900">
-              {resolvedLedger?.r_currency?.currency_code || account.currency_code || 'N/A'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Balance</p>
-            <p className={`text-gray-900 font-medium text-right ${account.balance < 0 ? 'text-red-600' : ''}`}>
-              {getDisplayBalance()}
-            </p>
-          </div>
-
-        </div>
-      </div>
-      
+      <DetailCard
+        title="Account Details"
+        subtitle={account.name}
+        sections={basicInfoSections}
+        actions={detailActions}
+      />
     </div>
   );
 };
