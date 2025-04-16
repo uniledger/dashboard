@@ -2,10 +2,10 @@ import React from 'react';
 
 /**
  * Reusable detail card component for showing entity, ledger, account, etc. details
- * Compact grid layout similar to the original ledger detail view
+ * Compact grid layout with title section and grid of properties
  * @param {Object} props - Component props
- * @param {string} props.title - Card title (only shown if subtitle not provided)
- * @param {string} props.subtitle - Card subtitle
+ * @param {string} props.title - Card title (model name)
+ * @param {string} props.subtitle - Card subtitle (instance name)
  * @param {Array} props.sections - Array of section objects with label and content
  * @param {React.ReactNode} props.actions - Optional action buttons to display
  * @returns {JSX.Element} - Rendered component
@@ -15,6 +15,7 @@ const DetailCard = ({ title, subtitle, sections, actions }) => {
   const basicSections = [];
   const tableSections = [];
   
+  // Remove any 'Name' fields from the basic sections since they're in the header
   sections.forEach((section) => {
     // Check if this section contains complex content like tables
     const hasTableContent = 
@@ -30,20 +31,35 @@ const DetailCard = ({ title, subtitle, sections, actions }) => {
          section.content.props.children.type === 'table')
       );
     
+    // Skip 'Name' fields as they're already in the header
+    const isNameField = 
+      section.label === 'Name' || 
+      section.label?.toLowerCase() === 'name' || 
+      section.label?.includes('Name');
+    
     if (hasTableContent) {
       tableSections.push(section);
-    } else {
+    } else if (!isNameField) { 
+      // Only add non-name fields to the basic sections
       basicSections.push(section);
     }
   });
   
   return (
     <div>
-      {/* Header section - only show actions, not the title (that's in page header) */}
-      <div className="flex justify-end mb-4">
-        {actions && (
-          <div className="flex space-x-3">{actions}</div>
-        )}
+      {/* Header section with title and actions */}
+      <div className="bg-white rounded-lg shadow overflow-hidden mb-6">
+        <div className="px-6 py-4 flex justify-between items-center">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+            {subtitle && (
+              <p className="mt-1 text-base text-gray-600">{subtitle}</p>
+            )}
+          </div>
+          {actions && (
+            <div className="flex space-x-3">{actions}</div>
+          )}
+        </div>
       </div>
       
       {/* Basic fields in compact grid */}
