@@ -1,11 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 /**
  * Component to display detailed information about a processed event
  */
 const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
-  if (!event) return null;
-
   // Helper function to format account information
   const formatAccount = (accountObj) => {
     if (!accountObj) return 'N/A';
@@ -17,14 +15,18 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
     return `${name} (ID: ${id}) - Balance: ${balance}`;
   };
 
-  // Extract the original event if available in metadata
-  const originalEvent = event.metadata && event.metadata.original_event_json 
-    ? event.metadata.original_event_json 
-    : event.original_event || null;
+  // Parse original event JSON if available
+  // We need to call useMemo before any conditional returns to follow React Hooks rules
+  const parsedOriginalEvent = useMemo(() => {
+    if (!event) return null;
     
-  // Try to parse the originalEvent if it's a string
-  const parsedOriginalEvent = React.useMemo(() => {
+    // Extract the original event if available in metadata
+    const originalEvent = event.metadata && event.metadata.original_event_json 
+      ? event.metadata.original_event_json 
+      : event.original_event || null;
+      
     if (!originalEvent) return null;
+    
     if (typeof originalEvent === 'string') {
       try {
         return JSON.parse(originalEvent);
@@ -34,7 +36,10 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
       }
     }
     return originalEvent;
-  }, [originalEvent]);
+  }, [event]);
+  
+  // Return null if no event is provided
+  if (!event) return null;
 
   return (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
