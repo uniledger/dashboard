@@ -17,6 +17,11 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
     return `${name} (ID: ${id}) - Balance: ${balance}`;
   };
 
+  // Extract the original event if available in metadata
+  const originalEvent = event.metadata && event.metadata.original_event_json 
+    ? event.metadata.original_event_json 
+    : event.original_event || null;
+
   return (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
       <div className="px-4 py-5 sm:px-6 flex justify-between items-center">
@@ -41,6 +46,17 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
           >
             View JSON
           </button>
+          {originalEvent && (
+            <button
+              onClick={() => onViewJson(
+                typeof originalEvent === 'string' ? JSON.parse(originalEvent) : originalEvent, 
+                `Original Event ${event.event_id}`
+              )}
+              className="px-4 py-2 border border-blue-300 bg-blue-50 rounded-md text-sm font-medium text-blue-700 hover:bg-blue-100"
+            >
+              View Event JSON
+            </button>
+          )}
         </div>
       </div>
       <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
@@ -85,6 +101,45 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
               ) : 'N/A'}
             </dd>
           </div>
+          
+          {/* Transfers Information */}
+          {event.transfers && event.transfers.length > 0 && (
+            <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt className="text-sm font-medium text-gray-500">Transfers</dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From Account</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To Account</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {event.transfers.map((transfer, index) => (
+                        <tr key={index}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {transfer.from_account?.name || transfer.from_account_id || 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {transfer.to_account?.name || transfer.to_account_id || 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {transfer.amount || 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {transfer.status || 'N/A'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </dd>
+            </div>
+          )}
           
           {/* Accounts Information */}
           <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -140,7 +195,7 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {Object.entries(event.metadata).map(([key, value], index) => (
+                      {Object.entries(event.metadata).filter(([key]) => key !== 'original_event_json').map(([key, value], index) => (
                         <tr key={index}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{key}</td>
                           <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">
