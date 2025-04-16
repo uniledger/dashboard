@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import useTransactions from '../../hooks/useTransactions';
+import useAccounts from '../../hooks/useAccounts';
 import TemplatesList from './TemplatesList';
 import TemplateDetail from './TemplateDetail';
 import EventForm from './EventForm';
+import apiService from '../../services/apiService';
 
 /**
  * Main Templates page component
@@ -19,7 +21,14 @@ const TemplatesPage = ({ onViewJson }) => {
     loading
   } = useTransactions();
 
+  const {
+    accounts,
+    fetchAccounts
+  } = useAccounts();
+
   const [view, setView] = useState('list'); // 'list', 'detail', or 'event-form'
+  const [ledgers, setLedgers] = useState([]);
+  const [loadingLedgers, setLoadingLedgers] = useState(false);
 
   // Update the view when selectedTemplate changes
   useEffect(() => {
@@ -29,6 +38,26 @@ const TemplatesPage = ({ onViewJson }) => {
       setView('list');
     }
   }, [selectedTemplate, view]);
+
+  // Fetch ledgers when needed
+  useEffect(() => {
+    if (view === 'event-form') {
+      fetchLedgers();
+      fetchAccounts();
+    }
+  }, [view, fetchAccounts]);
+
+  const fetchLedgers = async () => {
+    setLoadingLedgers(true);
+    try {
+      const data = await apiService.ledger.getLedgers();
+      setLedgers(data);
+    } catch (error) {
+      console.error('Error fetching ledgers:', error);
+    } finally {
+      setLoadingLedgers(false);
+    }
+  };
 
   const handleViewJson = (data, title) => {
     if (onViewJson) {
@@ -59,6 +88,8 @@ const TemplatesPage = ({ onViewJson }) => {
     return (
       <EventForm 
         template={selectedTemplate}
+        ledgers={ledgers}
+        accounts={accounts}
         onBack={handleBackToDetail}
         onViewJson={handleViewJson}
         onSubmitEvent={submitEvent}
