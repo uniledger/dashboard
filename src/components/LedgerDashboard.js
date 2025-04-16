@@ -11,7 +11,7 @@ import AccountsByTypeView from './dashboard/AccountsByTypeView';
 import CurrenciesList from './reference/CurrenciesList';
 import CountriesList from './reference/CountriesList';
 import AccountCodesList from './reference/AccountCodesList';
-import TemplatesView from './templates/TemplatesView';
+import TemplatesPage from './templates/TemplatesPage';  // Changed from TemplatesView to TemplatesPage
 import ProcessedEventsView from './processed-events/ProcessedEventsView';
 import RulesView from './rules/RulesView';
 import Sidebar from './shared/sidebar';
@@ -709,14 +709,8 @@ const LedgerDashboard = () => {
             
             {/* Templates Tab */}
             {activeTab === 'templates' && (
-              <TemplatesView 
-                ledgers={ledgersList || []}
-                accounts={accountsList || []}
+              <TemplatesPage 
                 onViewJson={handleViewJson}
-                onRefresh={() => {
-                  fetchLedgersList();
-                  fetchAccountsList();
-                }}
               />
             )}
             
