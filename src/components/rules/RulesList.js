@@ -11,7 +11,7 @@ const RulesList = ({ rules, onSelectRule, onViewJson, onRefresh }) => {
       key: 'rule_id',
       header: 'ID',
       cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
-      render: (rule) => `Rule ID: ${rule.rule_id}`
+      // Display the ID directly, consistent with other list views
     },
     {
       key: 'action',
