@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import PageHeader from '../shared/PageHeader';
 import { formatBalance, formatAccountCode } from '../../utils/formatters';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
@@ -100,13 +99,37 @@ const AccountList = ({ accounts, accountTypeFilter, onViewJson, onRefresh, onVie
 
   return (
     <div>
-      <PageHeader 
-        title={accountTypeFilter ? `${accountTypeFilter.charAt(0) + accountTypeFilter.slice(1).toLowerCase()} Accounts` : "Accounts Overview"} 
-        buttonText="+ New Account" 
-        onButtonClick={() => console.log('Create new account')}
-        refreshButton={true}
-        onRefresh={onRefresh}
-      />
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex space-x-4">
+          {accountTypeFilter && (
+            <button 
+              onClick={onClearFilter}
+              className="px-3 py-1 bg-white border border-blue-300 rounded-md text-blue-600 hover:bg-blue-50 text-sm flex items-center"
+            >
+              <span className="mr-1">Clear Filter</span>
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+          <button 
+            className="px-3 py-1 bg-white border border-gray-300 rounded-md text-gray-600 hover:bg-gray-50 text-sm"
+            onClick={() => console.log('Create new account')}
+          >
+            + New Account
+          </button>
+        </div>
+        <button
+          onClick={onRefresh}
+          className="px-3 py-1 rounded border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 flex items-center"
+        >
+          <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Refresh Data
+        </button>
+      </div>
       
       {/* Filter Banner */}
       {accountTypeFilter && (
@@ -115,12 +138,6 @@ const AccountList = ({ accounts, accountTypeFilter, onViewJson, onRefresh, onVie
             <p className="text-blue-700 font-medium">Filtered by account type: <span className="font-bold">{accountTypeFilter}</span></p>
             <p className="text-sm text-blue-600">Showing {accounts.length} {accountTypeFilter.toLowerCase()} accounts</p>
           </div>
-          <button 
-            onClick={onClearFilter}
-            className="px-3 py-1 bg-white border border-blue-300 rounded-md text-blue-600 hover:bg-blue-50 text-sm"
-          >
-            Clear Filter
-          </button>
         </div>
       )}
       
