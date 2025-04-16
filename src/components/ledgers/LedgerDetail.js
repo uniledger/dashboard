@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { DetailCard, ActionButton } from '../common';
 import { formatBalance, getCountryDisplay } from '../../utils/formatters';
 
 const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
 
 /**
  * Ledger Detail component to display a single ledger with its accounts
- * with proper nested data handling
+ * using the standard DetailCard component for consistency
  */
 const LedgerDetail = ({ 
   ledger,
@@ -16,7 +17,6 @@ const LedgerDetail = ({
   onViewEntity,
   onViewAccount
 }) => {
-  console.log('LedgerDetail mounted with ledger:', ledger?.ledger_id);
   // All hooks must be at the top level
   const [entity, setEntity] = useState(null);
   const [entities, setEntities] = useState([]);
@@ -72,117 +72,104 @@ const LedgerDetail = ({
     return account.account_code || 'N/A';
   };
   
-  // Helper function to find entity for an account with improved debugging
+  // Helper function to find entity for an account
   const getEntityForAccount = (account) => {
-    // Debug the input account structure
-    console.log("Account entity resolution:", {
-      account_name: account.name,
-      account_id: account.account_id,
-      entity_id: account.entity_id,
-      enriched_ledger_entity_id: account.enriched_ledger?.entity_id
-    });
-    
     // Get entity ID from account or its ledger
     const entityId = account.entity_id || 
       (account.enriched_ledger && account.enriched_ledger.entity_id) ||
       (account.entity && account.entity.entity_id);
     
     if (!entityId) {
-      console.log("No entity ID found for account:", account.name);
       return null;
     }
     
     // Find entity in our fetched list
     const foundEntity = entities.find(e => e.entity_id === entityId);
-    console.log("Entity lookup result:", foundEntity ? foundEntity.name : "Not found");
     return foundEntity;
   };
   
   // Get entity from ledger or from separate fetch
   const displayEntity = ledger.r_entity || entity;
   
+  // Define sections for the detail card
+  const detailSections = [
+    {
+      label: 'Ledger ID',
+      content: ledger.ledger_id
+    },
+    {
+      label: 'Name',
+      content: ledger.name
+    },
+    {
+      label: 'Ledger Owner',
+      content: displayEntity ? (
+        <button 
+          className="text-blue-600 hover:text-blue-800 hover:underline"
+          onClick={() => displayEntity && onViewEntity && onViewEntity(displayEntity.entity_id)}
+        >
+          {displayEntity.name}
+        </button>
+      ) : 'N/A'
+    },
+    {
+      label: 'Currency',
+      content: ledger.r_currency 
+        ? `${ledger.r_currency.currency_code} (${ledger.r_currency.type})` 
+        : 'N/A'
+    },
+    {
+      label: 'Country',
+      content: getCountryDisplay(ledger)
+    },
+    {
+      label: 'Description',
+      content: ledger.description || 'No description'
+    }
+  ];
+  
+  // Define actions for the detail card
+  const detailActions = (
+    <>
+      <ActionButton
+        variant="outline"
+        onClick={() => onViewJson(ledger, `Ledger: ${ledger.name}`)}
+      >
+        View JSON
+      </ActionButton>
+      <ActionButton
+        variant="outline"
+        onClick={onRefresh}
+        icon={
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        }
+      >
+        Refresh
+      </ActionButton>
+      <ActionButton
+        variant="secondary"
+        onClick={onBack}
+      >
+        Back
+      </ActionButton>
+    </>
+  );
+  
   return (
     <div>
-      {/* Ledger Header with back button */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <button 
-            onClick={() => {
-              console.log('Back to ledger list clicked');
-              onBack();
-            }}
-            className="mr-3 text-gray-600 hover:text-gray-800"
-          >
-            ← Back to Ledgers
-          </button>
-          <h2 className="text-xl font-semibold text-gray-800">
-            {ledger.name}
-          </h2>
-        </div>
-        <div className="flex space-x-2">
-          <button 
-            onClick={onRefresh}
-            className="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-            title="Refresh data"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-          <button 
-            className="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 flex items-center"
-            onClick={() => onViewJson(ledger, `Ledger: ${ledger.name}`)}
-          >
-            <span>View Full JSON</span>
-            <svg className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-            </svg>
-          </button>
-        </div>
-      </div>
-      
-      {/* Ledger Details Card */}
-      <div className="bg-white rounded-lg shadow p-4 mb-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm text-gray-500">ID</p>
-            <p className="text-gray-900">{ledger.ledger_id}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Name</p>
-            <p className="text-gray-900">{ledger.name}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Ledger Owner</p>
-            <p 
-              className={`${displayEntity ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-900'}`}
-              onClick={() => displayEntity && onViewEntity && onViewEntity(displayEntity.entity_id)}
-            >
-              {displayEntity?.name || 'N/A'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Currency</p>
-            <p className="text-gray-900">
-              {ledger.r_currency 
-                ? `${ledger.r_currency.currency_code} (${ledger.r_currency.type})` 
-                : 'N/A'}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Country</p>
-            <p className="text-gray-900">{getCountryDisplay(ledger)}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Description</p>
-            <p className="text-gray-900">{ledger.description || 'N/A'}</p>
-          </div>
-        </div>
-      </div>
+      {/* Ledger Details Card using standard DetailCard component */}
+      <DetailCard
+        title="Ledger Details"
+        subtitle={ledger.name}
+        sections={detailSections}
+        actions={detailActions}
+      />
       
       {/* Ledger's Accounts */}
-      <h3 className="text-lg font-medium text-gray-900 mb-2">Accounts in this Ledger</h3>
+      <h3 className="text-lg font-medium text-gray-900 mt-6 mb-2">Accounts in this Ledger</h3>
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -217,8 +204,6 @@ const LedgerDetail = ({
               })
               .map(account => {
               const accountEntity = getEntityForAccount(account);
-              // Debug the entity ID
-              console.log("Account:", account.name, "Entity ID:", account.entity_id, "Entity from lookup:", accountEntity);
               const accountEntityId = accountEntity?.entity_id || account.entity_id || (account.enriched_ledger && account.enriched_ledger.entity_id);
               const balance = account.balance / Math.pow(10, ledger.r_currency?.scale || 2);
               const isNegative = balance < 0;
@@ -245,7 +230,6 @@ const LedgerDetail = ({
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent other click handlers from firing
                       if (accountEntityId && onViewEntity) {
-                        console.log("Clicking entity owner:", accountEntityId);
                         onViewEntity(accountEntityId);
                       }
                     }}
