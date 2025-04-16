@@ -116,18 +116,22 @@ const AccountList = ({ accounts, accountTypeFilter, onViewJson, onRefresh, onVie
       header: 'Account Owner',
       render: (account) => {
         const entity = getEntityForAccount(account);
-        const entityId = entity?.entity_id || account.entity_id || (account.enriched_ledger && account.enriched_ledger.entity_id) || (account.entity && account.entity.entity_id);
-        
-        return {
-          value: entity ? entity.name : (account.entity ? account.entity.name : 'N/A'),
-          entityId,
-          className: entityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500'
-        };
+        return entity ? entity.name : (account.entity ? account.entity.name : 'N/A');
       },
-      cellClassName: (item, rendered) => rendered.className || 'text-gray-500',
-      onClick: (item, rendered) => {
-        if (rendered.entityId && onViewEntity) {
-          onViewEntity(rendered.entityId);
+      cellClassName: (account) => {
+        const entityId = getEntityForAccount(account)?.entity_id || 
+                         account.entity_id || 
+                         (account.enriched_ledger && account.enriched_ledger.entity_id) || 
+                         (account.entity && account.entity.entity_id);
+        return entityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
+      },
+      onClick: (account) => {
+        const entityId = getEntityForAccount(account)?.entity_id || 
+                         account.entity_id || 
+                         (account.enriched_ledger && account.enriched_ledger.entity_id) || 
+                         (account.entity && account.entity.entity_id);
+        if (entityId && onViewEntity) {
+          onViewEntity(entityId);
           return true; // Prevent other click handlers
         }
         return false;
@@ -139,18 +143,20 @@ const AccountList = ({ accounts, accountTypeFilter, onViewJson, onRefresh, onVie
       header: 'Ledger',
       render: (account) => {
         const ledger = getLedgerForAccount(account);
-        const ledgerId = ledger?.ledger_id || account.ledger_id || (account.enriched_ledger && account.enriched_ledger.ledger_id);
-        
-        return {
-          value: ledger ? ledger.name : (account.enriched_ledger?.name || account.ledger?.name || account.ledger_name || 'N/A'),
-          ledgerId,
-          className: ledgerId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500'
-        };
+        return ledger ? ledger.name : (account.enriched_ledger?.name || account.ledger?.name || account.ledger_name || 'N/A');
       },
-      cellClassName: (item, rendered) => rendered.className || 'text-gray-500',
-      onClick: (item, rendered) => {
-        if (rendered.ledgerId && onViewLedger) {
-          onViewLedger(rendered.ledgerId);
+      cellClassName: (account) => {
+        const ledgerId = getLedgerForAccount(account)?.ledger_id || 
+                         account.ledger_id || 
+                         (account.enriched_ledger && account.enriched_ledger.ledger_id);
+        return ledgerId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
+      },
+      onClick: (account) => {
+        const ledgerId = getLedgerForAccount(account)?.ledger_id || 
+                         account.ledger_id || 
+                         (account.enriched_ledger && account.enriched_ledger.ledger_id);
+        if (ledgerId && onViewLedger) {
+          onViewLedger(ledgerId);
           return true; // Prevent other click handlers
         }
         return false;
