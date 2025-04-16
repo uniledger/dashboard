@@ -49,7 +49,7 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
   return (
     <div>
       <PageHeader 
-        title="Account Codes" 
+        title="Reference Data" 
         refreshButton={true}
         onRefresh={handleRefresh}
       />
