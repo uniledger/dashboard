@@ -73,7 +73,7 @@ const Sidebar = ({ activeTab, onTabChange, collapsed, setCollapsed }) => {
   );
 
   return (
-    <div className={`bg-white border-r border-gray-200 transition-all duration-300 flex flex-col h-full ${collapsed ? 'w-16' : 'w-64'}`}>
+    <div className={`bg-white border-r border-gray-200 transition-all duration-300 flex flex-col h-full ${collapsed ? 'w-14' : 'w-56'}`}>
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 bg-gray-50">
         {!collapsed && (
           <div className="text-xl font-bold text-gray-900 flex items-center">
