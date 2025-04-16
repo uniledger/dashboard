@@ -91,6 +91,10 @@ const AccountDetail = ({
       content: account.account_id || account.account_extra_id || 'N/A'
     },
     {
+      label: 'Name',
+      content: account.name
+    },
+    {
       label: 'Account Type',
       content: getAccountType(account)
     },
@@ -178,8 +182,8 @@ const AccountDetail = ({
   return (
     <div>
       <DetailCard
-        title="Account Details"
-        subtitle={account.name}
+        title={null}
+        subtitle={null}
         sections={basicInfoSections}
         actions={detailActions}
       />

@@ -47,6 +47,10 @@ const TemplateDetail = ({ template, onBack, onViewJson, onUseTemplate }) => {
       content: template.template_id
     },
     {
+      label: formatFieldName('name'),
+      content: template.name
+    },
+    {
       label: formatFieldName('description'),
       content: template.description
     },
@@ -154,8 +158,8 @@ const TemplateDetail = ({ template, onBack, onViewJson, onUseTemplate }) => {
 
   return (
     <DetailCard
-      title="Template Details"
-      subtitle={template.name}
+      title={null}
+      subtitle={null}
       sections={basicSections}
       actions={detailActions}
     />

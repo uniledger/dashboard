@@ -160,10 +160,10 @@ const LedgerDetail = ({
   
   return (
     <div>
-      {/* Ledger Details Card using standard DetailCard component */}
+      {/* Ledger Details Card using standard DetailCard component - no title/subtitle */}
       <DetailCard
-        title="Ledger Details"
-        subtitle={ledger.name}
+        title={null}
+        subtitle={null}
         sections={detailSections}
         actions={detailActions}
       />
