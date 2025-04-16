@@ -28,6 +28,13 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh, onViewEntit
     fetchEntities();
   }, []);
   
+  // Helper function to find entity for a ledger
+  const getEntityForLedger = (ledger) => {
+    // Find the associated entity
+    const entity = entities.find(e => e.entity_id === ledger.entity_id) || ledger.r_entity;
+    return entity;
+  };
+
   // Define columns for the DataTable
   const columns = [
     {
@@ -44,20 +51,17 @@ const LedgerList = ({ ledgers, onViewDetails, onViewJson, onRefresh, onViewEntit
       key: 'entity',
       header: 'Ledger Owner',
       render: (ledger) => {
-        // Find the associated entity
-        const entity = entities.find(e => e.entity_id === ledger.entity_id) || ledger.r_entity;
-        const entityId = entity?.entity_id || ledger.entity_id;
-        
-        return {
-          value: entity?.name || 'N/A',
-          entityId,
-          className: entityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500'
-        };
+        const entity = getEntityForLedger(ledger);
+        return entity?.name || 'N/A';
       },
-      cellClassName: (item, rendered) => rendered.className || 'text-gray-500',
-      onClick: (item, rendered) => {
-        if (rendered.entityId && onViewEntity) {
-          onViewEntity(rendered.entityId);
+      cellClassName: (ledger) => {
+        const entityId = getEntityForLedger(ledger)?.entity_id || ledger.entity_id;
+        return entityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
+      },
+      onClick: (ledger) => {
+        const entityId = getEntityForLedger(ledger)?.entity_id || ledger.entity_id;
+        if (entityId && onViewEntity) {
+          onViewEntity(entityId);
           return true; // Prevent other click handlers
         }
         return false;
