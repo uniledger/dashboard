@@ -48,29 +48,29 @@ const TemplateDetail = ({ template, onBack, onViewJson, onUseTemplate }) => {
       </div>
       <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
         <dl className="sm:divide-y sm:divide-gray-200">
-          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">{formatFieldName('template_id')}</dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{template.template_id}</dd>
+          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
+            <dt className="text-sm font-medium text-gray-500 col-span-1">{formatFieldName('template_id')}</dt>
+            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-3">{template.template_id}</dd>
           </div>
-          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">{formatFieldName('description')}</dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{template.description}</dd>
+          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
+            <dt className="text-sm font-medium text-gray-500 col-span-1">{formatFieldName('description')}</dt>
+            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-3">{template.description}</dd>
           </div>
-          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">{formatFieldName('product_type')}</dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{template.product}</dd>
+          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
+            <dt className="text-sm font-medium text-gray-500 col-span-1">{formatFieldName('product_type')}</dt>
+            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-3">{template.product}</dd>
           </div>
-          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">{formatFieldName('created')}</dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
+            <dt className="text-sm font-medium text-gray-500 col-span-1">{formatFieldName('created')}</dt>
+            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-3">
               {new Date(template.created_date * 1000).toLocaleString()} by {template.created_by}
             </dd>
           </div>
           
           {/* Variables */}
-          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">{formatFieldName('variables')}</dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
+            <dt className="text-sm font-medium text-gray-500 col-span-1">{formatFieldName('variables')}</dt>
+            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-3">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
@@ -98,9 +98,9 @@ const TemplateDetail = ({ template, onBack, onViewJson, onUseTemplate }) => {
           </div>
           
           {/* Validations */}
-          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">{formatFieldName('validations')}</dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
+            <dt className="text-sm font-medium text-gray-500 col-span-1">{formatFieldName('validations')}</dt>
+            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-3">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
@@ -130,9 +130,9 @@ const TemplateDetail = ({ template, onBack, onViewJson, onUseTemplate }) => {
           </div>
           
           {/* Template Legs */}
-          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt className="text-sm font-medium text-gray-500">{formatFieldName('template_legs')}</dt>
-            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+          <div className="py-4 sm:py-5 sm:grid sm:grid-cols-4 sm:gap-4 sm:px-6">
+            <dt className="text-sm font-medium text-gray-500 col-span-1">{formatFieldName('template_legs')}</dt>
+            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-3">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
