@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatBalance, formatAccountCode, getAccountType } from '../../../utils/formatters';
+import { formatBalance, formatAccountCode, getAccountType } from '../../../utils/formatters/index';
 
 /**
  * Reusable accounts table component for displaying a list of accounts

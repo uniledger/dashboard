@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../shared/PageHeader';
-import { formatBalance } from '../../utils/formatters';
+import { formatBalance } from '../../utils/formatters/index';
 import useDashboardData from '../../hooks/useDashboardData';
 
 /**
@@ -46,6 +46,9 @@ const DashboardView = () => {
     let revenue = 0;
     let expenses = 0;
     
+    // Default currency scale (2 for GBP/USD, etc.)
+    const currencyScale = 2;
+    
     accounts.forEach(account => {
       // Get account type (normalize to uppercase)
       let accountType = 'OTHER';
@@ -58,26 +61,41 @@ const DashboardView = () => {
         accountType = account.account_code.type.toUpperCase();
       }
       
-      // Normalize balance (if in cents)
-      const balance = account.balance || 0;
-      let normalizedBalance = balance;
+      // Get the account's raw balance
+      const rawBalance = account.balance || 0;
+      
+      // Determine currency scale for this account
+      let scale = currencyScale;
+      if (account.r_currency && typeof account.r_currency.scale === 'number') {
+        scale = account.r_currency.scale;
+      } else if (account.currency && typeof account.currency.scale === 'number') {
+        scale = account.currency.scale;
+      } else if (account.ledger && account.ledger.r_currency && typeof account.ledger.r_currency.scale === 'number') {
+        scale = account.ledger.r_currency.scale;
+      } else if (account.enriched_ledger && account.enriched_ledger.r_currency && 
+                typeof account.enriched_ledger.r_currency.scale === 'number') {
+        scale = account.enriched_ledger.r_currency.scale;
+      }
+      
+      // Convert raw integer balance to decimal value
+      const decimalBalance = rawBalance / Math.pow(10, scale);
       
       // Update financial statement data
       switch (accountType) {
         case 'ASSET':
-          assets += normalizedBalance;
+          assets += decimalBalance;
           break;
         case 'LIABILITY':
-          liabilities += normalizedBalance;
+          liabilities += decimalBalance;
           break;
         case 'EQUITY':
-          equity += normalizedBalance;
+          equity += decimalBalance;
           break;
         case 'REVENUE':
-          revenue += normalizedBalance;
+          revenue += decimalBalance;
           break;
         case 'EXPENSE':
-          expenses += normalizedBalance;
+          expenses += decimalBalance;
           break;
         default:
           // Other account types
@@ -88,7 +106,8 @@ const DashboardView = () => {
     // Calculate net income
     const netIncome = revenue - expenses;
     
-    // Update balance sheet data (include net income in equity)
+    // Values are already in decimal form, convert to thousands for display
+    // For example, if assets = 1,000,000.00, we want to show 1,000 (thousands)
     setBalanceSheetData({
       assets: assets / 1000,
       liabilities: liabilities / 1000,
@@ -96,7 +115,7 @@ const DashboardView = () => {
       retainedEarnings: netIncome / 1000  // Include net income as retained earnings
     });
     
-    // Update income statement data
+    // Update income statement data (also in thousands)
     setIncomeStatementData({
       revenue: revenue / 1000,
       expenses: expenses / 1000,
@@ -117,6 +136,9 @@ const DashboardView = () => {
     let totalRevenue = 0;
     let netIncome = 0;
     
+    // Default currency scale (2 for GBP/USD, etc.)
+    const currencyScale = 2;
+    
     // We're making simplified assumptions here for demo purposes:
     // - All assets are considered current assets
     // - All liabilities are considered current liabilities
@@ -133,24 +155,40 @@ const DashboardView = () => {
         accountType = account.account_code.type.toUpperCase();
       }
       
-      // Normalize balance
-      const balance = account.balance || 0;
+      // Get the account's raw balance
+      const rawBalance = account.balance || 0;
+      
+      // Determine currency scale for this account
+      let scale = currencyScale;
+      if (account.r_currency && typeof account.r_currency.scale === 'number') {
+        scale = account.r_currency.scale;
+      } else if (account.currency && typeof account.currency.scale === 'number') {
+        scale = account.currency.scale;
+      } else if (account.ledger && account.ledger.r_currency && typeof account.ledger.r_currency.scale === 'number') {
+        scale = account.ledger.r_currency.scale;
+      } else if (account.enriched_ledger && account.enriched_ledger.r_currency && 
+                typeof account.enriched_ledger.r_currency.scale === 'number') {
+        scale = account.enriched_ledger.r_currency.scale;
+      }
+      
+      // Convert raw integer balance to decimal value
+      const decimalBalance = rawBalance / Math.pow(10, scale);
       
       // Update ratio-specific values
       switch (accountType) {
         case 'ASSET':
-          currentAssets += balance;
+          currentAssets += decimalBalance;
           break;
         case 'LIABILITY':
-          currentLiabilities += balance;
-          totalLiabilities += balance;
+          currentLiabilities += decimalBalance;
+          totalLiabilities += decimalBalance;
           break;
         case 'EQUITY':
-          totalEquity += balance;
+          totalEquity += decimalBalance;
           break;
         case 'REVENUE':
-          totalRevenue += balance;
-          grossProfit += balance;
+          totalRevenue += decimalBalance;
+          grossProfit += decimalBalance;
           break;
         case 'EXPENSE':
           // Expenses reduce profit
@@ -160,8 +198,8 @@ const DashboardView = () => {
       }
     });
     
-    // Calculate net income
-    netIncome = totalRevenue - (accounts
+    // Calculate net income from expense accounts
+    const totalExpenses = accounts
       .filter(a => {
         const type = a.account_type || 
                     (a.account_code && a.account_code.type) || 
@@ -169,7 +207,25 @@ const DashboardView = () => {
                     '';
         return type.toUpperCase() === 'EXPENSE';
       })
-      .reduce((sum, a) => sum + (a.balance || 0), 0));
+      .reduce((sum, a) => {
+        // Get currency scale
+        let scale = currencyScale;
+        if (a.r_currency && typeof a.r_currency.scale === 'number') {
+          scale = a.r_currency.scale;
+        } else if (a.currency && typeof a.currency.scale === 'number') {
+          scale = a.currency.scale;
+        } else if (a.ledger && a.ledger.r_currency && typeof a.ledger.r_currency.scale === 'number') {
+          scale = a.ledger.r_currency.scale;
+        } else if (a.enriched_ledger && a.enriched_ledger.r_currency && 
+                  typeof a.enriched_ledger.r_currency.scale === 'number') {
+          scale = a.enriched_ledger.r_currency.scale;
+        }
+        
+        // Convert to decimal and add to sum
+        return sum + ((a.balance || 0) / Math.pow(10, scale));
+      }, 0);
+    
+    netIncome = totalRevenue - totalExpenses;
     
     // Calculate the ratios
     const calculatedRatios = {

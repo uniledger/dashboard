@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GenericDetailView, DataTableSection, EntityConfig } from '../common';
-import { getCountryDisplay, formatAccountCode, formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters';
+import { getCountryDisplay, formatAccountCode, formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
 import useEntities from '../../hooks/useEntities';
 import { useDashboard } from '../../context/DashboardContext';
 
