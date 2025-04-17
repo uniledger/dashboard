@@ -1,5 +1,6 @@
 Directory Structure:
 .
+├── CLAUDE.md
 ├── consolidated_code.txt
 ├── gather_code.sh
 ├── IMPROVEMENTS.md
@@ -14,9 +15,8 @@ Directory Structure:
 │   ├── logo512.png
 │   ├── manifest.json
 │   └── robots.txt
-├── README.ARCHITECTURE.md
 ├── README.md
-├── REFACTORING.md
+├── REFACTORING_GUIDE.md
 ├── remove-unused-files.txt
 ├── src
 │   ├── App.css
@@ -50,7 +50,8 @@ Directory Structure:
 │   │   │   ├── DashboardView.js
 │   │   │   └── layout
 │   │   │       ├── DashboardFooter.js
-│   │   │       └── DashboardHeader.js
+│   │   │       ├── DashboardHeader.js
+│   │   │       └── DashboardLayout.js
 │   │   ├── entities
 │   │   │   ├── EntityDetail.js
 │   │   │   └── EntityList.js
@@ -117,7 +118,7 @@ Directory Structure:
 │       └── useInterval.js
 └── tailwind.config.js
 
-27 directories, 90 files
+27 directories, 91 files
 
 File: ./package.json
 --------------------
@@ -132,6 +133,7 @@ File: ./package.json
     "axios": "^1.3.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^7.5.0",
     "react-scripts": "5.0.1",
     "recharts": "^2.4.3",
     "uuid": "^9.0.0",
@@ -162,11 +164,12 @@ File: ./package.json
     ]
   },
   "devDependencies": {
-    "tailwindcss": "^3.2.7",
     "autoprefixer": "^10.4.13",
-    "postcss": "^8.4.21"
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.2.7"
   }
 }
+
 File: ./postcss.config.js
 --------------------
 module.exports = {
@@ -1006,14 +1009,6 @@ const DashboardContext = createContext(null);
  * Manages shared state across dashboard components
  */
 export const DashboardProvider = ({ children }) => {
-  // Tab state
-  const [activeTab, setActiveTab] = useState('dashboard');
-  
-  // Item selection state
-  const [selectedEntityId, setSelectedEntityId] = useState(null);
-  const [selectedLedgerId, setSelectedLedgerId] = useState(null);
-  const [selectedAccountId, setSelectedAccountId] = useState(null);
-  
   // Filter state
   const [accountsFilter, setAccountsFilter] = useState({
     active: false,
@@ -1034,70 +1029,8 @@ export const DashboardProvider = ({ children }) => {
   // Global error state
   const [error, setError] = useState(null);
   
-  // UI state
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  
-  // Handle tab change
-  const handleTabChange = (tab) => {
-    console.log('Tab changed to:', tab);
-    setActiveTab(tab);
-    
-    // Reset detail selections
-    setSelectedEntityId(null);
-    setSelectedLedgerId(null);
-    setSelectedAccountId(null);
-    
-    // Reset accounts filter
-    setAccountsFilter({
-      active: false,
-      type: ''
-    });
-  };
-  
-  // Handle entity selection
-  const handleEntitySelection = (entityId) => {
-    console.log('Entity selected:', entityId);
-    // Set active tab to 'entities' to ensure we're in the right view
-    setActiveTab('entities');
-    // Reset other selections
-    setSelectedLedgerId(null);
-    setSelectedAccountId(null);
-    // Set the selected entity
-    setSelectedEntityId(entityId);
-  };
-
-  // Handle ledger selection
-  const handleLedgerSelection = (ledgerId) => {
-    console.log('Ledger selected:', ledgerId);
-    // Set active tab to 'ledgers' to ensure we're in the right view
-    setActiveTab('ledgers');
-    // Reset other selections
-    setSelectedEntityId(null);
-    setSelectedAccountId(null);
-    // Set the selected ledger
-    setSelectedLedgerId(ledgerId);
-  };
-  
-  // Handle account selection
-  const handleAccountSelection = (accountId) => {
-    // Set active tab to 'accounts' to ensure we're in the right view
-    setActiveTab('accounts');
-    // Reset other selections
-    setSelectedEntityId(null);
-    setSelectedLedgerId(null);
-    // Set the selected account
-    setSelectedAccountId(accountId);
-  };
-  
-  // Handle drilling down to accounts by type
-  const handleDrillToAccounts = (accountType) => {
-    // Set the filter and change tab
-    setAccountsFilter({
-      active: true,
-      type: accountType
-    });
-    setActiveTab('accounts');
-  };
+  // We no longer need this function since React Router handles navigation directly
+  // and the filter is set based on URL parameters
 
   // Handle opening the detail modal
   const handleViewJson = (data, title) => {
@@ -1117,38 +1050,32 @@ export const DashboardProvider = ({ children }) => {
     });
   };
   
+  // Clear account filter
+  const clearFilter = () => {
+    setAccountsFilter({
+      active: false,
+      type: ''
+    });
+  };
+  
   // Context value
   const value = {
     // State
-    activeTab,
-    selectedEntityId,
-    selectedLedgerId,
-    selectedAccountId,
     accountsFilter,
     autoRefreshEnabled,
     refreshInterval,
     detailModal,
     error,
-    sidebarCollapsed,
     
     // Actions
-    setActiveTab,
-    setSelectedEntityId,
-    setSelectedLedgerId,
-    setSelectedAccountId,
     setAccountsFilter,
     setAutoRefreshEnabled,
     setRefreshInterval,
     setDetailModal,
     setError,
-    setSidebarCollapsed,
+    clearFilter,
     
     // Handlers
-    handleTabChange,
-    handleEntitySelection,
-    handleLedgerSelection,
-    handleAccountSelection,
-    handleDrillToAccounts,
     handleViewJson,
     handleCloseModal
   };
@@ -2631,20 +2558,40 @@ function useInterval(callback, delay) {
 export default useInterval;
 File: ./src/components/accounts/AccountDetail.js
 --------------------
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GenericDetailView, AccountConfig } from '../common';
+import useAccounts from '../../hooks/useAccounts';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * Account Detail component using GenericDetailView
  */
-const AccountDetail = ({ 
-  account, 
-  onViewJson, 
-  onBack, 
-  onRefresh, 
-  onViewEntity, 
-  onViewLedger 
-}) => {
+const AccountDetail = () => { 
+  const { accountId } = useParams();
+  const navigate = useNavigate();
+  const { handleViewJson } = useDashboard();
+  const { selectedAccount: account, loading, selectAccount } = useAccounts();
+  
+  // Fetch account data when component mounts or accountId changes
+  useEffect(() => {
+    if (accountId) {
+      selectAccount(accountId);
+    }
+  }, [accountId, selectAccount]);
+  
+  if (!account) return null;
+  
+  // Handle navigation back to accounts list
+  const handleBack = () => {
+    navigate('/accounts');
+  };
+  
+  // Handle refresh
+  const handleRefresh = () => {
+    selectAccount(accountId);
+  };
+  
   // Extract entity and ledger information
   const entity = account?.entity || account?.enriched_entity || 
     (account?.enriched_ledger && account?.enriched_ledger.entity);
@@ -2655,24 +2602,24 @@ const AccountDetail = ({
   const entitySection = entity ? {
     label: 'Entity',
     content: (
-      <button 
+      <Link 
+        to={`/entities/${entity.entity_id}`} 
         className="text-blue-600 hover:text-blue-800 hover:underline"
-        onClick={() => entity.entity_id && onViewEntity && onViewEntity(entity.entity_id)}
       >
         {entity.name || entity.entity_id}
-      </button>
+      </Link>
     )
   } : null;
   
   const ledgerSection = ledger ? {
     label: 'Ledger',
     content: (
-      <button 
+      <Link 
+        to={`/ledgers/${ledger.ledger_id}`} 
         className="text-blue-600 hover:text-blue-800 hover:underline"
-        onClick={() => ledger.ledger_id && onViewLedger && onViewLedger(ledger.ledger_id)}
       >
         {ledger.name || ledger.ledger_id}
-      </button>
+      </Link>
     )
   } : null;
 
@@ -2706,9 +2653,10 @@ const AccountDetail = ({
       title={AccountConfig.title + " Detail"}
       subtitle={account?.name}
       sections={sections}
-      onBack={onBack}
-      onRefresh={onRefresh}
-      onViewJson={onViewJson}
+      onBack={handleBack}
+      onRefresh={handleRefresh}
+      onViewJson={handleViewJson}
+      loading={loading}
       loadingMessage="Loading account details..."
     />
   );
@@ -2718,26 +2666,49 @@ export default AccountDetail;
 File: ./src/components/accounts/AccountList.js
 --------------------
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GenericListView, AccountConfig, FilterBadge } from '../common';
 import { formatBalance, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters';
 import apiService from '../../services/apiService';
+import useAccounts from '../../hooks/useAccounts';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * Account List component using GenericListView
  */
-const AccountList = ({ 
-  accounts, 
-  accountTypeFilter, 
-  onViewJson, 
-  onRefresh, 
-  onViewEntity, 
-  onViewLedger, 
-  onViewAccount, 
-  onClearFilter 
-}) => {
+const AccountList = () => {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const accountTypeFilter = searchParams.get('type');
+  
+  const { handleViewJson, accountsFilter, setAccountsFilter, clearFilter } = useDashboard();
+  const { accounts, loading: accountsLoading, fetchAccounts, refreshAccountBalances } = useAccounts();
+  
   const [entities, setEntities] = useState([]);
   const [ledgers, setLedgers] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Apply filter based on URL query param if present
+  useEffect(() => {
+    if (accountTypeFilter) {
+      // If URL has a filter, sync it to context
+      setAccountsFilter({
+        active: true,
+        type: accountTypeFilter
+      });
+    } else {
+      // If URL has no filter, clear the context filter
+      setAccountsFilter({
+        active: false,
+        type: ''
+      });
+    }
+  }, [accountTypeFilter, setAccountsFilter]);
+
+  // Fetch accounts when component mounts
+  useEffect(() => {
+    fetchAccounts();
+  }, [fetchAccounts]);
 
   // Fetch entity and ledger data for display and drilldown
   useEffect(() => {
@@ -2793,6 +2764,35 @@ const AccountList = ({
       account.currency_code || 
       'N/A';
   };
+  
+  // Navigate to entity detail view
+  const handleViewEntity = (entityId) => {
+    navigate(`/entities/${entityId}`);
+  };
+  
+  // Navigate to ledger detail view
+  const handleViewLedger = (ledgerId) => {
+    navigate(`/ledgers/${ledgerId}`);
+  };
+  
+  // Navigate to account detail view
+  const handleViewAccount = (account) => {
+    const accountId = typeof account === 'object' 
+      ? (account.account_id || account.account_extra_id) 
+      : account;
+    navigate(`/accounts/${accountId}`);
+  };
+  
+  // Handle clearing the filter
+  const handleClearFilter = () => {
+    // Clear the URL parameters first
+    setSearchParams({});
+    // Then clear the context filter
+    setAccountsFilter({
+      active: false,
+      type: ''
+    });
+  };
 
   // Define columns for the DataTable - start with the base AccountConfig columns
   const columns = [...AccountConfig.listColumns];
@@ -2817,8 +2817,8 @@ const AccountList = ({
                        account.entity_id || 
                        (account.enriched_ledger && account.enriched_ledger.entity_id) || 
                        (account.entity && account.entity.entity_id);
-      if (entityId && onViewEntity) {
-        onViewEntity(entityId);
+      if (entityId) {
+        handleViewEntity(entityId);
         return true; // Prevent other click handlers
       }
       return false;
@@ -2844,8 +2844,8 @@ const AccountList = ({
       const ledgerId = getLedgerForAccount(account)?.ledger_id || 
                        account.ledger_id || 
                        (account.enriched_ledger && account.enriched_ledger.ledger_id);
-      if (ledgerId && onViewLedger) {
-        onViewLedger(ledgerId);
+      if (ledgerId) {
+        handleViewLedger(ledgerId);
         return true; // Prevent other click handlers
       }
       return false;
@@ -2873,6 +2873,15 @@ const AccountList = ({
     };
   }
 
+  // Get filtered accounts based on URL query parameter
+  const filteredAccounts = accountTypeFilter 
+    ? accounts.filter(account => 
+        account.account_type === accountTypeFilter || 
+        (account.account_code && account.account_code.type === accountTypeFilter))
+    : accounts;
+
+  // We don't need custom header anymore, we'll use the standard filter badge
+
   // Create filter object for GenericListView if filtering by account type
   const filter = accountTypeFilter ? {
     field: 'account_type',
@@ -2880,33 +2889,20 @@ const AccountList = ({
     label: 'Account Type'
   } : null;
 
-  // Custom header component with filter badge if filtering is active
-  const customHeader = accountTypeFilter ? (
-    <div className="mb-4">
-      <FilterBadge
-        label={`Account Type: ${accountTypeFilter}`}
-        onClear={onClearFilter}
-        count={accounts.length}
-        entityName="account"
-      />
-    </div>
-  ) : null;
-
   return (
     <GenericListView
-      data={accounts}
+      data={filteredAccounts}
       columns={columns}
       title="Accounts"
       idField="account_id"
-      loading={loading}
-      onItemClick={(item) => onViewAccount ? onViewAccount(item) : null}
-      onViewJson={onViewJson}
-      onRefresh={onRefresh}
+      loading={loading || accountsLoading}
+      onItemClick={handleViewAccount}
+      onViewJson={handleViewJson}
+      onRefresh={refreshAccountBalances}
       filter={filter}
-      onClearFilter={onClearFilter}
+      onClearFilter={handleClearFilter}
       searchPlaceholder="Search accounts..."
       emptyMessage="No accounts found"
-      customHeader={customHeader}
     />
   );
 };
@@ -3075,49 +3071,16 @@ File: ./src/components/LedgerDashboard.js
 --------------------
 import React from 'react';
 import { DashboardProvider } from '../context/DashboardContext';
-import Sidebar from './shared/sidebar';
 import DashboardRouter from './dashboard/DashboardRouter';
-import DashboardHeader from './dashboard/layout/DashboardHeader';
-import DashboardFooter from './dashboard/layout/DashboardFooter';
-import { useDashboard } from '../context/DashboardContext';
-
-/**
- * Dashboard layout component that provides the overall structure
- * with sidebar, header, content area, and footer
- */
-const DashboardLayout = ({ children }) => {
-  const { activeTab, sidebarCollapsed, setSidebarCollapsed, handleTabChange } = useDashboard();
-  
-  return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar Navigation */}
-      <Sidebar 
-        activeTab={activeTab} 
-        onTabChange={handleTabChange} 
-        collapsed={sidebarCollapsed} 
-        setCollapsed={setSidebarCollapsed}
-      />
-      
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader />
-        {children}
-        <DashboardFooter />
-      </div>
-    </div>
-  );
-};
 
 /**
  * Main dashboard component that manages navigation and data flow
- * Provides context via DashboardProvider
+ * The actual layout is now handled by DashboardRouter and DashboardLayout
  */
 const LedgerDashboard = () => {
   return (
     <DashboardProvider>
-      <DashboardLayout>
-        <DashboardRouter />
-      </DashboardLayout>
+      <DashboardRouter />
     </DashboardProvider>
   );
 };
@@ -4404,6 +4367,7 @@ export default PageHeader;
 File: ./src/components/shared/sidebar/Sidebar.js
 --------------------
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 
 // Using unicode emojis instead of icon libraries to avoid dependencies
 const icons = {
@@ -4425,26 +4389,26 @@ const icons = {
 /**
  * Sidebar navigation component
  */
-const Sidebar = ({ activeTab, onTabChange, collapsed, setCollapsed }) => {
+const Sidebar = ({ collapsed, setCollapsed }) => {
   // Define navigation items with icons and categories
   const mainTabs = [
-    { id: 'dashboard', name: 'Balance Sheet', icon: 'BarChart2' },
-    { id: 'ledgers', name: 'Ledgers', icon: 'Book' },
-    { id: 'accounts', name: 'Accounts', icon: 'Briefcase' },
-    { id: 'entities', name: 'Entities', icon: 'Users' },
+    { id: 'dashboard', path: '/dashboard', name: 'Balance Sheet', icon: 'BarChart2' },
+    { id: 'ledgers', path: '/ledgers', name: 'Ledgers', icon: 'Book' },
+    { id: 'accounts', path: '/accounts', name: 'Accounts', icon: 'Briefcase' },
+    { id: 'entities', path: '/entities', name: 'Entities', icon: 'Users' },
   ];
 
   const referenceTabs = [
-    { id: 'currencies', name: 'Currencies', icon: 'DollarSign' },
-    { id: 'countries', name: 'Countries', icon: 'Globe' },
-    { id: 'account-codes', name: 'Account Codes', icon: 'Tag' },
+    { id: 'currencies', path: '/currencies', name: 'Currencies', icon: 'DollarSign' },
+    { id: 'countries', path: '/countries', name: 'Countries', icon: 'Globe' },
+    { id: 'account-codes', path: '/account-codes', name: 'Account Codes', icon: 'Tag' },
   ];
 
   const transactionTabs = [
-    { id: 'templates', name: 'Templates', icon: 'FileText' },
-    { id: 'event-entry', name: 'Event Entry', icon: 'PlusCircle' }, // New menu item
-    { id: 'processed-events', name: 'Processed Events', icon: 'CheckSquare' },
-    { id: 'rules', name: 'Rules', icon: 'Shield' },
+    { id: 'templates', path: '/templates', name: 'Templates', icon: 'FileText' },
+    { id: 'event-entry', path: '/event-entry', name: 'Event Entry', icon: 'PlusCircle' },
+    { id: 'processed-events', path: '/processed-events', name: 'Processed Events', icon: 'CheckSquare' },
+    { id: 'rules', path: '/rules', name: 'Rules', icon: 'Shield' },
   ];
 
   // Render navigation item
@@ -4452,18 +4416,17 @@ const Sidebar = ({ activeTab, onTabChange, collapsed, setCollapsed }) => {
     const icon = icons[tab.icon];
     
     return (
-      <button
+      <NavLink
         key={tab.id}
-        onClick={() => onTabChange(tab.id)}
-        className={`flex items-center w-full py-2 px-3 my-1 rounded ${collapsed ? 'justify-center' : 'px-4'} ${
-          activeTab === tab.id
-            ? 'bg-blue-50 text-blue-600'
-            : 'text-gray-600 hover:bg-gray-50'
-        }`}
+        to={tab.path}
+        className={({ isActive }) => `
+          flex items-center w-full py-2 px-3 my-1 rounded ${collapsed ? 'justify-center' : 'px-4'} 
+          ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}
+        `}
       >
         <span className={`${collapsed ? '' : 'mr-3'} text-lg`}>{icon}</span>
         {!collapsed && <span className="text-sm">{tab.name}</span>}
-      </button>
+      </NavLink>
     );
   };
 
@@ -4927,7 +4890,11 @@ export const LedgerConfig = {
     {
       key: 'entity',
       header: 'Owner',
-      render: (ledger) => ledger.r_entity ? ledger.r_entity.name : (ledger.entity ? ledger.entity.name : 'N/A')
+      // Use a more explicit render function that includes the entity ID in a data attribute
+      render: (ledger) => {
+        // Just return the name - clicking will be handled by the column's onClick handler
+        return ledger.r_entity ? ledger.r_entity.name : (ledger.entity ? ledger.entity.name : 'N/A');
+      }
     },
     {
       key: 'currency',
@@ -6202,6 +6169,54 @@ const DashboardHeader = () => {
 };
 
 export default DashboardHeader;
+File: ./src/components/dashboard/layout/DashboardLayout.js
+--------------------
+import React, { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import DashboardHeader from './DashboardHeader';
+import DashboardFooter from './DashboardFooter';
+import Sidebar from '../../shared/sidebar/Sidebar';
+import DetailModal from '../../shared/DetailModal';
+import { useDashboard } from '../../../context/DashboardContext';
+
+/**
+ * Layout component that wraps all dashboard pages
+ * Contains the sidebar, header, footer, and detail modal
+ */
+const DashboardLayout = () => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { detailModal, handleCloseModal } = useDashboard();
+  
+  return (
+    <div className="min-h-screen bg-gray-50 flex overflow-hidden">
+      <Sidebar 
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
+      />
+      
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <DashboardHeader />
+        
+        <main className="flex-1 overflow-auto">
+          <div className="max-w-full px-2 py-3">
+            <Outlet />
+          </div>
+        </main>
+        
+        <DashboardFooter />
+      </div>
+      
+      <DetailModal 
+        isOpen={detailModal.isOpen}
+        data={detailModal.data}
+        title={detailModal.title}
+        onClose={handleCloseModal}
+      />
+    </div>
+  );
+};
+
+export default DashboardLayout;
 File: ./src/components/dashboard/layout/DashboardFooter.js
 --------------------
 import React from 'react';
@@ -6368,13 +6383,23 @@ export default AccountsByTypeView;
 File: ./src/components/dashboard/DashboardView.js
 --------------------
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '../shared/PageHeader';
 import { formatBalance } from '../../utils/formatters';
+import useDashboardData from '../../hooks/useDashboardData';
 
 /**
  * Dashboard View component to display a system overview with financial statements
  */
-const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccounts }) => {
+const DashboardView = () => {
+  const navigate = useNavigate();
+  const { dashboardData, loading, fetchAllDashboardData, refreshAccountBalances } = useDashboardData();
+  const { entities = [], ledgers = [], accounts = [] } = dashboardData;
+  
+  // Fetch dashboard data when component mounts
+  useEffect(() => {
+    fetchAllDashboardData();
+  }, [fetchAllDashboardData]);
   const [balanceSheetData, setBalanceSheetData] = useState({
     assets: 0,
     liabilities: 0,
@@ -6557,12 +6582,24 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
   // Calculate total equity including retained earnings
   const totalEquity = balanceSheetData.equity + balanceSheetData.retainedEarnings;
 
+  // Show loading indicator
+  if (loading && (!entities.length || !accounts.length)) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-3 text-gray-700">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <PageHeader 
         title={`Financial Overview as of ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`}
         refreshButton={true}
-        onRefresh={onRefresh}
+        onRefresh={refreshAccountBalances}
       />
       
 
@@ -6589,7 +6626,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
                   <td className="py-2 text-gray-700">Total Assets</td>
                   <td 
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${balanceSheetData.assets < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => onDrillToAccounts('ASSET')}
+                    onClick={() => navigate('/accounts?type=ASSET')}
                     title="Click to view all asset accounts"
                   >
                     {formatCurrency(-balanceSheetData.assets)}
@@ -6607,7 +6644,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
                   <td className="py-2 text-gray-700">Total Liabilities</td>
                   <td 
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${balanceSheetData.liabilities < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => onDrillToAccounts('LIABILITY')}
+                    onClick={() => navigate('/accounts?type=LIABILITY')}
                     title="Click to view all liability accounts"
                   >
                     {formatCurrency(balanceSheetData.liabilities)}
@@ -6625,7 +6662,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
                   <td className="py-2 text-gray-700">Contributed Capital</td>
                   <td 
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${balanceSheetData.equity < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => onDrillToAccounts('EQUITY')}
+                    onClick={() => navigate('/accounts?type=EQUITY')}
                     title="Click to view all equity accounts"
                   >
                     {formatCurrency(balanceSheetData.equity)}
@@ -6677,7 +6714,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
                   <td className="py-2 text-gray-700">Total Revenue</td>
                   <td 
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${incomeStatementData.revenue < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => onDrillToAccounts('REVENUE')}
+                    onClick={() => navigate('/accounts?type=REVENUE')}
                     title="Click to view all revenue accounts"
                   >
                     {formatCurrency(incomeStatementData.revenue)}
@@ -6695,7 +6732,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
                   <td className="py-2 text-gray-700">Total Expenses</td>
                   <td 
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${incomeStatementData.expenses < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => onDrillToAccounts('EXPENSE')}
+                    onClick={() => navigate('/accounts?type=EXPENSE')}
                     title="Click to view all expense accounts"
                   >
                     {formatCurrency(incomeStatementData.expenses)}
@@ -6757,458 +6794,126 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
 export default DashboardView;
 File: ./src/components/dashboard/DashboardRouter.js
 --------------------
-import React, { useEffect } from 'react';
-import { useDashboard } from '../../context/DashboardContext';
-import useEntities from '../../hooks/useEntities';
-import useLedgers from '../../hooks/useLedgers';
-import useAccounts from '../../hooks/useAccounts';
-import useDashboardData from '../../hooks/useDashboardData';
-import useReferenceData from '../../hooks/useReferenceData';
-import useInterval from '../../utils/useInterval';
-import { filterUtils } from '../../utils/filterUtils';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { DashboardProvider } from '../../context/DashboardContext';
 
-// Components
-import DetailModal from '../shared/DetailModal';
+// Import layout component
+import DashboardLayout from './layout/DashboardLayout';
+
+// Import view components
 import DashboardView from './DashboardView';
 import EntityList from '../entities/EntityList';
 import EntityDetail from '../entities/EntityDetail';
 import LedgerList from '../ledgers/LedgerList';
 import LedgerDetail from '../ledgers/LedgerDetail';
-import AccountDetail from '../accounts/AccountDetail';
 import AccountList from '../accounts/AccountList';
+import AccountDetail from '../accounts/AccountDetail';
 import CurrenciesList from '../reference/CurrenciesList';
 import CountriesList from '../reference/CountriesList';
 import AccountCodesList from '../reference/AccountCodesList';
 import TemplatesPage from '../templates/TemplatesPage';
-import EventEntryPage from '../events/EventEntryPage'; // Import the new component
+import EventEntryPage from '../events/EventEntryPage';
 import ProcessedEventsView from '../processed-events/ProcessedEventsView';
 import RulesView from '../rules/RulesView';
-import { LoadingSpinner } from '../common';
+import DetailModal from '../shared/DetailModal';
 
 /**
- * Dashboard Router component that handles navigation between dashboard tabs
- * and fetches appropriate data for each view
+ * Dashboard Router component that handles navigation between dashboard views
+ * Uses React Router for client-side routing
  */
 const DashboardRouter = () => {
-  // Get context and hook data
-  const {
-    activeTab,
-    selectedEntityId,
-    selectedLedgerId,
-    selectedAccountId,
-    accountsFilter,
-    autoRefreshEnabled,
-    refreshInterval,
-    detailModal,
-    handleCloseModal,
-    handleViewJson,
-    setSelectedEntityId,
-    setSelectedLedgerId,
-    setSelectedAccountId,
-    handleEntitySelection,
-    handleLedgerSelection,
-    handleAccountSelection,
-    handleDrillToAccounts,
-    clearFilter
-  } = useDashboard();
-  
-  const {
-    entities,
-    selectedEntity,
-    entityLedgers,
-    entityAccounts,
-    loading: entitiesLoading,
-    fetchEntities,
-    fetchEntityById,
-    refreshEntityAccounts,
-    clearSelectedEntity
-  } = useEntities();
-  
-  const {
-    ledgers,
-    selectedLedger,
-    ledgerAccounts,
-    loading: ledgersLoading,
-    fetchLedgers,
-    fetchLedgerById,
-    refreshLedgerAccounts,
-    clearSelectedLedger
-  } = useLedgers();
-  
-  const {
-    accounts,
-    selectedAccount,
-    loading: accountsLoading,
-    fetchAccounts,
-    selectAccount,
-    clearSelectedAccount,
-    refreshAccountBalances: refreshAccounts
-  } = useAccounts();
-  
-  const {
-    dashboardData,
-    loading: dashboardLoading,
-    fetchAllDashboardData,
-    refreshAccountBalances: refreshDashboardAccounts
-  } = useDashboardData();
-  
-  const {
-    currencies,
-    countries,
-    accountCodes,
-    loading: referenceLoading,
-    fetchCurrencies,
-    fetchCountries,
-    fetchAccountCodes
-  } = useReferenceData();
-
-  // Aggregate loading state
-  const isLoading = 
-    dashboardLoading || 
-    entitiesLoading || 
-    ledgersLoading || 
-    accountsLoading || 
-    (referenceLoading && 
-      (referenceLoading.currencies || 
-      referenceLoading.countries || 
-      referenceLoading.accountCodes));
-
-  // Load initial data for active tab
-  useEffect(() => {
-    const loadTabData = async () => {
-      switch(activeTab) {
-        case 'dashboard':
-          fetchAllDashboardData();
-          break;
-        case 'entities':
-          if (!entities.length) {
-            await fetchEntities();
-          }
-          if (selectedEntityId) {
-            await fetchEntityById(selectedEntityId);
-          }
-          break;
-        case 'ledgers':
-          if (!ledgers.length) {
-            await fetchLedgers();
-          }
-          if (selectedLedgerId) {
-            await fetchLedgerById(selectedLedgerId);
-          }
-          break;
-        case 'accounts':
-          if (!accounts.length) {
-            await fetchAccounts();
-          }
-          if (selectedAccountId) {
-            selectAccount(selectedAccountId);
-          }
-          break;
-        case 'currencies':
-          if (!currencies.length) {
-            await fetchCurrencies();
-          }
-          break;
-        case 'countries':
-          if (!countries.length) {
-            await fetchCountries();
-          }
-          break;
-        case 'account-codes':
-          if (!accountCodes.length) {
-            await fetchAccountCodes();
-          }
-          break;
-        case 'templates':
-        case 'event-entry': // Add the new tab to load dependencies
-          // Make sure ledgers and accounts are loaded for templates and event entry
-          if (!ledgers.length) {
-            await fetchLedgers();
-          }
-          if (!accounts.length) {
-            await fetchAccounts();
-          }
-          break;
-        default:
-          break;
-      }
-    };
-    
-    loadTabData();
-  }, [activeTab, selectedEntityId, selectedLedgerId, selectedAccountId]);
-
-  // Targeted refresh function that only updates necessary data
-  const refreshCurrentView = async () => {
-    switch(activeTab) {
-      case 'dashboard':
-        await refreshDashboardAccounts();
-        break;
-      case 'entities':
-        if (selectedEntityId) {
-          await refreshEntityAccounts(selectedEntityId);
-        } else {
-          await fetchEntities();
-        }
-        break;
-      case 'ledgers':
-        if (selectedLedgerId) {
-          await refreshLedgerAccounts(selectedLedgerId);
-        } else {
-          await fetchLedgers();
-        }
-        break;
-      case 'accounts':
-        await refreshAccounts();
-        break;
-      default:
-        break;
-    }
-  };
-
-  // Set up auto-refresh for account balances
-  useInterval(() => {
-    if (!autoRefreshEnabled) return;
-    console.log('Auto-refreshing balances...');
-    refreshCurrentView();
-  }, refreshInterval);
-
-  // Handle drilling down to accounts by specific type
-  const handleDrillDown = async (type) => {
-    // Make sure accounts are loaded before setting the filter
-    await fetchAccounts();
-    // Now use the handleDrillToAccounts from context
-    handleDrillToAccounts(type);
-  };
-
-  // Handler functions for selecting entities, ledgers, and accounts
-  // These ensure both the hooks and context state are updated
-
-  // Handle selecting an entity from any view
-  const handleViewEntity = (entityId) => {
-    // Make sure we have a string ID
-    const id = typeof entityId === 'object' ? entityId.entity_id : entityId;
-    
-    // Set the context state
-    setSelectedEntityId(id);
-    handleEntitySelection(id);
-    // Also fetch the entity data
-    fetchEntityById(id);
-  };
-
-  // Handle selecting a ledger from any view
-  const handleViewLedger = (ledgerId) => {
-    // Make sure we have a string ID
-    const id = typeof ledgerId === 'object' ? ledgerId.ledger_id : ledgerId;
-    
-    // Set the context state
-    setSelectedLedgerId(id);
-    handleLedgerSelection(id);
-    // Also fetch the ledger data
-    fetchLedgerById(id);
-  };
-
-  // Handle selecting an account from any view
-  const handleViewAccount = (account) => {
-    // Always pass a clean ID, not an object
-    const accountId = (typeof account === 'object')
-      ? (account.account_id || account.account_extra_id)
-      : account;
-      
-    // First select the account in the accounts hook
-    selectAccount(accountId);
-    // Then set the context state
-    setSelectedAccountId(accountId);
-    handleAccountSelection(accountId);
-  };
-  
-  // Filter accounts by type if a filter is active
-  const filteredAccounts = accountsFilter.active 
-    ? filterUtils.filterAccountsByType(accounts, accountsFilter.type)
-    : accounts;
-  
-  // Loading state
-  if (isLoading && (!dashboardData && !entities.length && !ledgers.length && !accounts.length)) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <LoadingSpinner size="lg" message="Loading data..." />
-      </div>
-    );
-  }
-
   return (
-    <>
-      <DetailModal 
-        isOpen={detailModal.isOpen}
-        data={detailModal.data}
-        title={detailModal.title}
-        onClose={handleCloseModal}
-      />
-      
-      <main className="flex-1 overflow-auto">
-        <div className="max-w-full px-2 py-3">
-          {/* Dashboard View */}
-          {activeTab === 'dashboard' && dashboardData && (
-            <DashboardView 
-              entities={dashboardData.entities} 
-              ledgers={dashboardData.ledgers} 
-              accounts={dashboardData.accounts}
-              onRefresh={refreshDashboardAccounts}
-              onDrillToAccounts={handleDrillDown}
-            />
-          )}
-
-          {/* Entities Tab - List View */}
-          {activeTab === 'entities' && !selectedEntityId && entities && (
-            <EntityList 
-              entities={entities}
-              onViewDetails={handleViewEntity}
-              onViewJson={handleViewJson}
-              onRefresh={refreshCurrentView}
-            />
-          )}
-
-          {/* Entities Tab - Detail View */}
-          {activeTab === 'entities' && selectedEntityId && selectedEntity && (
-            <EntityDetail 
-              entity={selectedEntity}
-              entityLedgers={entityLedgers}
-              entityAccounts={entityAccounts}
-              onBack={clearSelectedEntity}
-              onViewJson={handleViewJson}
-              onViewLedger={handleViewLedger}
-              onViewAccount={handleViewAccount}
-              onRefresh={() => fetchEntityById(selectedEntityId)}
-            />
-          )}
-
-          {/* Ledgers Tab - List View */}
-          {activeTab === 'ledgers' && !selectedLedgerId && ledgers && (
-            <LedgerList 
-              ledgers={ledgers}
-              onViewDetails={handleViewLedger}
-              onViewJson={handleViewJson}
-              onRefresh={refreshCurrentView}
-              onViewEntity={handleViewEntity}
-            />
-          )}
-
-          {/* Ledgers Tab - Detail View */}
-          {activeTab === 'ledgers' && selectedLedgerId && selectedLedger && (
-            <LedgerDetail 
-              ledger={selectedLedger}
-              ledgerAccounts={ledgerAccounts}
-              onBack={clearSelectedLedger}
-              onViewJson={handleViewJson}
-              onRefresh={() => fetchLedgerById(selectedLedgerId)}
-              onViewEntity={handleViewEntity}
-              onViewAccount={handleViewAccount}
-            />
-          )}
-
-          {/* Accounts Tab */}
-          {activeTab === 'accounts' && accounts && (
-            !selectedAccountId ? (
-              <AccountList 
-                accounts={filteredAccounts}
-                accountTypeFilter={accountsFilter.active ? accountsFilter.type : null}
-                onViewJson={handleViewJson}
-                onRefresh={refreshCurrentView}
-                onViewEntity={handleViewEntity}
-                onViewLedger={handleViewLedger}
-                onViewAccount={handleViewAccount}
-                onClearFilter={clearFilter}
-              />
-            ) : (
-              <AccountDetail
-                account={selectedAccount}
-                onBack={clearSelectedAccount}
-                onViewJson={handleViewJson}
-                onRefresh={() => selectAccount(selectedAccountId)}
-                onViewEntity={handleViewEntity}
-                onViewLedger={handleViewLedger}
-              />
-            )
-          )}
-
-          {/* Currencies Tab */}
-          {activeTab === 'currencies' && (
-            <CurrenciesList 
-              onViewJson={handleViewJson}
-              onRefresh={fetchCurrencies}
-            />
-          )}
-
-          {/* Countries Tab */}
-          {activeTab === 'countries' && (
-            <CountriesList 
-              onViewJson={handleViewJson}
-              onRefresh={fetchCountries}
-            />
-          )}
-
-          {/* Account Codes Tab */}
-          {activeTab === 'account-codes' && (
-            <AccountCodesList 
-              onViewJson={handleViewJson}
-              onRefresh={fetchAccountCodes}
-            />
-          )}
+    <DashboardProvider>
+      <Routes>
+        <Route path="/" element={<DashboardLayout />}>
+          {/* Dashboard */}
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardView />} />
           
-          {/* Templates Tab */}
-          {activeTab === 'templates' && (
-            <TemplatesPage 
-              onViewJson={handleViewJson}
-            />
-          )}
+          {/* Entities */}
+          <Route path="entities">
+            <Route index element={<EntityList />} />
+            <Route path=":entityId" element={<EntityDetail />} />
+          </Route>
           
-          {/* Event Entry Tab */}
-          {activeTab === 'event-entry' && (
-            <EventEntryPage 
-              onViewJson={handleViewJson}
-            />
-          )}
+          {/* Ledgers */}
+          <Route path="ledgers">
+            <Route index element={<LedgerList />} />
+            <Route path=":ledgerId" element={<LedgerDetail />} />
+          </Route>
           
-          {/* Processed Events Tab */}
-          {activeTab === 'processed-events' && (
-            <ProcessedEventsView 
-              onViewJson={handleViewJson}
-            />
-          )}
+          {/* Accounts */}
+          <Route path="accounts">
+            <Route index element={<AccountList />} />
+            <Route path=":accountId" element={<AccountDetail />} />
+          </Route>
           
-          {/* Rules Tab */}
-          {activeTab === 'rules' && (
-            <RulesView 
-              onViewJson={handleViewJson}
-            />
-          )}
-        </div>
-      </main>
-    </>
+          {/* Reference Data */}
+          <Route path="currencies" element={<CurrenciesList />} />
+          <Route path="countries" element={<CountriesList />} />
+          <Route path="account-codes" element={<AccountCodesList />} />
+          
+          {/* Transactions */}
+          <Route path="templates" element={<TemplatesPage />} />
+          <Route path="event-entry" element={<EventEntryPage />} />
+          <Route path="processed-events" element={<ProcessedEventsView />} />
+          <Route path="rules" element={<RulesView />} />
+          
+          {/* Fallback route */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Route>
+      </Routes>
+    </DashboardProvider>
   );
 };
 
 export default DashboardRouter;
 File: ./src/components/entities/EntityDetail.js
 --------------------
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GenericDetailView, DataTableSection, EntityConfig } from '../common';
 import { getCountryDisplay, formatAccountCode, formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters';
+import useEntities from '../../hooks/useEntities';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * Entity Detail component using GenericDetailView
  */
-const EntityDetail = ({ 
-  entity,
-  entityLedgers,
-  entityAccounts,
-  onBack,
-  onViewJson,
-  onViewLedger,
-  onViewAccount,
-  onRefresh
-}) => {
+const EntityDetail = () => {
+  const { entityId } = useParams();
+  const navigate = useNavigate();
+  const { handleViewJson } = useDashboard();
+  
+  const {
+    selectedEntity: entity,
+    entityLedgers,
+    entityAccounts,
+    loading,
+    fetchEntityById,
+    refreshEntityAccounts
+  } = useEntities();
+  
+  // Fetch entity data when component mounts or entityId changes
+  useEffect(() => {
+    if (entityId) {
+      fetchEntityById(entityId);
+    }
+  }, [entityId, fetchEntityById]);
+  
   if (!entity) return null;
-
+  
+  // Handle navigation back to entity list
+  const handleBack = () => {
+    navigate('/entities');
+  };
+  
+  // Handle refresh
+  const handleRefresh = () => {
+    refreshEntityAccounts(entityId);
+  };
+  
   // Helper function to format account code
   const getAccountCodeDisplay = (account) => {
     if (!account) return 'N/A';
@@ -7230,10 +6935,11 @@ const EntityDetail = ({
             key: 'ledger_id',
             header: 'ID',
             cellClassName: 'text-blue-600 cursor-pointer hover:underline',
-            onClick: (ledger) => {
-              onViewLedger(ledger.ledger_id);
-              return true; // Prevent row click propagation
-            }
+            render: (ledger) => (
+              <Link to={`/ledgers/${ledger.ledger_id}`}>
+                {ledger.ledger_id}
+              </Link>
+            )
           },
           {
             key: 'name',
@@ -7259,7 +6965,7 @@ const EntityDetail = ({
                 className="text-gray-600 hover:text-gray-800"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onViewJson(ledger, `Ledger: ${ledger.name}`);
+                  handleViewJson(ledger, `Ledger: ${ledger.name}`);
                 }}
               >
                 JSON
@@ -7267,7 +6973,7 @@ const EntityDetail = ({
             )
           }
         ]}
-        onRowClick={(ledger) => onViewLedger(ledger.ledger_id)}
+        onRowClick={(ledger) => navigate(`/ledgers/${ledger.ledger_id}`)}
         emptyMessage="No ledgers found for this entity"
       />
     )
@@ -7285,10 +6991,9 @@ const EntityDetail = ({
             key: 'account_id',
             header: 'ID',
             cellClassName: 'text-blue-600 cursor-pointer hover:underline',
-            render: (account) => account.account_id || account.account_extra_id || 'N/A',
-            onClick: (account) => {
-              onViewAccount(account);
-              return true; // Prevent row click propagation
+            render: (account) => {
+              const id = account.account_id || account.account_extra_id || 'N/A';
+              return <Link to={`/accounts/${id}`}>{id}</Link>;
             }
           },
           {
@@ -7311,14 +7016,11 @@ const EntityDetail = ({
             key: 'ledger',
             header: 'Ledger',
             cellClassName: (account) => account.enriched_ledger ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500',
-            render: (account) => account.enriched_ledger ? account.enriched_ledger.name : 'N/A',
-            onClick: (account) => {
-              if (account.enriched_ledger) {
-                onViewLedger(account.enriched_ledger.ledger_id);
-                return true; // Prevent row click propagation
-              }
-              return false;
-            }
+            render: (account) => account.enriched_ledger ? (
+              <Link to={`/ledgers/${account.enriched_ledger.ledger_id}`}>
+                {account.enriched_ledger.name}
+              </Link>
+            ) : 'N/A'
           },
           {
             key: 'balance',
@@ -7339,7 +7041,7 @@ const EntityDetail = ({
                 className="text-gray-600 hover:text-gray-800"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onViewJson(account, `Account: ${account.name || 'N/A'}`);
+                  handleViewJson(account, `Account: ${account.name || 'N/A'}`);
                 }}
               >
                 JSON
@@ -7363,7 +7065,10 @@ const EntityDetail = ({
           const codeB = getCode(b);
           return (codeA || '').toString().localeCompare((codeB || '').toString());
         }}
-        onRowClick={(account) => onViewAccount(account)}
+        onRowClick={(account) => {
+          const id = account.account_id || account.account_extra_id;
+          navigate(`/accounts/${id}`);
+        }}
         emptyMessage="No accounts found for this entity"
       />
     )
@@ -7376,9 +7081,10 @@ const EntityDetail = ({
       subtitle={entity.name}
       sections={basicSections}
       childrenSections={[ledgersTableSection, accountsTableSection]}
-      onBack={onBack}
-      onRefresh={onRefresh}
-      onViewJson={onViewJson}
+      onBack={handleBack}
+      onRefresh={handleRefresh}
+      onViewJson={handleViewJson}
+      loading={loading}
     />
   );
 };
@@ -7386,18 +7092,32 @@ const EntityDetail = ({
 export default EntityDetail;
 File: ./src/components/entities/EntityList.js
 --------------------
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GenericListView, EntityConfig } from '../common';
+import useEntities from '../../hooks/useEntities';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * Entity List component using GenericListView
  */
-const EntityList = ({ 
-  entities,
-  onViewDetails,
-  onViewJson,
-  onRefresh
-}) => {
+const EntityList = () => {
+  const navigate = useNavigate();
+  const { handleViewJson } = useDashboard();
+  const { entities, loading, fetchEntities } = useEntities();
+  
+  // Fetch entities when component mounts
+  useEffect(() => {
+    fetchEntities();
+  }, [fetchEntities]);
+  
+  // Navigate to entity detail view when entity is clicked
+  const handleViewDetails = (entity) => {
+    // Extract the ID from the entity object
+    const id = typeof entity === 'object' ? entity.entity_id : entity;
+    navigate(`/entities/${id}`);
+  };
+  
   // Define the columns for the entity list
   const columns = [...EntityConfig.listColumns];
   
@@ -7407,11 +7127,12 @@ const EntityList = ({
       columns={columns}
       title="Entities"
       idField={EntityConfig.idField}
-      onItemClick={onViewDetails}
-      onViewJson={onViewJson}
-      onRefresh={onRefresh}
+      onItemClick={handleViewDetails}
+      onViewJson={handleViewJson}
+      onRefresh={fetchEntities}
       searchPlaceholder="Search entities..."
       emptyMessage="No entities found"
+      loading={loading}
     />
   );
 };
@@ -7570,25 +7291,39 @@ export default EventEntryPage;
 File: ./src/components/ledgers/LedgerDetail.js
 --------------------
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GenericDetailView, DataTableSection, LedgerConfig } from '../common';
 import { formatBalance, getCountryDisplay, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters';
 import apiService from '../../services/apiService';
+import useLedgers from '../../hooks/useLedgers';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * Ledger Detail component using GenericDetailView
  */
-const LedgerDetail = ({ 
-  ledger,
-  ledgerAccounts,
-  onBack,
-  onViewJson,
-  onRefresh,
-  onViewEntity,
-  onViewAccount
-}) => {
+const LedgerDetail = () => {
+  const { ledgerId } = useParams();
+  const navigate = useNavigate();
+  const { handleViewJson } = useDashboard();
+  
+  const {
+    selectedLedger: ledger,
+    ledgerAccounts,
+    loading,
+    fetchLedgerById,
+    refreshLedgerAccounts
+  } = useLedgers();
+  
   // All hooks must be at the top level
   const [entity, setEntity] = useState(null);
   const [entities, setEntities] = useState([]);
+  
+  // Fetch ledger data when component mounts or ledgerId changes
+  useEffect(() => {
+    if (ledgerId) {
+      fetchLedgerById(ledgerId);
+    }
+  }, [ledgerId, fetchLedgerById]);
   
   // Use useEffect for fetching entity details
   useEffect(() => {
@@ -7625,6 +7360,16 @@ const LedgerDetail = ({
 
   // Early return if no ledger, but after hooks are declared
   if (!ledger) return null;
+  
+  // Handle navigation back to ledger list
+  const handleBack = () => {
+    navigate('/ledgers');
+  };
+  
+  // Handle refresh
+  const handleRefresh = () => {
+    refreshLedgerAccounts(ledgerId);
+  };
   
   // Helper function for account codes
   const getAccountCodeDisplay = (account) => {
@@ -7664,12 +7409,12 @@ const LedgerDetail = ({
       basicSections[ownerIndex] = {
         label: 'Owner',
         content: (
-          <button 
+          <Link 
+            to={`/entities/${displayEntity.entity_id}`}
             className="text-blue-600 hover:text-blue-800 hover:underline"
-            onClick={() => displayEntity && onViewEntity && onViewEntity(displayEntity.entity_id)}
           >
             {displayEntity.name}
-          </button>
+          </Link>
         )
       };
     }
@@ -7687,10 +7432,9 @@ const LedgerDetail = ({
             key: 'account_id',
             header: 'ID',
             cellClassName: 'text-blue-600 cursor-pointer hover:underline',
-            render: (account) => account.account_id || account.account_extra_id || 'N/A',
-            onClick: (account) => {
-              onViewAccount(account);
-              return true; // Prevent row click propagation
+            render: (account) => {
+              const id = account.account_id || account.account_extra_id || 'N/A';
+              return <Link to={`/accounts/${id}`}>{id}</Link>;
             }
           },
           {
@@ -7719,16 +7463,12 @@ const LedgerDetail = ({
             },
             render: (account) => {
               const accountEntity = getEntityForAccount(account);
-              return accountEntity ? accountEntity.name : (account.entity ? account.entity.name : 'N/A');
-            },
-            onClick: (account) => {
-              const accountEntity = getEntityForAccount(account);
-              const accountEntityId = accountEntity?.entity_id || account.entity_id;
-              if (accountEntityId && onViewEntity) {
-                onViewEntity(accountEntityId);
-                return true; // Prevent row click propagation
-              }
-              return false;
+              const entityName = accountEntity ? accountEntity.name : (account.entity ? account.entity.name : 'N/A');
+              const entityId = accountEntity?.entity_id || account.entity_id || (account.entity && account.entity.entity_id);
+              
+              return entityId ? (
+                <Link to={`/entities/${entityId}`}>{entityName}</Link>
+              ) : entityName;
             }
           },
           {
@@ -7751,7 +7491,7 @@ const LedgerDetail = ({
                 className="text-gray-600 hover:text-gray-800"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onViewJson(account, `Account: ${account.name || 'N/A'}`);
+                  handleViewJson(account, `Account: ${account.name || 'N/A'}`);
                 }}
               >
                 JSON
@@ -7775,7 +7515,10 @@ const LedgerDetail = ({
           const codeB = getCode(b);
           return (codeA || '').toString().localeCompare((codeB || '').toString());
         }}
-        onRowClick={(account) => onViewAccount(account)}
+        onRowClick={(account) => {
+          const id = account.account_id || account.account_extra_id;
+          navigate(`/accounts/${id}`);
+        }}
         emptyMessage="No accounts found for this ledger"
       />
     )
@@ -7788,9 +7531,10 @@ const LedgerDetail = ({
       subtitle={ledger.name}
       sections={basicSections}
       childrenSections={[accountsTableSection]}
-      onBack={onBack}
-      onRefresh={onRefresh}
-      onViewJson={onViewJson}
+      onBack={handleBack}
+      onRefresh={handleRefresh}
+      onViewJson={handleViewJson}
+      loading={loading}
     />
   );
 };
@@ -7798,19 +7542,56 @@ const LedgerDetail = ({
 export default LedgerDetail;
 File: ./src/components/ledgers/LedgerList.js
 --------------------
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GenericListView, LedgerConfig } from '../common';
+import useLedgers from '../../hooks/useLedgers';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * Ledger List component using GenericListView
  */
-const LedgerList = ({ 
-  ledgers,
-  onViewDetails,
-  onViewJson,
-  onRefresh,
-  onViewEntity
-}) => {
+const LedgerList = () => {
+  const navigate = useNavigate();
+  const { handleViewJson } = useDashboard();
+  const { ledgers, loading, fetchLedgers } = useLedgers();
+  
+  // Fetch ledgers when component mounts
+  useEffect(() => {
+    fetchLedgers();
+  }, [fetchLedgers]);
+  
+  // Navigate to entity detail view
+  const handleViewEntity = (entity) => {
+    console.log("Entity to navigate to:", entity);
+    
+    // Handle different entity structures
+    let entityId;
+    
+    if (typeof entity === 'string') {
+      // If it's already a string ID
+      entityId = entity;
+    } else if (typeof entity === 'object' && entity !== null) {
+      // Try all possible locations for entity_id
+      entityId = entity.entity_id;
+    }
+    
+    console.log("Extracted entityId:", entityId);
+    
+    if (entityId) {
+      navigate(`/entities/${entityId}`);
+    } else {
+      console.error("Could not extract entity ID from:", entity);
+    }
+  };
+  
+  // Navigate to ledger detail view
+  const handleViewLedger = (ledger) => {
+    // Make sure we have a string ID, not an object
+    const id = typeof ledger === 'object' ? ledger.ledger_id : ledger;
+    navigate(`/ledgers/${id}`);
+  };
+  
   // Add entity navigation to columns
   const columns = [...LedgerConfig.listColumns];
   
@@ -7824,11 +7605,30 @@ const LedgerList = ({
         return entityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
       },
       onClick: (ledger) => {
-        const entityId = ledger.r_entity?.entity_id || ledger.entity_id || (ledger.entity && ledger.entity.entity_id);
-        if (entityId && onViewEntity) {
-          onViewEntity(entityId);
+        console.log("Ledger clicked:", ledger);
+        
+        // Get entity ID directly from various possible locations
+        let entityId;
+        
+        if (ledger.r_entity && ledger.r_entity.entity_id) {
+          // If we have a nested r_entity object
+          entityId = ledger.r_entity.entity_id;
+        } else if (ledger.entity && ledger.entity.entity_id) {
+          // If we have a nested entity object
+          entityId = ledger.entity.entity_id;
+        } else if (ledger.entity_id) {
+          // If we have a direct entity_id property
+          entityId = ledger.entity_id;
+        }
+        
+        console.log("Entity ID from ledger:", entityId);
+        
+        if (entityId) {
+          // Navigate directly with the ID, not the object
+          navigate(`/entities/${entityId}`);
           return true; // Prevent row click propagation
         }
+        
         return false;
       }
     };
@@ -7840,11 +7640,12 @@ const LedgerList = ({
       columns={columns}
       title="Ledgers"
       idField={LedgerConfig.idField}
-      onItemClick={onViewDetails}
-      onViewJson={onViewJson}
-      onRefresh={onRefresh}
+      onItemClick={handleViewLedger}
+      onViewJson={handleViewJson}
+      onRefresh={fetchLedgers}
       searchPlaceholder="Search ledgers..."
       emptyMessage="No ledgers found"
+      loading={loading}
     />
   );
 };
@@ -8225,6 +8026,7 @@ File: ./src/index.js
 --------------------
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
@@ -8232,7 +8034,9 @@ import reportWebVitals from './reportWebVitals';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </React.StrictMode>
 );
 
