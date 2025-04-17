@@ -1,17 +1,37 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GenericDetailView, AccountConfig } from '../common';
+import useAccounts from '../../hooks/useAccounts';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * Account Detail component using GenericDetailView
  */
-const AccountDetail = ({ 
-  account, 
-  onViewJson, 
-  onBack, 
-  onRefresh, 
-  onViewEntity, 
-  onViewLedger 
-}) => {
+const AccountDetail = () => { 
+  const { accountId } = useParams();
+  const navigate = useNavigate();
+  const { handleViewJson } = useDashboard();
+  const { selectedAccount: account, loading, selectAccount } = useAccounts();
+  
+  // Fetch account data when component mounts or accountId changes
+  useEffect(() => {
+    if (accountId) {
+      selectAccount(accountId);
+    }
+  }, [accountId, selectAccount]);
+  
+  if (!account) return null;
+  
+  // Handle navigation back to accounts list
+  const handleBack = () => {
+    navigate('/accounts');
+  };
+  
+  // Handle refresh
+  const handleRefresh = () => {
+    selectAccount(accountId);
+  };
+  
   // Extract entity and ledger information
   const entity = account?.entity || account?.enriched_entity || 
     (account?.enriched_ledger && account?.enriched_ledger.entity);
@@ -22,24 +42,24 @@ const AccountDetail = ({
   const entitySection = entity ? {
     label: 'Entity',
     content: (
-      <button 
+      <Link 
+        to={`/entities/${entity.entity_id}`} 
         className="text-blue-600 hover:text-blue-800 hover:underline"
-        onClick={() => entity.entity_id && onViewEntity && onViewEntity(entity.entity_id)}
       >
         {entity.name || entity.entity_id}
-      </button>
+      </Link>
     )
   } : null;
   
   const ledgerSection = ledger ? {
     label: 'Ledger',
     content: (
-      <button 
+      <Link 
+        to={`/ledgers/${ledger.ledger_id}`} 
         className="text-blue-600 hover:text-blue-800 hover:underline"
-        onClick={() => ledger.ledger_id && onViewLedger && onViewLedger(ledger.ledger_id)}
       >
         {ledger.name || ledger.ledger_id}
-      </button>
+      </Link>
     )
   } : null;
 
@@ -73,9 +93,10 @@ const AccountDetail = ({
       title={AccountConfig.title + " Detail"}
       subtitle={account?.name}
       sections={sections}
-      onBack={onBack}
-      onRefresh={onRefresh}
-      onViewJson={onViewJson}
+      onBack={handleBack}
+      onRefresh={handleRefresh}
+      onViewJson={handleViewJson}
+      loading={loading}
       loadingMessage="Loading account details..."
     />
   );

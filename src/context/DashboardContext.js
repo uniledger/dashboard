@@ -8,14 +8,6 @@ const DashboardContext = createContext(null);
  * Manages shared state across dashboard components
  */
 export const DashboardProvider = ({ children }) => {
-  // Tab state
-  const [activeTab, setActiveTab] = useState('dashboard');
-  
-  // Item selection state
-  const [selectedEntityId, setSelectedEntityId] = useState(null);
-  const [selectedLedgerId, setSelectedLedgerId] = useState(null);
-  const [selectedAccountId, setSelectedAccountId] = useState(null);
-  
   // Filter state
   const [accountsFilter, setAccountsFilter] = useState({
     active: false,
@@ -36,70 +28,8 @@ export const DashboardProvider = ({ children }) => {
   // Global error state
   const [error, setError] = useState(null);
   
-  // UI state
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  
-  // Handle tab change
-  const handleTabChange = (tab) => {
-    console.log('Tab changed to:', tab);
-    setActiveTab(tab);
-    
-    // Reset detail selections
-    setSelectedEntityId(null);
-    setSelectedLedgerId(null);
-    setSelectedAccountId(null);
-    
-    // Reset accounts filter
-    setAccountsFilter({
-      active: false,
-      type: ''
-    });
-  };
-  
-  // Handle entity selection
-  const handleEntitySelection = (entityId) => {
-    console.log('Entity selected:', entityId);
-    // Set active tab to 'entities' to ensure we're in the right view
-    setActiveTab('entities');
-    // Reset other selections
-    setSelectedLedgerId(null);
-    setSelectedAccountId(null);
-    // Set the selected entity
-    setSelectedEntityId(entityId);
-  };
-
-  // Handle ledger selection
-  const handleLedgerSelection = (ledgerId) => {
-    console.log('Ledger selected:', ledgerId);
-    // Set active tab to 'ledgers' to ensure we're in the right view
-    setActiveTab('ledgers');
-    // Reset other selections
-    setSelectedEntityId(null);
-    setSelectedAccountId(null);
-    // Set the selected ledger
-    setSelectedLedgerId(ledgerId);
-  };
-  
-  // Handle account selection
-  const handleAccountSelection = (accountId) => {
-    // Set active tab to 'accounts' to ensure we're in the right view
-    setActiveTab('accounts');
-    // Reset other selections
-    setSelectedEntityId(null);
-    setSelectedLedgerId(null);
-    // Set the selected account
-    setSelectedAccountId(accountId);
-  };
-  
-  // Handle drilling down to accounts by type
-  const handleDrillToAccounts = (accountType) => {
-    // Set the filter and change tab
-    setAccountsFilter({
-      active: true,
-      type: accountType
-    });
-    setActiveTab('accounts');
-  };
+  // We no longer need this function since React Router handles navigation directly
+  // and the filter is set based on URL parameters
 
   // Handle opening the detail modal
   const handleViewJson = (data, title) => {
@@ -119,38 +49,32 @@ export const DashboardProvider = ({ children }) => {
     });
   };
   
+  // Clear account filter
+  const clearFilter = () => {
+    setAccountsFilter({
+      active: false,
+      type: ''
+    });
+  };
+  
   // Context value
   const value = {
     // State
-    activeTab,
-    selectedEntityId,
-    selectedLedgerId,
-    selectedAccountId,
     accountsFilter,
     autoRefreshEnabled,
     refreshInterval,
     detailModal,
     error,
-    sidebarCollapsed,
     
     // Actions
-    setActiveTab,
-    setSelectedEntityId,
-    setSelectedLedgerId,
-    setSelectedAccountId,
     setAccountsFilter,
     setAutoRefreshEnabled,
     setRefreshInterval,
     setDetailModal,
     setError,
-    setSidebarCollapsed,
+    clearFilter,
     
     // Handlers
-    handleTabChange,
-    handleEntitySelection,
-    handleLedgerSelection,
-    handleAccountSelection,
-    handleDrillToAccounts,
     handleViewJson,
     handleCloseModal
   };

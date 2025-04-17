@@ -1,22 +1,46 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GenericDetailView, DataTableSection, EntityConfig } from '../common';
 import { getCountryDisplay, formatAccountCode, formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters';
+import useEntities from '../../hooks/useEntities';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * Entity Detail component using GenericDetailView
  */
-const EntityDetail = ({ 
-  entity,
-  entityLedgers,
-  entityAccounts,
-  onBack,
-  onViewJson,
-  onViewLedger,
-  onViewAccount,
-  onRefresh
-}) => {
+const EntityDetail = () => {
+  const { entityId } = useParams();
+  const navigate = useNavigate();
+  const { handleViewJson } = useDashboard();
+  
+  const {
+    selectedEntity: entity,
+    entityLedgers,
+    entityAccounts,
+    loading,
+    fetchEntityById,
+    refreshEntityAccounts
+  } = useEntities();
+  
+  // Fetch entity data when component mounts or entityId changes
+  useEffect(() => {
+    if (entityId) {
+      fetchEntityById(entityId);
+    }
+  }, [entityId, fetchEntityById]);
+  
   if (!entity) return null;
-
+  
+  // Handle navigation back to entity list
+  const handleBack = () => {
+    navigate('/entities');
+  };
+  
+  // Handle refresh
+  const handleRefresh = () => {
+    refreshEntityAccounts(entityId);
+  };
+  
   // Helper function to format account code
   const getAccountCodeDisplay = (account) => {
     if (!account) return 'N/A';
@@ -38,10 +62,11 @@ const EntityDetail = ({
             key: 'ledger_id',
             header: 'ID',
             cellClassName: 'text-blue-600 cursor-pointer hover:underline',
-            onClick: (ledger) => {
-              onViewLedger(ledger.ledger_id);
-              return true; // Prevent row click propagation
-            }
+            render: (ledger) => (
+              <Link to={`/ledgers/${ledger.ledger_id}`}>
+                {ledger.ledger_id}
+              </Link>
+            )
           },
           {
             key: 'name',
@@ -67,7 +92,7 @@ const EntityDetail = ({
                 className="text-gray-600 hover:text-gray-800"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onViewJson(ledger, `Ledger: ${ledger.name}`);
+                  handleViewJson(ledger, `Ledger: ${ledger.name}`);
                 }}
               >
                 JSON
@@ -75,7 +100,7 @@ const EntityDetail = ({
             )
           }
         ]}
-        onRowClick={(ledger) => onViewLedger(ledger.ledger_id)}
+        onRowClick={(ledger) => navigate(`/ledgers/${ledger.ledger_id}`)}
         emptyMessage="No ledgers found for this entity"
       />
     )
@@ -93,10 +118,9 @@ const EntityDetail = ({
             key: 'account_id',
             header: 'ID',
             cellClassName: 'text-blue-600 cursor-pointer hover:underline',
-            render: (account) => account.account_id || account.account_extra_id || 'N/A',
-            onClick: (account) => {
-              onViewAccount(account);
-              return true; // Prevent row click propagation
+            render: (account) => {
+              const id = account.account_id || account.account_extra_id || 'N/A';
+              return <Link to={`/accounts/${id}`}>{id}</Link>;
             }
           },
           {
@@ -119,14 +143,11 @@ const EntityDetail = ({
             key: 'ledger',
             header: 'Ledger',
             cellClassName: (account) => account.enriched_ledger ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500',
-            render: (account) => account.enriched_ledger ? account.enriched_ledger.name : 'N/A',
-            onClick: (account) => {
-              if (account.enriched_ledger) {
-                onViewLedger(account.enriched_ledger.ledger_id);
-                return true; // Prevent row click propagation
-              }
-              return false;
-            }
+            render: (account) => account.enriched_ledger ? (
+              <Link to={`/ledgers/${account.enriched_ledger.ledger_id}`}>
+                {account.enriched_ledger.name}
+              </Link>
+            ) : 'N/A'
           },
           {
             key: 'balance',
@@ -147,7 +168,7 @@ const EntityDetail = ({
                 className="text-gray-600 hover:text-gray-800"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onViewJson(account, `Account: ${account.name || 'N/A'}`);
+                  handleViewJson(account, `Account: ${account.name || 'N/A'}`);
                 }}
               >
                 JSON
@@ -171,7 +192,10 @@ const EntityDetail = ({
           const codeB = getCode(b);
           return (codeA || '').toString().localeCompare((codeB || '').toString());
         }}
-        onRowClick={(account) => onViewAccount(account)}
+        onRowClick={(account) => {
+          const id = account.account_id || account.account_extra_id;
+          navigate(`/accounts/${id}`);
+        }}
         emptyMessage="No accounts found for this entity"
       />
     )
@@ -184,9 +208,10 @@ const EntityDetail = ({
       subtitle={entity.name}
       sections={basicSections}
       childrenSections={[ledgersTableSection, accountsTableSection]}
-      onBack={onBack}
-      onRefresh={onRefresh}
-      onViewJson={onViewJson}
+      onBack={handleBack}
+      onRefresh={handleRefresh}
+      onViewJson={handleViewJson}
+      loading={loading}
     />
   );
 };

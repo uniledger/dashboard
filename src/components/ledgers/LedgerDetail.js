@@ -1,23 +1,37 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GenericDetailView, DataTableSection, LedgerConfig } from '../common';
 import { formatBalance, getCountryDisplay, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters';
 import apiService from '../../services/apiService';
+import useLedgers from '../../hooks/useLedgers';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * Ledger Detail component using GenericDetailView
  */
-const LedgerDetail = ({ 
-  ledger,
-  ledgerAccounts,
-  onBack,
-  onViewJson,
-  onRefresh,
-  onViewEntity,
-  onViewAccount
-}) => {
+const LedgerDetail = () => {
+  const { ledgerId } = useParams();
+  const navigate = useNavigate();
+  const { handleViewJson } = useDashboard();
+  
+  const {
+    selectedLedger: ledger,
+    ledgerAccounts,
+    loading,
+    fetchLedgerById,
+    refreshLedgerAccounts
+  } = useLedgers();
+  
   // All hooks must be at the top level
   const [entity, setEntity] = useState(null);
   const [entities, setEntities] = useState([]);
+  
+  // Fetch ledger data when component mounts or ledgerId changes
+  useEffect(() => {
+    if (ledgerId) {
+      fetchLedgerById(ledgerId);
+    }
+  }, [ledgerId, fetchLedgerById]);
   
   // Use useEffect for fetching entity details
   useEffect(() => {
@@ -54,6 +68,16 @@ const LedgerDetail = ({
 
   // Early return if no ledger, but after hooks are declared
   if (!ledger) return null;
+  
+  // Handle navigation back to ledger list
+  const handleBack = () => {
+    navigate('/ledgers');
+  };
+  
+  // Handle refresh
+  const handleRefresh = () => {
+    refreshLedgerAccounts(ledgerId);
+  };
   
   // Helper function for account codes
   const getAccountCodeDisplay = (account) => {
@@ -93,12 +117,12 @@ const LedgerDetail = ({
       basicSections[ownerIndex] = {
         label: 'Owner',
         content: (
-          <button 
+          <Link 
+            to={`/entities/${displayEntity.entity_id}`}
             className="text-blue-600 hover:text-blue-800 hover:underline"
-            onClick={() => displayEntity && onViewEntity && onViewEntity(displayEntity.entity_id)}
           >
             {displayEntity.name}
-          </button>
+          </Link>
         )
       };
     }
@@ -116,10 +140,9 @@ const LedgerDetail = ({
             key: 'account_id',
             header: 'ID',
             cellClassName: 'text-blue-600 cursor-pointer hover:underline',
-            render: (account) => account.account_id || account.account_extra_id || 'N/A',
-            onClick: (account) => {
-              onViewAccount(account);
-              return true; // Prevent row click propagation
+            render: (account) => {
+              const id = account.account_id || account.account_extra_id || 'N/A';
+              return <Link to={`/accounts/${id}`}>{id}</Link>;
             }
           },
           {
@@ -148,16 +171,12 @@ const LedgerDetail = ({
             },
             render: (account) => {
               const accountEntity = getEntityForAccount(account);
-              return accountEntity ? accountEntity.name : (account.entity ? account.entity.name : 'N/A');
-            },
-            onClick: (account) => {
-              const accountEntity = getEntityForAccount(account);
-              const accountEntityId = accountEntity?.entity_id || account.entity_id;
-              if (accountEntityId && onViewEntity) {
-                onViewEntity(accountEntityId);
-                return true; // Prevent row click propagation
-              }
-              return false;
+              const entityName = accountEntity ? accountEntity.name : (account.entity ? account.entity.name : 'N/A');
+              const entityId = accountEntity?.entity_id || account.entity_id || (account.entity && account.entity.entity_id);
+              
+              return entityId ? (
+                <Link to={`/entities/${entityId}`}>{entityName}</Link>
+              ) : entityName;
             }
           },
           {
@@ -180,7 +199,7 @@ const LedgerDetail = ({
                 className="text-gray-600 hover:text-gray-800"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onViewJson(account, `Account: ${account.name || 'N/A'}`);
+                  handleViewJson(account, `Account: ${account.name || 'N/A'}`);
                 }}
               >
                 JSON
@@ -204,7 +223,10 @@ const LedgerDetail = ({
           const codeB = getCode(b);
           return (codeA || '').toString().localeCompare((codeB || '').toString());
         }}
-        onRowClick={(account) => onViewAccount(account)}
+        onRowClick={(account) => {
+          const id = account.account_id || account.account_extra_id;
+          navigate(`/accounts/${id}`);
+        }}
         emptyMessage="No accounts found for this ledger"
       />
     )
@@ -217,9 +239,10 @@ const LedgerDetail = ({
       subtitle={ledger.name}
       sections={basicSections}
       childrenSections={[accountsTableSection]}
-      onBack={onBack}
-      onRefresh={onRefresh}
-      onViewJson={onViewJson}
+      onBack={handleBack}
+      onRefresh={handleRefresh}
+      onViewJson={handleViewJson}
+      loading={loading}
     />
   );
 };
