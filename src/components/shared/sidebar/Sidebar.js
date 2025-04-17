@@ -13,7 +13,8 @@ const icons = {
   CheckSquare: '✅',
   Shield: '🛡️',
   ChevronLeft: '◀️',
-  ChevronRight: '▶️'
+  ChevronRight: '▶️',
+  PlusCircle: '➕' // Added for Event Entry
 };
 
 /**
@@ -36,6 +37,7 @@ const Sidebar = ({ activeTab, onTabChange, collapsed, setCollapsed }) => {
 
   const transactionTabs = [
     { id: 'templates', name: 'Templates', icon: 'FileText' },
+    { id: 'event-entry', name: 'Event Entry', icon: 'PlusCircle' }, // New menu item
     { id: 'processed-events', name: 'Processed Events', icon: 'CheckSquare' },
     { id: 'rules', name: 'Rules', icon: 'Shield' },
   ];

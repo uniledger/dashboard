@@ -16,7 +16,9 @@ const fetchWithErrorHandling = async (url, options = {}) => {
     const response = await fetch(url, options);
     
     if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
+      // Get the raw response text
+      const errorText = await response.text();
+      throw new Error(errorText);
     }
     
     return await response.json();
@@ -190,14 +192,15 @@ const transactionApi = {
    * @param {Object} eventData - Event data
    * @returns {Promise<Object>} - Response with status and transfer information
    */
-  submitEvent: (eventData) => 
-    fetchWithErrorHandling(endpoints.transaction.submitEvent, {
+  submitEvent: (eventData) => {
+    return fetchWithErrorHandling(endpoints.transaction.submitEvent, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(eventData),
-    })
+    });
+  }
 };
 
 // Export all API services
