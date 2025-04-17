@@ -110,7 +110,7 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
       ...prev,
       accounts: {
         ...prev.accounts,
-        [key]: parseInt(accountId)
+        [key]: accountId
       }
     }));
   };
@@ -143,11 +143,7 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
     const metadata = {};
     fields.forEach(field => {
       if (field.key.trim() !== '' && field.value.trim() !== '') {
-        // Try to convert numeric strings to numbers
-        const value = !isNaN(field.value) && field.value.trim() !== '' 
-          ? parseInt(field.value) 
-          : field.value;
-        metadata[field.key] = value;
+        metadata[field.key] = field.value;
       }
     });
     
@@ -179,9 +175,11 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
     setError(null);
     
     try {
-      // Store the original event data
+      // Add product type from template
       const eventDataToSubmit = {
         ...eventData,
+        amount: parseInt(eventData.amount),
+        product: template.product, // Include product from template
         metadata: {
           ...eventData.metadata,
           original_event_json: JSON.stringify(eventData)
@@ -343,7 +341,7 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
                   name="ledger_id"
                   className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                   value={eventData.ledger_id}
-                  onChange={(e) => setEventData({ ...eventData, ledger_id: parseInt(e.target.value) })}
+                  onChange={(e) => setEventData({ ...eventData, ledger_id: e.target.value })}
                   required
                 >
                   <option value="">Select a ledger</option>
@@ -368,7 +366,7 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
                   id="amount"
                   className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
                   value={eventData.amount}
-                  onChange={(e) => setEventData({ ...eventData, amount: parseInt(e.target.value) })}
+                  onChange={(e) => setEventData({ ...eventData, amount: e.target.value })}
                   required
                 />
               </div>

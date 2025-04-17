@@ -21,6 +21,7 @@ import CurrenciesList from '../reference/CurrenciesList';
 import CountriesList from '../reference/CountriesList';
 import AccountCodesList from '../reference/AccountCodesList';
 import TemplatesPage from '../templates/TemplatesPage';
+import EventEntryPage from '../events/EventEntryPage'; // Import the new component
 import ProcessedEventsView from '../processed-events/ProcessedEventsView';
 import RulesView from '../rules/RulesView';
 import { LoadingSpinner } from '../common';
@@ -160,7 +161,8 @@ const DashboardRouter = () => {
           }
           break;
         case 'templates':
-          // Make sure ledgers and accounts are loaded for the templates view
+        case 'event-entry': // Add the new tab to load dependencies
+          // Make sure ledgers and accounts are loaded for templates and event entry
           if (!ledgers.length) {
             await fetchLedgers();
           }
@@ -396,6 +398,13 @@ const DashboardRouter = () => {
           {/* Templates Tab */}
           {activeTab === 'templates' && (
             <TemplatesPage 
+              onViewJson={handleViewJson}
+            />
+          )}
+          
+          {/* Event Entry Tab */}
+          {activeTab === 'event-entry' && (
+            <EventEntryPage 
               onViewJson={handleViewJson}
             />
           )}
