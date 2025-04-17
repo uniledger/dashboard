@@ -6,6 +6,7 @@ import useAccounts from '../../hooks/useAccounts';
 import useDashboardData from '../../hooks/useDashboardData';
 import useReferenceData from '../../hooks/useReferenceData';
 import useInterval from '../../utils/useInterval';
+import { filterUtils } from '../../utils/filterUtils';
 
 // Components
 import DetailModal from '../shared/DetailModal';
@@ -22,6 +23,7 @@ import AccountCodesList from '../reference/AccountCodesList';
 import TemplatesPage from '../templates/TemplatesPage';
 import ProcessedEventsView from '../processed-events/ProcessedEventsView';
 import RulesView from '../rules/RulesView';
+import { LoadingSpinner } from '../common';
 
 /**
  * Dashboard Router component that handles navigation between dashboard tabs
@@ -183,11 +185,15 @@ const DashboardRouter = () => {
       case 'entities':
         if (selectedEntityId) {
           await refreshEntityAccounts(selectedEntityId);
+        } else {
+          await fetchEntities();
         }
         break;
       case 'ledgers':
         if (selectedLedgerId) {
           await refreshLedgerAccounts(selectedLedgerId);
+        } else {
+          await fetchLedgers();
         }
         break;
       case 'accounts':
@@ -218,28 +224,35 @@ const DashboardRouter = () => {
 
   // Handle selecting an entity from any view
   const handleViewEntity = (entityId) => {
-    console.log("Selecting entity:", entityId);
+    // Make sure we have a string ID
+    const id = typeof entityId === 'object' ? entityId.entity_id : entityId;
+    
     // Set the context state
-    setSelectedEntityId(entityId);
-    handleEntitySelection(entityId);
+    setSelectedEntityId(id);
+    handleEntitySelection(id);
     // Also fetch the entity data
-    fetchEntityById(entityId);
+    fetchEntityById(id);
   };
 
   // Handle selecting a ledger from any view
   const handleViewLedger = (ledgerId) => {
-    console.log("Selecting ledger:", ledgerId);
+    // Make sure we have a string ID
+    const id = typeof ledgerId === 'object' ? ledgerId.ledger_id : ledgerId;
+    
     // Set the context state
-    setSelectedLedgerId(ledgerId);
-    handleLedgerSelection(ledgerId);
+    setSelectedLedgerId(id);
+    handleLedgerSelection(id);
     // Also fetch the ledger data
-    fetchLedgerById(ledgerId);
+    fetchLedgerById(id);
   };
 
   // Handle selecting an account from any view
   const handleViewAccount = (account) => {
-    const accountId = account.account_id || account.account_extra_id;
-    console.log("Selecting account:", accountId);
+    // Always pass a clean ID, not an object
+    const accountId = (typeof account === 'object')
+      ? (account.account_id || account.account_extra_id)
+      : account;
+      
     // First select the account in the accounts hook
     selectAccount(accountId);
     // Then set the context state
@@ -247,14 +260,16 @@ const DashboardRouter = () => {
     handleAccountSelection(accountId);
   };
   
+  // Filter accounts by type if a filter is active
+  const filteredAccounts = accountsFilter.active 
+    ? filterUtils.filterAccountsByType(accounts, accountsFilter.type)
+    : accounts;
+  
   // Loading state
   if (isLoading && (!dashboardData && !entities.length && !ledgers.length && !accounts.length)) {
     return (
       <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-3 text-gray-600">Loading data...</p>
-        </div>
+        <LoadingSpinner size="lg" message="Loading data..." />
       </div>
     );
   }
@@ -333,21 +348,7 @@ const DashboardRouter = () => {
           {activeTab === 'accounts' && accounts && (
             !selectedAccountId ? (
               <AccountList 
-                accounts={accounts.filter(account => {
-                  if (!accountsFilter.active) return true;
-                  
-                  // Extract account type
-                  let accountType = 'OTHER';
-                  if (account.account_type) {
-                    accountType = account.account_type.toUpperCase();
-                  } else if (account.account_code && account.account_code.type) {
-                    accountType = account.account_code.type.toUpperCase();
-                  } else if (typeof account.account_code === 'object' && account.account_code.type) {
-                    accountType = account.account_code.type.toUpperCase();
-                  }
-                  
-                  return accountType === accountsFilter.type;
-                })}
+                accounts={filteredAccounts}
                 accountTypeFilter={accountsFilter.active ? accountsFilter.type : null}
                 onViewJson={handleViewJson}
                 onRefresh={refreshCurrentView}
@@ -371,7 +372,6 @@ const DashboardRouter = () => {
           {/* Currencies Tab */}
           {activeTab === 'currencies' && (
             <CurrenciesList 
-              currencies={currencies}
               onViewJson={handleViewJson}
               onRefresh={fetchCurrencies}
             />
@@ -380,7 +380,6 @@ const DashboardRouter = () => {
           {/* Countries Tab */}
           {activeTab === 'countries' && (
             <CountriesList 
-              countries={countries}
               onViewJson={handleViewJson}
               onRefresh={fetchCountries}
             />
@@ -389,7 +388,6 @@ const DashboardRouter = () => {
           {/* Account Codes Tab */}
           {activeTab === 'account-codes' && (
             <AccountCodesList 
-              accountCodes={accountCodes}
               onViewJson={handleViewJson}
               onRefresh={fetchAccountCodes}
             />

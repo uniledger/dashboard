@@ -1,43 +1,13 @@
 import React from 'react';
-import { StandardList } from '../common';
+import { GenericListView, ProcessedEventConfig } from '../common';
 
 /**
- * Component to display a list of processed events using StandardList
+ * Component to display a list of processed events using GenericListView
  */
-const ProcessedEventsList = ({ events, onSelectEvent, onViewJson, onRefresh }) => {
-  // Define columns for the DataTable
+const ProcessedEventsList = ({ events, onSelectEvent, onViewJson, onRefresh, loading }) => {
+  // Define custom columns that extend the base configuration
   const columns = [
-    {
-      key: 'event_id',
-      header: 'Event ID',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
-      render: (event) => `Event ID: ${event.event_id}`
-    },
-    {
-      key: 'template_id',
-      header: 'Template ID',
-      cellClassName: 'text-gray-500',
-    },
-    {
-      key: 'amount',
-      header: 'Amount',
-      cellClassName: 'text-gray-500',
-      render: (event) => {
-        let ledgerInfo = '';
-        if (event.ledger) {
-          ledgerInfo = event.ledger.name || event.ledger.ledger_id || 'N/A';
-        }
-        return `Amount: ${event.amount} | Ledger: ${ledgerInfo}`;
-      }
-    },
-    {
-      key: 'timestamp',
-      header: 'Processed',
-      cellClassName: 'text-gray-500',
-      render: (event) => event.timestamp 
-        ? new Date(event.timestamp * 1000).toLocaleString()
-        : 'Timestamp: N/A'
-    },
+    ...ProcessedEventConfig.listColumns,
     {
       key: 'metadata',
       header: 'Metadata',
@@ -64,15 +34,16 @@ const ProcessedEventsList = ({ events, onSelectEvent, onViewJson, onRefresh }) =
   ];
 
   return (
-    <StandardList
+    <GenericListView
       data={events}
       columns={columns}
       title="Processed Events"
-      idField="event_id"
+      idField={ProcessedEventConfig.idField}
+      loading={loading}
       onItemClick={onSelectEvent}
       onViewJson={onViewJson}
       onRefresh={onRefresh}
-      searchPlaceholder="Search by ID..."
+      searchPlaceholder="Search processed events..."
       emptyMessage="No processed events found"
     />
   );

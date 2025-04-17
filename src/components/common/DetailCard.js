@@ -7,15 +7,16 @@ import React from 'react';
  * @param {string|null} props.title - Card title (model name) or null to hide
  * @param {string|null} props.subtitle - Card subtitle (instance name) or null to hide
  * @param {Array} props.sections - Array of section objects with label and content
+ * @param {Array} props.childrenSections - Array of child sections (like tables) to display below basic info
  * @param {React.ReactNode} props.actions - Optional action buttons to display
  * @returns {JSX.Element} - Rendered component
  */
-const DetailCard = ({ title, subtitle, sections, actions }) => {
-  // Split sections into basic fields and table/complex sections
+const DetailCard = ({ title, subtitle, sections, childrenSections = [], actions }) => {
+  // Filter basic fields vs complex table sections
   const basicSections = [];
   const tableSections = [];
   
-  // Remove any 'Name' fields from the basic sections since they're in the header
+  // Process main sections
   sections.forEach((section) => {
     // Check if this section contains complex content like tables
     const hasTableContent = 
@@ -46,6 +47,9 @@ const DetailCard = ({ title, subtitle, sections, actions }) => {
       basicSections.push(section);
     }
   });
+  
+  // Add all children sections to tableSections
+  tableSections.push(...childrenSections);
   
   return (
     <div>

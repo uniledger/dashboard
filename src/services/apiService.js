@@ -27,6 +27,30 @@ const fetchWithErrorHandling = async (url, options = {}) => {
 };
 
 /**
+ * Helper to ensure IDs are properly formatted for API calls
+ * @param {string|number|Object} id - The ID to format
+ * @returns {string} - Formatted ID
+ */
+const ensureIdString = (id) => {
+  if (id === null || id === undefined) {
+    console.error('Invalid ID provided:', id);
+    throw new Error('Invalid ID provided');
+  }
+  
+  if (typeof id === 'object') {
+    // If we accidentally got passed an object, try to extract the ID
+    if (id.ledger_id) return id.ledger_id.toString();
+    if (id.entity_id) return id.entity_id.toString();
+    if (id.account_id) return id.account_id.toString();
+    
+    console.error('Object passed instead of ID:', id);
+    throw new Error('Invalid object passed instead of ID');
+  }
+  
+  return id.toString();
+};
+
+/**
  * Entity-related API calls
  */
 const entityApi = {
@@ -43,7 +67,7 @@ const entityApi = {
    * @returns {Promise<Object>} - Entity data
    */
   getEntityById: (entityId) => 
-    fetchWithErrorHandling(endpoints.ledger.entityById(entityId)),
+    fetchWithErrorHandling(endpoints.ledger.entityById(ensureIdString(entityId))),
   
   /**
    * Get all ledgers for a specific entity
@@ -51,7 +75,7 @@ const entityApi = {
    * @returns {Promise<Array>} - List of ledgers for the entity
    */
   getEntityLedgers: (entityId) => 
-    fetchWithErrorHandling(endpoints.ledger.entityLedgers(entityId)),
+    fetchWithErrorHandling(endpoints.ledger.entityLedgers(ensureIdString(entityId))),
   
   /**
    * Get all accounts for a specific entity
@@ -59,7 +83,7 @@ const entityApi = {
    * @returns {Promise<Array>} - List of accounts for the entity
    */
   getEntityAccounts: (entityId) => 
-    fetchWithErrorHandling(endpoints.ledger.entityAccounts(entityId))
+    fetchWithErrorHandling(endpoints.ledger.entityAccounts(ensureIdString(entityId)))
 };
 
 /**
@@ -79,7 +103,7 @@ const ledgerApi = {
    * @returns {Promise<Object>} - Ledger data
    */
   getLedgerById: (ledgerId) => 
-    fetchWithErrorHandling(endpoints.ledger.ledgerById(ledgerId)),
+    fetchWithErrorHandling(endpoints.ledger.ledgerById(ensureIdString(ledgerId))),
   
   /**
    * Get all accounts for a specific ledger
@@ -87,7 +111,7 @@ const ledgerApi = {
    * @returns {Promise<Array>} - List of accounts for the ledger
    */
   getLedgerAccounts: (ledgerId) => 
-    fetchWithErrorHandling(endpoints.ledger.ledgerAccounts(ledgerId))
+    fetchWithErrorHandling(endpoints.ledger.ledgerAccounts(ensureIdString(ledgerId)))
 };
 
 /**
@@ -107,7 +131,7 @@ const accountApi = {
    * @returns {Promise<Object>} - Account data
    */
   getAccountById: (accountId) => 
-    fetchWithErrorHandling(endpoints.ledger.accountById(accountId))
+    fetchWithErrorHandling(endpoints.ledger.accountById(ensureIdString(accountId)))
 };
 
 /**
@@ -153,6 +177,13 @@ const transactionApi = {
    */
   getProcessedEvents: () => 
     fetchWithErrorHandling(endpoints.transaction.processedEvents),
+  
+  /**
+   * Get all rules
+   * @returns {Promise<Array>} - List of rules
+   */
+  getRules: () => 
+    fetchWithErrorHandling(endpoints.transaction.rules),
   
   /**
    * Submit an event based on a template

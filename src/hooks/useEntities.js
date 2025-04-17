@@ -1,101 +1,50 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import apiService from '../services/apiService';
+import useDataFetching from './useDataFetching';
 
 /**
- * Custom hook for managing entities data
+ * Custom hook for managing entities data, implementing the generic data fetching hook
  * @returns {Object} - Entities data and helper functions
  */
 const useEntities = () => {
-  // State for entities data
-  const [entities, setEntities] = useState([]);
-  const [selectedEntity, setSelectedEntity] = useState(null);
-  const [entityLedgers, setEntityLedgers] = useState([]);
-  const [entityAccounts, setEntityAccounts] = useState([]);
+  // Define API-specific fetching functions
+  const fetchAllEntities = useCallback(() => {
+    return apiService.entity.getEntities();
+  }, []);
   
-  // Loading and error states
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  /**
-   * Fetch all entities
-   */
-  const fetchEntities = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const data = await apiService.entity.getEntities();
-      setEntities(data);
-      setLoading(false);
-      return data;
-    } catch (err) {
-      console.error('Error fetching entities:', err);
-      setError(err.message || 'An error occurred while fetching entities');
-      setLoading(false);
-      return null;
-    }
+  const fetchEntityById = useCallback((entityId) => {
+    return apiService.entity.getEntityById(entityId);
   }, []);
-
-  /**
-   * Fetch entity details by ID
-   * @param {string} entityId - Entity ID to fetch
-   */
-  const fetchEntityById = useCallback(async (entityId) => {
-    if (!entityId) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Fetch entity details
-      const entityData = await apiService.entity.getEntityById(entityId);
-      setSelectedEntity(entityData);
-      
-      // Fetch ledgers for the entity
-      const entityLedgersData = await apiService.entity.getEntityLedgers(entityId);
-      setEntityLedgers(entityLedgersData);
-      
-      // Fetch accounts for the entity
-      const entityAccountsData = await apiService.entity.getEntityAccounts(entityId);
-      setEntityAccounts(entityAccountsData);
-      
-      setLoading(false);
-      return { entity: entityData, ledgers: entityLedgersData, accounts: entityAccountsData };
-    } catch (err) {
-      console.error('Error fetching entity detail:', err);
-      setError(err.message || 'An error occurred while fetching entity data');
-      setLoading(false);
-      return null;
-    }
+  
+  const fetchEntityLedgers = useCallback((entityId) => {
+    return apiService.entity.getEntityLedgers(entityId);
   }, []);
-
-  /**
-   * Refresh accounts for a specific entity
-   * @param {string} entityId - Entity ID to refresh accounts for
-   */
-  const refreshEntityAccounts = useCallback(async (entityId) => {
-    if (!entityId) return;
-    
-    try {
-      const accountsData = await apiService.entity.getEntityAccounts(entityId);
-      setEntityAccounts(accountsData);
-      return accountsData;
-    } catch (err) {
-      console.error('Error refreshing entity accounts:', err);
-      // Don't update error state on refresh to avoid disrupting the UI
-      return null;
-    }
+  
+  const fetchEntityAccounts = useCallback((entityId) => {
+    return apiService.entity.getEntityAccounts(entityId);
   }, []);
-
-  /**
-   * Clear the selected entity and related data
-   */
-  const clearSelectedEntity = useCallback(() => {
-    setSelectedEntity(null);
-    setEntityLedgers([]);
-    setEntityAccounts([]);
-  }, []);
-
+  
+  // Use the generic data fetching hook
+  const {
+    items: entities,
+    selectedItem: selectedEntity,
+    childItems: entityLedgers,
+    secondaryChildItems: entityAccounts,
+    loading,
+    error,
+    fetchAllItems: fetchEntities,
+    fetchItemById: fetchEntityWithDetails,
+    refreshChildren: refreshEntityLedgers,
+    refreshSecondaryChildren: refreshEntityAccounts,
+    clearSelectedItem: clearSelectedEntity,
+    setSelectedItem: setSelectedEntity
+  } = useDataFetching({
+    fetchAll: fetchAllEntities,
+    fetchById: fetchEntityById,
+    fetchChildren: fetchEntityLedgers,
+    fetchSecondaryChildren: fetchEntityAccounts
+  });
+  
   return {
     // Data
     entities,
@@ -107,7 +56,7 @@ const useEntities = () => {
     
     // Actions
     fetchEntities,
-    fetchEntityById,
+    fetchEntityById: fetchEntityWithDetails,
     refreshEntityAccounts,
     clearSelectedEntity,
     setSelectedEntity

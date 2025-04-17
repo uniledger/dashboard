@@ -1,33 +1,43 @@
 import React from 'react';
-import { DetailCard, ActionButton } from '../common';
+import { GenericDetailView, ActionButton, RuleConfig } from '../common';
 
 /**
- * Component to display detailed rule information using the common DetailCard
+ * Component to display detailed rule information using GenericDetailView
  */
 const RuleDetail = ({ rule, onBack, onViewJson }) => {
-  if (!rule) return null;
-
-  // Define sections for the detail card
+  // Define custom sections for the rule detail
   const sections = [
     {
       label: 'Rule ID',
-      content: rule.rule_id
+      content: rule?.rule_id
     },
     {
       label: 'Description',
-      content: rule.description
+      content: rule?.description
     },
     {
       label: 'Action',
-      content: (
+      content: rule?.action && (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
           {rule.action}
         </span>
       )
     },
     {
+      label: 'Status',
+      content: rule?.status && (
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          rule.status === 'ACTIVE' 
+            ? 'bg-green-100 text-green-800' 
+            : 'bg-gray-100 text-gray-800'
+        }`}>
+          {rule.status}
+        </span>
+      )
+    },
+    {
       label: 'Expression',
-      content: (
+      content: rule?.expression && (
         <div className="bg-gray-50 p-4 rounded font-mono overflow-x-auto">
           {rule.expression}
         </div>
@@ -35,12 +45,12 @@ const RuleDetail = ({ rule, onBack, onViewJson }) => {
     }
   ];
 
-  // Define actions for the detail card
-  const actions = (
+  // Define custom actions
+  const customActions = (
     <>
       <ActionButton
         variant="outline"
-        onClick={() => onViewJson(rule, `Rule ${rule.rule_id}`)}
+        onClick={() => onViewJson(rule, `Rule ${rule?.rule_id}`)}
       >
         View JSON
       </ActionButton>
@@ -54,11 +64,14 @@ const RuleDetail = ({ rule, onBack, onViewJson }) => {
   );
 
   return (
-    <DetailCard
+    <GenericDetailView
+      data={rule}
       title="Rule Detail"
-      subtitle={null}
+      subtitle={rule?.name || `Rule ${rule?.rule_id}`}
       sections={sections}
-      actions={actions}
+      onBack={onBack}
+      onViewJson={onViewJson}
+      customActions={customActions}
     />
   );
 };

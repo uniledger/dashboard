@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { StandardList } from '../common';
-import { fetchCurrencies } from '../../utils/apiService';
+import { GenericListView } from '../common';
+import apiService from '../../services/apiService';
 
 /**
- * Currencies List component using StandardList for consistent behavior
+ * Currencies List component using GenericListView
  */
 const CurrenciesList = ({ onViewJson, onRefresh }) => {
   const [currencies, setCurrencies] = useState([]);
@@ -35,7 +35,7 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
     const loadCurrencies = async () => {
       setLoading(true);
       try {
-        const data = await fetchCurrencies();
+        const data = await apiService.reference.getCurrencies();
         setCurrencies(data);
         setError(null);
       } catch (err) {
@@ -55,7 +55,7 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
     } else {
       setLoading(true);
       try {
-        const data = await fetchCurrencies();
+        const data = await apiService.reference.getCurrencies();
         setCurrencies(data);
         setError(null);
       } catch (err) {
@@ -68,7 +68,7 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
   };
 
   return (
-    <StandardList
+    <GenericListView
       data={currencies}
       columns={columns}
       title="Currencies"
