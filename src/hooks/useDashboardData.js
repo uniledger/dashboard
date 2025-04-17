@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import apiService from '../services/apiService';
 
 /**
@@ -32,16 +32,21 @@ const useDashboardData = () => {
         apiService.account.getAccounts()
       ]);
       
-      setDashboardData({
+      setDashboardData(prev => ({
+        ...prev,
         entities: entitiesData,
         ledgers: ledgersData,
         accounts: accountsData
-      });
+      }));
       
       setLoading(false);
       return { entities: entitiesData, ledgers: ledgersData, accounts: accountsData };
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
+      setDashboardData(prev => ({
+        ...prev,
+        accounts: [] // Ensure accounts is an array, even if fetch fails
+      }));
       setError(err.message || 'An error occurred while fetching dashboard data');
       setLoading(false);
       return null;

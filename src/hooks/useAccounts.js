@@ -39,22 +39,7 @@ const useAccounts = () => {
     type: ''
   });
 
-  /**
-   * Refresh account balances
-   */
-  const refreshAccountBalances = useCallback(async () => {
-    try {
-      const data = await fetchAllAccounts();
-      setAccounts(data);
-      applyFilter(data, filter);
-      return true;
-    } catch (err) {
-      console.error('Error refreshing account balances:', err);
-      return false;
-    }
-  }, [filter, fetchAllAccounts, setAccounts]);
-
-  /**
+    /**
    * Apply the current filter to accounts data
    * @param {Array} accountsData - Accounts data to filter
    * @param {Object} currentFilter - Current filter settings
@@ -82,10 +67,25 @@ const useAccounts = () => {
     setFilteredAccounts(filtered);
   }, []);
 
+
+
+
+
+
   /**
-   * Filter accounts by type
-   * @param {string} type - Account type to filter by
+   * Refresh account balances
    */
+  const refreshAccountBalances = useCallback(async () => {
+    try {
+      const data = await fetchAllAccounts();
+      setAccounts(data);
+      applyFilter(data, filter);
+      return true;
+    } catch (err) {
+      console.error('Error refreshing account balances:', err);
+      return false;
+    }
+  }, [filter, fetchAllAccounts, setAccounts, applyFilter]);
   const filterByType = useCallback((type) => {
     const newFilter = {
       active: true,
@@ -95,9 +95,6 @@ const useAccounts = () => {
     applyFilter(accounts, newFilter);
   }, [accounts, applyFilter]);
 
-  /**
-   * Clear the current filter
-   */
   const clearFilter = useCallback(() => {
     const newFilter = {
       active: false,
@@ -106,11 +103,6 @@ const useAccounts = () => {
     setFilter(newFilter);
     applyFilter(accounts, newFilter);
   }, [accounts, applyFilter]);
-
-  /**
-   * Select an account by ID
-   * @param {string|number} accountId - Account ID to select
-   */
   const selectAccount = useCallback((accountId) => {
     const account = accounts.find(acc => 
       acc.account_id === accountId || 

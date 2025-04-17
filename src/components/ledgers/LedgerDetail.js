@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GenericDetailView, DataTableSection, LedgerConfig } from '../common';
-import { formatBalance, getCountryDisplay, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
-import apiService from '../../services/apiService';
+import { formatBalance, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
+import apiService from '../../services/apiService'; // Assuming apiService is defined elsewhere
 import useLedgers from '../../hooks/useLedgers';
 import { useDashboard } from '../../context/DashboardContext';
 
@@ -10,6 +10,7 @@ import { useDashboard } from '../../context/DashboardContext';
  * Ledger Detail component using GenericDetailView
  */
 const LedgerDetail = () => {
+  // Destructure the object returned by useParams
   const { ledgerId } = useParams();
   const navigate = useNavigate();
   const { handleViewJson } = useDashboard();
@@ -27,7 +28,7 @@ const LedgerDetail = () => {
   const [entities, setEntities] = useState([]);
   
   // Fetch ledger data when component mounts or ledgerId changes
-  useEffect(() => {
+    useEffect(() => {
     if (ledgerId) {
       fetchLedgerById(ledgerId);
     }
@@ -46,7 +47,7 @@ const LedgerDetail = () => {
         setEntity(data);
       } catch (err) {
         console.error('Error fetching entity details:', err);
-      }
+    }
     };
 
     fetchEntity();
@@ -62,7 +63,6 @@ const LedgerDetail = () => {
         console.error('Error fetching entities:', err);
       }
     };
-    
     fetchEntities();
   }, []);
 

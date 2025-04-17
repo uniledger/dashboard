@@ -20,7 +20,6 @@ import TemplatesPage from '../templates/TemplatesPage';
 import EventEntryPage from '../events/EventEntryPage';
 import ProcessedEventsView from '../processed-events/ProcessedEventsView';
 import RulesView from '../rules/RulesView';
-import DetailModal from '../shared/DetailModal';
 
 /**
  * Dashboard Routes component that contains the actual routes

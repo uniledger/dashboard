@@ -479,12 +479,14 @@ export const RuleConfig = {
   ]
 };
 
-// Export all configurations
-export default {
+/**
+ * Export all configurations
+ */
+const modelConfigs = {
   EntityConfig,
   LedgerConfig,
   AccountConfig,
   TemplateConfig,
   ProcessedEventConfig,
   RuleConfig
-};
+};export default modelConfigs;

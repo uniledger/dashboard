@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../shared/PageHeader';
-import { formatBalance } from '../../utils/formatters/index';
 import useDashboardData from '../../hooks/useDashboardData';
 
 /**
@@ -10,8 +9,8 @@ import useDashboardData from '../../hooks/useDashboardData';
 const DashboardView = () => {
   const navigate = useNavigate();
   const { dashboardData, loading, fetchAllDashboardData, refreshAccountBalances } = useDashboardData();
-  const { entities = [], ledgers = [], accounts = [] } = dashboardData;
-  
+  const { entities = [], accounts = [] } = dashboardData;
+
   // Fetch dashboard data when component mounts
   useEffect(() => {
     fetchAllDashboardData();
@@ -29,7 +28,7 @@ const DashboardView = () => {
     netIncome: 0
   });
   
-  const [ratios, setRatios] = useState({
+  const [, setRatios] = useState({
     currentRatio: 0,
     debtToEquityRatio: 0,
     grossMargin: 0,
@@ -38,6 +37,10 @@ const DashboardView = () => {
 
   // Process accounts data to create financial statements
   useEffect(() => {
+    if (!Array.isArray(accounts)) {
+      return;
+    }
+
     if (!accounts || accounts.length === 0) return;
     
     let assets = 0;
@@ -125,6 +128,10 @@ const DashboardView = () => {
   
   // Calculate financial ratios based on account data
   useEffect(() => {
+    if (!Array.isArray(accounts)) {
+      return;
+    }
+
     if (!accounts || accounts.length === 0) return;
     
     // For detailed ratio calculation, we need to categorize assets and liabilities further

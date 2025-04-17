@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StandardList, FilterBadge, ErrorAlert, LoadingSpinner } from './index';
 
 /**

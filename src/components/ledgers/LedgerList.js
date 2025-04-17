@@ -17,29 +17,6 @@ const LedgerList = () => {
     fetchLedgers();
   }, [fetchLedgers]);
   
-  // Navigate to entity detail view
-  const handleViewEntity = (entity) => {
-    console.log("Entity to navigate to:", entity);
-    
-    // Handle different entity structures
-    let entityId;
-    
-    if (typeof entity === 'string') {
-      // If it's already a string ID
-      entityId = entity;
-    } else if (typeof entity === 'object' && entity !== null) {
-      // Try all possible locations for entity_id
-      entityId = entity.entity_id;
-    }
-    
-    console.log("Extracted entityId:", entityId);
-    
-    if (entityId) {
-      navigate(`/entities/${entityId}`);
-    } else {
-      console.error("Could not extract entity ID from:", entity);
-    }
-  };
   
   // Navigate to ledger detail view
   const handleViewLedger = (ledger) => {
