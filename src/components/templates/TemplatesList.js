@@ -1,53 +1,17 @@
-import React, { useState } from 'react';
-import { StandardList } from '../common';
+import React from 'react';
+import { GenericListView, TemplateConfig } from '../common';
 
 /**
- * Component to display a list of templates
+ * Templates list component using GenericListView
  */
-const TemplatesList = ({ templates, onSelectTemplate, onViewJson, onRefresh }) => {
-  // Define columns for StandardList
-  const columns = [
-    {
-      key: 'template_id',
-      header: 'ID',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
-    },
-    {
-      key: 'name',
-      header: 'Template Name',
-      cellClassName: 'font-medium text-gray-900',
-    },
-    {
-      key: 'product',
-      header: 'Type',
-      cellClassName: 'text-gray-500',
-    },
-    {
-      key: 'description',
-      header: 'Description',
-      cellClassName: 'text-gray-500',
-      render: (item) => {
-        return item.description.length > 100 
-          ? `${item.description.substring(0, 100)}...` 
-          : item.description;
-      }
-    },
-    {
-      key: 'created_date',
-      header: 'Created',
-      cellClassName: 'text-gray-500',
-      render: (item) => {
-        return new Date(item.created_date * 1000).toLocaleDateString();
-      }
-    }
-  ];
-
+const TemplatesList = ({ templates, onSelectTemplate, onViewJson, onRefresh, loading }) => {
   return (
-    <StandardList
+    <GenericListView
       data={templates}
-      columns={columns}
+      columns={TemplateConfig.listColumns}
       title="Templates"
-      idField="template_id"
+      idField={TemplateConfig.idField}
+      loading={loading}
       onItemClick={onSelectTemplate}
       onViewJson={onViewJson}
       onRefresh={onRefresh}

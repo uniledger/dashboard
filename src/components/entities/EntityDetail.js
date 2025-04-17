@@ -1,10 +1,9 @@
 import React from 'react';
-import { DetailCard, ActionButton } from '../common';
-import { getCountryDisplay } from '../../utils/formatters';
+import { GenericDetailView, DataTableSection, EntityConfig } from '../common';
+import { getCountryDisplay, formatAccountCode, formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters';
 
 /**
- * Entity Detail component to display a single entity with its ledgers and accounts
- * with enhanced JSON display and proper nested data handling
+ * Entity Detail component using GenericDetailView
  */
 const EntityDetail = ({ 
   entity,
@@ -18,233 +17,176 @@ const EntityDetail = ({
 }) => {
   if (!entity) return null;
 
-  // Define detail card actions
-  const detailActions = (
-    <>
-      <ActionButton
-        variant="outline"
-        onClick={() => onViewJson && onViewJson(entity, `Entity: ${entity.name}`)}
-      >
-        View JSON
-      </ActionButton>
-      <ActionButton
-        variant="outline"
-        onClick={onRefresh}
-        icon={
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-        }
-      >
-        Refresh
-      </ActionButton>
-      <ActionButton
-        variant="secondary"
-        onClick={onBack}
-      >
-        Back
-      </ActionButton>
-    </>
-  );
-  
   // Helper function to format account code
   const getAccountCodeDisplay = (account) => {
     if (!account) return 'N/A';
-    
-    // Handle when account_code is a full object
-    if (account.account_code && typeof account.account_code === 'object') {
-      return `${account.account_code.account_code} - ${account.account_code.name || ''}`;
-    }
-    
-    // Handle when it's just the code value
-    return account.account_code || 'N/A';
+    return formatAccountCode(account.account_code || account.code);
   };
   
-  // Format balance
-  const formatBalance = (balance, scale) => {
-    const amount = balance / Math.pow(10, scale);
-    const roundedAmount = Math.round(amount);
-    const formattedAmount = roundedAmount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    
-    if (roundedAmount < 0) {
-      return `(${formattedAmount.replace('-', '')})`;
-    } else {
-      return formattedAmount;
-    }
+  // Define basic information sections
+  const basicSections = EntityConfig.detailSections(entity);
+  
+  // Define the ledgers table section
+  const ledgersTableSection = {
+    label: 'Ledgers Owned',
+    content: (
+      <DataTableSection
+        data={entityLedgers || []}
+        title="Ledgers"
+        columns={[
+          {
+            key: 'ledger_id',
+            header: 'ID',
+            cellClassName: 'text-blue-600 cursor-pointer hover:underline',
+            onClick: (ledger) => {
+              onViewLedger(ledger.ledger_id);
+              return true; // Prevent row click propagation
+            }
+          },
+          {
+            key: 'name',
+            header: 'Name',
+            cellClassName: 'font-medium text-gray-900'
+          },
+          {
+            key: 'currency',
+            header: 'Currency',
+            render: (ledger) => ledger.r_currency ? `${ledger.r_currency.currency_code} (${ledger.r_currency.type})` : 'N/A'
+          },
+          {
+            key: 'country',
+            header: 'Country',
+            render: (ledger) => getCountryDisplay(ledger, entity)
+          },
+          {
+            key: 'actions',
+            header: 'Actions',
+            align: 'center',
+            render: (ledger) => (
+              <button 
+                className="text-gray-600 hover:text-gray-800"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewJson(ledger, `Ledger: ${ledger.name}`);
+                }}
+              >
+                JSON
+              </button>
+            )
+          }
+        ]}
+        onRowClick={(ledger) => onViewLedger(ledger.ledger_id)}
+        emptyMessage="No ledgers found for this entity"
+      />
+    )
   };
   
-  // Define all sections for the detail card
-  const allSections = [
-    {
-      label: 'Entity ID',
-      content: entity.entity_id
-    },
-    {
-      label: 'Name',
-      content: entity.name
-    },
-    {
-      label: 'Type',
-      content: entity.type || entity.entity_type || 'N/A'
-    },
-    {
-      label: 'Country',
-      content: getCountryDisplay(entity)
-    },
-    {
-      label: 'Ledgers Owned',
-      content: (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Currency</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {entityLedgers && entityLedgers.length > 0 ? entityLedgers.map(ledger => (
-                <tr key={ledger.ledger_id} className="hover:bg-gray-50">
-                  <td 
-                    className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline"
-                    onClick={() => onViewLedger(ledger.ledger_id)}
-                  >
-                    {ledger.ledger_id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {ledger.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {ledger.r_currency ? `${ledger.r_currency.currency_code} (${ledger.r_currency.type})` : 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {getCountryDisplay(ledger, entity)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                    <button 
-                      className="text-gray-600 hover:text-gray-800"
-                      onClick={() => onViewJson(ledger, `Ledger: ${ledger.name}`)}
-                    >
-                      JSON
-                    </button>
-                  </td>
-                </tr>
-              )) : (
-                <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-sm text-gray-500">
-                    No ledgers found for this entity
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )
-    },
-    {
-      label: 'Accounts',
-      content: (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account Code</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ledger</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {entityAccounts && entityAccounts.length > 0 ? entityAccounts
-                // Sort accounts by account code
-                .sort((a, b) => {
-                  // Extract account code from account_code or name
-                  const getCode = (account) => {
-                    if (account.account_code && typeof account.account_code === 'object') {
-                      return String(account.account_code.account_code || '');
-                    } else if (typeof account.account_code === 'string') {
-                      return account.account_code;
-                    } else if (account.name && account.name.includes('-')) {
-                      return account.name.split('-')[0].trim();
-                    }
-                    return '';
-                  };
-                  const codeA = getCode(a);
-                  const codeB = getCode(b);
-                  return (codeA || '').toString().localeCompare((codeB || '').toString());
-                })
-                .map(account => {
-                const ledger = account.enriched_ledger || {};
-                const currency = ledger.r_currency || {};
-                const scale = currency.scale || 2;
-                
-                return (
-                  <tr key={account.account_id || account.account_extra_id} className="hover:bg-gray-50">
-                    <td 
-                      className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline"
-                      onClick={() => onViewAccount && onViewAccount(account)}
-                    >
-                      {account.account_id || account.account_extra_id || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {account.name || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {getAccountCodeDisplay(account)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {account.account_type || (account.account_code && account.account_code.type) || 'N/A'}
-                    </td>
-                    <td 
-                      className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 cursor-pointer hover:underline"
-                      onClick={() => ledger.ledger_id && onViewLedger && onViewLedger(ledger.ledger_id)}
-                    >
-                      {ledger.name || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
-                      {typeof account.balance === 'number' ? (
-                        <span className={account.balance < 0 ? 'text-red-600' : 'text-gray-900'}>
-                          {formatBalance(account.balance, scale)}
-                        </span>
-                      ) : 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                      <button 
-                        className="text-gray-600 hover:text-gray-800"
-                        onClick={() => onViewJson(account, `Account: ${account.name || 'N/A'}`)}
-                      >
-                        JSON
-                      </button>
-                    </td>
-                  </tr>
-                );
-              }) : (
-                <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">
-                    No accounts found for this entity
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )
-    }
-  ];
+  // Define the accounts table section
+  const accountsTableSection = {
+    label: 'Accounts',
+    content: (
+      <DataTableSection
+        data={entityAccounts || []}
+        title="Accounts"
+        columns={[
+          {
+            key: 'account_id',
+            header: 'ID',
+            cellClassName: 'text-blue-600 cursor-pointer hover:underline',
+            render: (account) => account.account_id || account.account_extra_id || 'N/A',
+            onClick: (account) => {
+              onViewAccount(account);
+              return true; // Prevent row click propagation
+            }
+          },
+          {
+            key: 'name',
+            header: 'Name',
+            cellClassName: 'font-medium text-gray-900',
+            render: (account) => account.name || 'N/A'
+          },
+          {
+            key: 'account_code',
+            header: 'Account Code',
+            render: (account) => getAccountCodeDisplay(account)
+          },
+          {
+            key: 'type',
+            header: 'Type',
+            render: (account) => account.account_type || (account.account_code && account.account_code.type) || 'N/A'
+          },
+          {
+            key: 'ledger',
+            header: 'Ledger',
+            cellClassName: (account) => account.enriched_ledger ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500',
+            render: (account) => account.enriched_ledger ? account.enriched_ledger.name : 'N/A',
+            onClick: (account) => {
+              if (account.enriched_ledger) {
+                onViewLedger(account.enriched_ledger.ledger_id);
+                return true; // Prevent row click propagation
+              }
+              return false;
+            }
+          },
+          {
+            key: 'balance',
+            header: 'Balance',
+            align: 'right',
+            cellClassName: (account) => getBalanceClass(account.balance),
+            render: (account) => {
+              const currency = getCurrencyInfo(account);
+              return formatBalance(account.balance, currency, true);
+            }
+          },
+          {
+            key: 'actions',
+            header: 'Actions',
+            align: 'center',
+            render: (account) => (
+              <button 
+                className="text-gray-600 hover:text-gray-800"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewJson(account, `Account: ${account.name || 'N/A'}`);
+                }}
+              >
+                JSON
+              </button>
+            )
+          }
+        ]}
+        sortFunction={(a, b) => {
+          // Extract account code from account_code or name
+          const getCode = (account) => {
+            if (account.account_code && typeof account.account_code === 'object') {
+              return String(account.account_code.account_code || '');
+            } else if (typeof account.account_code === 'string') {
+              return account.account_code;
+            } else if (account.name && account.name.includes('-')) {
+              return account.name.split('-')[0].trim();
+            }
+            return '';
+          };
+          const codeA = getCode(a);
+          const codeB = getCode(b);
+          return (codeA || '').toString().localeCompare((codeB || '').toString());
+        }}
+        onRowClick={(account) => onViewAccount(account)}
+        emptyMessage="No accounts found for this entity"
+      />
+    )
+  };
   
   return (
-    <DetailCard
+    <GenericDetailView
+      data={entity}
       title="Entity Detail"
       subtitle={entity.name}
-      sections={allSections}
-      actions={detailActions}
+      sections={basicSections}
+      childrenSections={[ledgersTableSection, accountsTableSection]}
+      onBack={onBack}
+      onRefresh={onRefresh}
+      onViewJson={onViewJson}
     />
   );
 };

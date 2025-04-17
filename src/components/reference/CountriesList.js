@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { StandardList } from '../common';
-import { fetchCountries } from '../../utils/apiService';
+import { GenericListView } from '../common';
+import apiService from '../../services/apiService';
 
 /**
- * Countries List component using StandardList for consistent behavior
+ * Countries List component using GenericListView
  */
 const CountriesList = ({ onViewJson, onRefresh }) => {
   const [countries, setCountries] = useState([]);
@@ -35,7 +35,7 @@ const CountriesList = ({ onViewJson, onRefresh }) => {
     const loadCountries = async () => {
       setLoading(true);
       try {
-        const data = await fetchCountries();
+        const data = await apiService.reference.getCountries();
         setCountries(data);
         setError(null);
       } catch (err) {
@@ -55,7 +55,7 @@ const CountriesList = ({ onViewJson, onRefresh }) => {
     } else {
       setLoading(true);
       try {
-        const data = await fetchCountries();
+        const data = await apiService.reference.getCountries();
         setCountries(data);
         setError(null);
       } catch (err) {
@@ -68,7 +68,7 @@ const CountriesList = ({ onViewJson, onRefresh }) => {
   };
 
   return (
-    <StandardList
+    <GenericListView
       data={countries}
       columns={columns}
       title="Countries"

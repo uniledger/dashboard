@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { LoadingSpinner, ErrorAlert } from '../common';
 import ProcessedEventsList from './ProcessedEventsList';
 import ProcessedEventDetail from './ProcessedEventDetail';
-
-// Direct fetch without CORS proxy
-
-const TRANSACTIONS_API_BASE_URL = 'https://transactions.dev.ledgerrocket.com';
+import apiService from '../../services/apiService';
 
 /**
  * Main component for the Processed Events tab
@@ -27,13 +25,7 @@ const ProcessedEventsView = ({ onViewJson }) => {
     setError(null);
     
     try {
-      const response = await fetch(`${TRANSACTIONS_API_BASE_URL}/api/v1/processed-events/`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch processed events: ${response.status} ${response.statusText}`);
-      }
-      
-      const data = await response.json();
+      const data = await apiService.transaction.getProcessedEvents();
       setEvents(data);
       setIsLoading(false);
     } catch (err) {
@@ -49,31 +41,20 @@ const ProcessedEventsView = ({ onViewJson }) => {
     setView('detail');
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-3 text-gray-600">Loading processed events...</p>
-        </div>
-      </div>
-    );
-  }
+  // Handle back button click
+  const handleBack = () => {
+    setSelectedEvent(null);
+    setView('list');
+  };
 
   // Error state
   if (error) {
     return (
-      <div className="bg-white shadow sm:rounded-lg p-6">
-        <div className="text-center text-red-500">
-          <p>Error: {error}</p>
-          <button 
-            className="mt-3 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={fetchProcessedEvents}
-          >
-            Retry
-          </button>
-        </div>
+      <div className="mb-6">
+        <ErrorAlert 
+          error={error} 
+          onRetry={fetchProcessedEvents} 
+        />
       </div>
     );
   }
@@ -86,13 +67,14 @@ const ProcessedEventsView = ({ onViewJson }) => {
           onSelectEvent={handleSelectEvent}
           onViewJson={onViewJson}
           onRefresh={fetchProcessedEvents}
+          loading={isLoading}
         />
       )}
       
       {view === 'detail' && selectedEvent && (
         <ProcessedEventDetail 
           event={selectedEvent}
-          onBack={() => setView('list')}
+          onBack={handleBack}
           onViewJson={onViewJson}
         />
       )}

@@ -1,95 +1,43 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import apiService from '../services/apiService';
+import useDataFetching from './useDataFetching';
 
 /**
- * Custom hook for managing ledgers data
+ * Custom hook for managing ledgers data, implementing the generic data fetching hook
  * @returns {Object} - Ledgers data and helper functions
  */
 const useLedgers = () => {
-  // State for ledgers data
-  const [ledgers, setLedgers] = useState([]);
-  const [selectedLedger, setSelectedLedger] = useState(null);
-  const [ledgerAccounts, setLedgerAccounts] = useState([]);
+  // Define API-specific fetching functions
+  const fetchAllLedgers = useCallback(() => {
+    return apiService.ledger.getLedgers();
+  }, []);
   
-  // Loading and error states
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  /**
-   * Fetch all ledgers
-   */
-  const fetchLedgers = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const data = await apiService.ledger.getLedgers();
-      setLedgers(data);
-      setLoading(false);
-      return data;
-    } catch (err) {
-      console.error('Error fetching ledgers:', err);
-      setError(err.message || 'An error occurred while fetching ledgers');
-      setLoading(false);
-      return null;
-    }
+  const fetchLedgerById = useCallback((ledgerId) => {
+    return apiService.ledger.getLedgerById(ledgerId);
   }, []);
-
-  /**
-   * Fetch ledger details by ID
-   * @param {string} ledgerId - Ledger ID to fetch
-   */
-  const fetchLedgerById = useCallback(async (ledgerId) => {
-    if (!ledgerId) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Fetch ledger details
-      const ledgerData = await apiService.ledger.getLedgerById(ledgerId);
-      setSelectedLedger(ledgerData);
-      
-      // Fetch accounts for the ledger
-      const ledgerAccountsData = await apiService.ledger.getLedgerAccounts(ledgerId);
-      setLedgerAccounts(ledgerAccountsData);
-      
-      setLoading(false);
-      return { ledger: ledgerData, accounts: ledgerAccountsData };
-    } catch (err) {
-      console.error('Error fetching ledger detail:', err);
-      setError(err.message || 'An error occurred while fetching ledger data');
-      setLoading(false);
-      return null;
-    }
+  
+  const fetchLedgerAccounts = useCallback((ledgerId) => {
+    return apiService.ledger.getLedgerAccounts(ledgerId);
   }, []);
-
-  /**
-   * Refresh accounts for a specific ledger
-   * @param {string} ledgerId - Ledger ID to refresh accounts for
-   */
-  const refreshLedgerAccounts = useCallback(async (ledgerId) => {
-    if (!ledgerId) return;
-    
-    try {
-      const accountsData = await apiService.ledger.getLedgerAccounts(ledgerId);
-      setLedgerAccounts(accountsData);
-      return accountsData;
-    } catch (err) {
-      console.error('Error refreshing ledger accounts:', err);
-      // Don't update error state on refresh to avoid disrupting the UI
-      return null;
-    }
-  }, []);
-
-  /**
-   * Clear the selected ledger and related data
-   */
-  const clearSelectedLedger = useCallback(() => {
-    setSelectedLedger(null);
-    setLedgerAccounts([]);
-  }, []);
-
+  
+  // Use the generic data fetching hook
+  const {
+    items: ledgers,
+    selectedItem: selectedLedger,
+    childItems: ledgerAccounts,
+    loading,
+    error,
+    fetchAllItems: fetchLedgers,
+    fetchItemById: fetchLedgerWithDetails,
+    refreshChildren: refreshLedgerAccounts,
+    clearSelectedItem: clearSelectedLedger,
+    setSelectedItem: setSelectedLedger
+  } = useDataFetching({
+    fetchAll: fetchAllLedgers,
+    fetchById: fetchLedgerById,
+    fetchChildren: fetchLedgerAccounts
+  });
+  
   return {
     // Data
     ledgers,
@@ -100,7 +48,7 @@ const useLedgers = () => {
     
     // Actions
     fetchLedgers,
-    fetchLedgerById,
+    fetchLedgerById: fetchLedgerWithDetails,
     refreshLedgerAccounts,
     clearSelectedLedger,
     setSelectedLedger

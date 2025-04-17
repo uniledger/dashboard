@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import { DetailCard, ActionButton } from '../common';
+import { GenericDetailView, ActionButton, DataTableSection } from '../common';
 
 /**
  * Component to display detailed information about a processed event
- * using the standard DetailCard component for consistency
+ * using the GenericDetailView component for consistency
  */
 const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
   // Parse original event JSON if available
@@ -32,8 +32,8 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
   // Return null if no event is provided
   if (!event) return null;
 
-  // Define actions for the detail card
-  const detailActions = (
+  // Define custom actions for the detail view
+  const customActions = (
     <>
       <ActionButton
         variant="outline"
@@ -58,7 +58,7 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
     </>
   );
 
-  // Define sections for the detail card
+  // Define basic sections for the detail view
   const basicSections = [
     {
       label: 'Event ID',
@@ -96,118 +96,131 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
     }
   ];
 
-  // Additional section for transfers
+  // Define children sections (tables)
+  const childrenSections = [];
+
+  // Add transfers section if available
   if (event.transfers && event.transfers.length > 0) {
-    basicSections.push({
+    childrenSections.push({
       label: 'Transfers',
       content: (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From Account</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To Account</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {event.transfers.map((transfer, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transfer.from_account?.name || transfer.from_account_id || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transfer.to_account?.name || transfer.to_account_id || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transfer.amount || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transfer.status || 'N/A'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTableSection
+          data={event.transfers}
+          title="Transfers"
+          columns={[
+            {
+              key: 'from_account',
+              header: 'From Account',
+              render: (transfer) => transfer.from_account?.name || transfer.from_account_id || 'N/A'
+            },
+            {
+              key: 'to_account',
+              header: 'To Account',
+              render: (transfer) => transfer.to_account?.name || transfer.to_account_id || 'N/A'
+            },
+            {
+              key: 'amount',
+              header: 'Amount',
+              render: (transfer) => transfer.amount || 'N/A'
+            },
+            {
+              key: 'status',
+              header: 'Status',
+              render: (transfer) => transfer.status || 'N/A'
+            }
+          ]}
+          emptyMessage="No transfers found"
+        />
       )
     });
   }
 
-  // Additional section for accounts
+  // Add accounts section if available
   if (event.accounts && Object.keys(event.accounts).length > 0) {
-    basicSections.push({
+    // Convert accounts object to array for DataTableSection
+    const accountsArray = Object.entries(event.accounts).map(([role, account]) => ({
+      role,
+      ...account
+    }));
+
+    childrenSections.push({
       label: 'Accounts',
       content: (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {Object.entries(event.accounts).map(([role, account], index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{role}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {account.name} (ID: {account.account_extra_id})
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {account.account_code?.type || 'N/A'}: {account.account_code?.account_code || 'N/A'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {account.entity?.name || 'N/A'} 
-                    {account.entity?.entity_id ? `(ID: ${account.entity.entity_id})` : ''}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTableSection
+          data={accountsArray}
+          title="Accounts"
+          columns={[
+            {
+              key: 'role',
+              header: 'Role',
+              cellClassName: 'font-medium text-gray-900'
+            },
+            {
+              key: 'name',
+              header: 'Account',
+              render: (row) => `${row.name} (ID: ${row.account_extra_id})`
+            },
+            {
+              key: 'account_code',
+              header: 'Type',
+              render: (row) => `${row.account_code?.type || 'N/A'}: ${row.account_code?.account_code || 'N/A'}`
+            },
+            {
+              key: 'entity',
+              header: 'Entity',
+              render: (row) => row.entity?.name ? `${row.entity.name} ${row.entity?.entity_id ? `(ID: ${row.entity.entity_id})` : ''}` : 'N/A'
+            }
+          ]}
+          emptyMessage="No accounts found"
+        />
       )
     });
   }
 
-  // Additional section for metadata
+  // Add metadata section if available
   if (event.metadata && Object.keys(event.metadata).length > 0) {
-    basicSections.push({
+    // Convert metadata object to array for DataTableSection, excluding original_event_json
+    const metadataArray = Object.entries(event.metadata)
+      .filter(([key]) => key !== 'original_event_json')
+      .map(([key, value]) => ({
+        key,
+        value: typeof value === 'object' ? JSON.stringify(value) : value.toString()
+      }));
+
+    childrenSections.push({
       label: 'Metadata',
       content: (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Key</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {Object.entries(event.metadata).filter(([key]) => key !== 'original_event_json').map(([key, value], index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{key}</td>
-                  <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">
-                    {typeof value === 'object' ? JSON.stringify(value) : value.toString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <DataTableSection
+          data={metadataArray}
+          title="Metadata"
+          columns={[
+            {
+              key: 'key',
+              header: 'Key',
+              cellClassName: 'font-medium text-gray-900'
+            },
+            {
+              key: 'value',
+              header: 'Value',
+              cellClassName: 'whitespace-normal text-gray-500'
+            }
+          ]}
+          emptyMessage="No metadata found"
+        />
       )
     });
   }
 
   return (
-    <DetailCard
+    <GenericDetailView
+      data={event}
       title="Processed Event Detail"
-      subtitle={null}
+      subtitle={`Event ID: ${event.event_id}`}
       sections={basicSections}
-      actions={detailActions}
+      childrenSections={childrenSections}
+      onBack={onBack}
+      onViewJson={onViewJson}
+      customActions={customActions}
     />
   );
 };

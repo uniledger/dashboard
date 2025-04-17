@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { StandardList } from '../common';
-import { fetchAccountCodes } from '../../utils/apiService';
+import { GenericListView } from '../common';
+import apiService from '../../services/apiService';
 
 /**
- * Account Codes List component using StandardList for consistent behavior
+ * Account Codes List component using GenericListView
  */
 const AccountCodesList = ({ onViewJson, onRefresh }) => {
   const [accountCodes, setAccountCodes] = useState([]);
@@ -41,7 +41,7 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
     const loadAccountCodes = async () => {
       setLoading(true);
       try {
-        const data = await fetchAccountCodes();
+        const data = await apiService.reference.getAccountCodes();
         setAccountCodes(data);
         setError(null);
       } catch (err) {
@@ -61,7 +61,7 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
     } else {
       setLoading(true);
       try {
-        const data = await fetchAccountCodes();
+        const data = await apiService.reference.getAccountCodes();
         setAccountCodes(data);
         setError(null);
       } catch (err) {
@@ -74,7 +74,7 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
   };
 
   return (
-    <StandardList
+    <GenericListView
       data={accountCodes}
       columns={columns}
       title="Account Codes"

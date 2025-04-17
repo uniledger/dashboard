@@ -1,28 +1,13 @@
 import React from 'react';
-import { StandardList } from '../common';
+import { GenericListView, RuleConfig } from '../common';
 
 /**
- * Component to display a list of rules using StandardList
+ * Component to display a list of rules using GenericListView
  */
-const RulesList = ({ rules, onSelectRule, onViewJson, onRefresh }) => {
-  // Define columns for the DataTable
+const RulesList = ({ rules, onSelectRule, onViewJson, onRefresh, loading }) => {
+  // Define additional columns to include with the base configuration
   const columns = [
-    {
-      key: 'rule_id',
-      header: 'ID',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
-      // Display the ID directly, consistent with other list views
-    },
-    {
-      key: 'action',
-      header: 'Action',
-      cellClassName: 'text-gray-500',
-    },
-    {
-      key: 'description',
-      header: 'Description',
-      cellClassName: 'text-gray-500',
-    },
+    ...RuleConfig.listColumns,
     {
       key: 'expression',
       header: 'Expression',
@@ -34,11 +19,12 @@ const RulesList = ({ rules, onSelectRule, onViewJson, onRefresh }) => {
   ];
 
   return (
-    <StandardList
+    <GenericListView
       data={rules}
       columns={columns}
       title="Rules"
-      idField="rule_id"
+      idField={RuleConfig.idField}
+      loading={loading}
       onItemClick={onSelectRule}
       onViewJson={onViewJson}
       onRefresh={onRefresh}
