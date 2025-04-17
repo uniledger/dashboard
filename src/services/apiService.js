@@ -3,9 +3,7 @@
  * Centralizes all API calls to maintain consistency and reduce duplication
  */
 
-// Base URLs for the different APIs
-const LEDGER_API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
-const TRANSACTIONS_API_BASE_URL = 'https://transactions.dev.ledgerrocket.com';
+import { endpoints } from '../config/api';
 
 /**
  * Generic fetch wrapper with error handling
@@ -37,7 +35,7 @@ const entityApi = {
    * @returns {Promise<Array>} - List of entities
    */
   getEntities: () => 
-    fetchWithErrorHandling(`${LEDGER_API_BASE_URL}/api/v1/enriched-entities/`),
+    fetchWithErrorHandling(endpoints.ledger.entities),
   
   /**
    * Get a specific entity by ID
@@ -45,7 +43,7 @@ const entityApi = {
    * @returns {Promise<Object>} - Entity data
    */
   getEntityById: (entityId) => 
-    fetchWithErrorHandling(`${LEDGER_API_BASE_URL}/api/v1/enriched-entities/${entityId}`),
+    fetchWithErrorHandling(endpoints.ledger.entityById(entityId)),
   
   /**
    * Get all ledgers for a specific entity
@@ -53,7 +51,7 @@ const entityApi = {
    * @returns {Promise<Array>} - List of ledgers for the entity
    */
   getEntityLedgers: (entityId) => 
-    fetchWithErrorHandling(`${LEDGER_API_BASE_URL}/api/v1/enriched-ledgers/?entity_id=${entityId}`),
+    fetchWithErrorHandling(endpoints.ledger.entityLedgers(entityId)),
   
   /**
    * Get all accounts for a specific entity
@@ -61,7 +59,7 @@ const entityApi = {
    * @returns {Promise<Array>} - List of accounts for the entity
    */
   getEntityAccounts: (entityId) => 
-    fetchWithErrorHandling(`${LEDGER_API_BASE_URL}/api/v1/entities/${entityId}/enriched-accounts/`)
+    fetchWithErrorHandling(endpoints.ledger.entityAccounts(entityId))
 };
 
 /**
@@ -73,7 +71,7 @@ const ledgerApi = {
    * @returns {Promise<Array>} - List of ledgers
    */
   getLedgers: () => 
-    fetchWithErrorHandling(`${LEDGER_API_BASE_URL}/api/v1/enriched-ledgers/`),
+    fetchWithErrorHandling(endpoints.ledger.ledgers),
   
   /**
    * Get a specific ledger by ID
@@ -81,7 +79,7 @@ const ledgerApi = {
    * @returns {Promise<Object>} - Ledger data
    */
   getLedgerById: (ledgerId) => 
-    fetchWithErrorHandling(`${LEDGER_API_BASE_URL}/api/v1/enriched-ledgers/${ledgerId}`),
+    fetchWithErrorHandling(endpoints.ledger.ledgerById(ledgerId)),
   
   /**
    * Get all accounts for a specific ledger
@@ -89,7 +87,7 @@ const ledgerApi = {
    * @returns {Promise<Array>} - List of accounts for the ledger
    */
   getLedgerAccounts: (ledgerId) => 
-    fetchWithErrorHandling(`${LEDGER_API_BASE_URL}/api/v1/ledgers/${ledgerId}/enriched-accounts/`)
+    fetchWithErrorHandling(endpoints.ledger.ledgerAccounts(ledgerId))
 };
 
 /**
@@ -101,7 +99,7 @@ const accountApi = {
    * @returns {Promise<Array>} - List of accounts
    */
   getAccounts: () => 
-    fetchWithErrorHandling(`${LEDGER_API_BASE_URL}/api/v1/enriched-accounts/`),
+    fetchWithErrorHandling(endpoints.ledger.accounts),
   
   /**
    * Get a specific account by ID
@@ -109,7 +107,7 @@ const accountApi = {
    * @returns {Promise<Object>} - Account data
    */
   getAccountById: (accountId) => 
-    fetchWithErrorHandling(`${LEDGER_API_BASE_URL}/api/v1/enriched-accounts/${accountId}`)
+    fetchWithErrorHandling(endpoints.ledger.accountById(accountId))
 };
 
 /**
@@ -121,21 +119,21 @@ const referenceApi = {
    * @returns {Promise<Array>} - List of currencies
    */
   getCurrencies: () => 
-    fetchWithErrorHandling(`${LEDGER_API_BASE_URL}/api/v1/currencies/`),
+    fetchWithErrorHandling(endpoints.ledger.currencies),
   
   /**
    * Get all countries
    * @returns {Promise<Array>} - List of countries
    */
   getCountries: () => 
-    fetchWithErrorHandling(`${LEDGER_API_BASE_URL}/api/v1/countries/`),
+    fetchWithErrorHandling(endpoints.ledger.countries),
   
   /**
    * Get all account codes
    * @returns {Promise<Array>} - List of account codes
    */
   getAccountCodes: () => 
-    fetchWithErrorHandling(`${LEDGER_API_BASE_URL}/api/v1/account-codes/`)
+    fetchWithErrorHandling(endpoints.ledger.accountCodes)
 };
 
 /**
@@ -147,14 +145,14 @@ const transactionApi = {
    * @returns {Promise<Array>} - List of templates
    */
   getTemplates: () => 
-    fetchWithErrorHandling(`${TRANSACTIONS_API_BASE_URL}/api/v1/templates/`),
+    fetchWithErrorHandling(endpoints.transaction.templates),
   
   /**
    * Get all processed events
    * @returns {Promise<Array>} - List of processed events
    */
   getProcessedEvents: () => 
-    fetchWithErrorHandling(`${TRANSACTIONS_API_BASE_URL}/api/v1/processed-events/`),
+    fetchWithErrorHandling(endpoints.transaction.processedEvents),
   
   /**
    * Submit an event based on a template
@@ -162,7 +160,7 @@ const transactionApi = {
    * @returns {Promise<Object>} - Response with status and transfer information
    */
   submitEvent: (eventData) => 
-    fetchWithErrorHandling(`${TRANSACTIONS_API_BASE_URL}/api/v1/events/`, {
+    fetchWithErrorHandling(endpoints.transaction.submitEvent, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
