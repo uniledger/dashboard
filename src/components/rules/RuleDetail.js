@@ -1,5 +1,5 @@
 import React from 'react';
-import { GenericDetailView, ActionButton, RuleConfig } from '../common';
+import { GenericDetailView, ActionButton } from '../common';
 
 /**
  * Component to display detailed rule information using GenericDetailView

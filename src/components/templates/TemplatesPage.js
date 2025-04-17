@@ -28,7 +28,7 @@ const TemplatesPage = ({ onViewJson }) => {
 
   const [view, setView] = useState('list'); // 'list', 'detail', or 'event-form'
   const [ledgers, setLedgers] = useState([]);
-  const [loadingLedgers, setLoadingLedgers] = useState(false);
+  const [setLoadingLedgers] = useState(false);
 
   // Update the view when selectedTemplate changes
   useEffect(() => {
@@ -40,24 +40,24 @@ const TemplatesPage = ({ onViewJson }) => {
   }, [selectedTemplate, view]);
 
   // Fetch ledgers when needed
+
   useEffect(() => {
+     const fetchLedgers = async () => {
+      setLoadingLedgers(true);
+      try {
+        const data = await apiService.ledger.getLedgers();
+        setLedgers(data);
+      } catch (error) {
+        console.error('Error fetching ledgers:', error);
+      } finally {
+        setLoadingLedgers(false);
+      }
+    };
     if (view === 'event-form') {
       fetchLedgers();
       fetchAccounts();
     }
-  }, [view, fetchAccounts]);
-
-  const fetchLedgers = async () => {
-    setLoadingLedgers(true);
-    try {
-      const data = await apiService.ledger.getLedgers();
-      setLedgers(data);
-    } catch (error) {
-      console.error('Error fetching ledgers:', error);
-    } finally {
-      setLoadingLedgers(false);
-    }
-  };
+  }, [view, fetchAccounts, setLoadingLedgers]);
 
   const handleViewJson = (data, title) => {
     if (onViewJson) {

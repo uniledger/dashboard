@@ -34,7 +34,6 @@ const useEntities = () => {
     error,
     fetchAllItems: fetchEntities,
     fetchItemById: fetchEntityWithDetails,
-    refreshChildren: refreshEntityLedgers,
     refreshSecondaryChildren: refreshEntityAccounts,
     clearSelectedItem: clearSelectedEntity,
     setSelectedItem: setSelectedEntity

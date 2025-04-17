@@ -12,20 +12,31 @@ import { endpoints } from '../config/api';
  * @returns {Promise<Object>} - The response data
  */
 const fetchWithErrorHandling = async (url, options = {}) => {
-  try {
-    const response = await fetch(url, options);
-    
-    if (!response.ok) {
-      // Get the raw response text
-      const errorText = await response.text();
-      throw new Error(errorText);
+    try {
+        const response = await fetch(url, options);
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            return {
+                ok: false,
+                status: response.status,
+                error: errorData,
+            };
+        }
+        const data = await response.json();
+        return {
+            ok: true,
+            data,
+        };
+    } catch (error) {
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+            return {
+                ok: false,
+                error: { message: 'Network error: Could not connect to the API.' },
+            };
+        }
+        return { ok: false, error: { message: error.message } };
     }
-    
-    return await response.json();
-  } catch (error) {
-    console.error(`Fetch error for ${url}:`, error);
-    throw error;
-  }
 };
 
 /**

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { GenericListView, AccountConfig, FilterBadge } from '../common';
-import { formatBalance, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
+import { GenericListView, AccountConfig } from '../common';
+import { formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
 import apiService from '../../services/apiService';
 import useAccounts from '../../hooks/useAccounts';
 import { useDashboard } from '../../context/DashboardContext';
 
-/**
+/** 
  * Account List component using GenericListView
  */
 const AccountList = () => {
@@ -14,8 +14,8 @@ const AccountList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const accountTypeFilter = searchParams.get('type');
   
-  const { handleViewJson, accountsFilter, setAccountsFilter, clearFilter } = useDashboard();
-  const { accounts, loading: accountsLoading, fetchAccounts, refreshAccountBalances } = useAccounts();
+  const { handleViewJson, setAccountsFilter } = useDashboard();
+  const { accounts, loading: accountsLoading, fetchAccounts, refreshAccountBalances } = useAccounts(); 
   
   const [entities, setEntities] = useState([]);
   const [ledgers, setLedgers] = useState([]);

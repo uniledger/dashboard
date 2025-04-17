@@ -2,6 +2,7 @@
  * Account-specific filtering logic
  */
 import { filterData } from './index';
+import { getAccountType } from '../accountUtils';
 
 /**
  * Filter account data by account type (handles different structures)
@@ -16,20 +17,8 @@ export const filterAccountsByType = (accounts, accountType) => {
 
   const normalizedType = accountType.toUpperCase();
 
-  return accounts.filter(account => {
-    // Extract account type from different possible structures
-    let accountTypeValue = 'OTHER';
-    
-    if (account.account_type) {
-      accountTypeValue = account.account_type.toUpperCase();
-    } else if (account.account_code && account.account_code.type) {
-      accountTypeValue = account.account_code.type.toUpperCase();
-    } else if (typeof account.account_code === 'object' && account.account_code.type) {
-      accountTypeValue = account.account_code.type.toUpperCase();
-    } else if (account.type) {
-      accountTypeValue = account.type.toUpperCase();
-    }
-    
+  return accounts.filter((account) => {
+    const accountTypeValue = getAccountType(account);
     return accountTypeValue === normalizedType;
   });
 };

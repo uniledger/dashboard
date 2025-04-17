@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LoadingSpinner, ErrorAlert } from '../common';
+import { ErrorAlert } from '../common';
 import ProcessedEventsList from './ProcessedEventsList';
 import ProcessedEventDetail from './ProcessedEventDetail';
 import apiService from '../../services/apiService';

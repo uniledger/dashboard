@@ -37,8 +37,10 @@ export const endpoints = {
   }
 };
 
-export default {
+const apiConfig = {
   LEDGER_API_BASE_URL,
   TRANSACTIONS_API_BASE_URL,
   endpoints
 };
+
+export default apiConfig;

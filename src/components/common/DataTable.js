@@ -22,8 +22,6 @@ const DataTable = ({
   className = '',
   idField = null
 }) => {
-  // If idField is not explicitly specified, use the key of the first column
-  const actualIdField = idField || (columns.length > 0 ? columns[0].key : null);
   
   // Make sure the first column is styled as a drilldown link if we have an onRowClick handler
   const processedColumns = columns.map((column, index) => {

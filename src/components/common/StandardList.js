@@ -113,13 +113,6 @@ const StandardList = ({
     }
   };
   
-  // Define JSON view function for the Actions column
-  const handleViewJson = (item) => {
-    if (onViewJson) {
-      onViewJson(item, `${title}: ${item[idField] || 'Detail'}`);
-    }
-  };
-  
   // Render action buttons for the section header
   const renderActions = () => (
     <>
