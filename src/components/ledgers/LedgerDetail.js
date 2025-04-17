@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GenericDetailView, DataTableSection, LedgerConfig } from '../common';
-import { formatBalance, getCountryDisplay, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters';
+import { formatBalance, getCountryDisplay, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
 import apiService from '../../services/apiService';
 import useLedgers from '../../hooks/useLedgers';
 import { useDashboard } from '../../context/DashboardContext';

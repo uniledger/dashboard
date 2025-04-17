@@ -9,51 +9,41 @@ const RuleDetail = ({ rule, onBack, onViewJson }) => {
   const sections = [
     {
       label: 'Rule ID',
-      content: rule?.rule_id
+      content: rule?.rule_id || 'N/A'
     },
     {
       label: 'Description',
-      content: rule?.description
+      content: rule?.description || 'No description available'
     },
     {
       label: 'Action',
-      content: rule?.action && (
+      content: rule?.action ? (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
           {rule.action}
         </span>
-      )
-    },
-    {
-      label: 'Status',
-      content: rule?.status && (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          rule.status === 'ACTIVE' 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-gray-100 text-gray-800'
-        }`}>
-          {rule.status}
-        </span>
-      )
+      ) : 'N/A'
     },
     {
       label: 'Expression',
-      content: rule?.expression && (
+      content: rule?.expression ? (
         <div className="bg-gray-50 p-4 rounded font-mono overflow-x-auto">
           {rule.expression}
         </div>
-      )
+      ) : 'No expression defined'
     }
   ];
 
   // Define custom actions
   const customActions = (
     <>
-      <ActionButton
-        variant="outline"
-        onClick={() => onViewJson(rule, `Rule ${rule?.rule_id}`)}
-      >
-        View JSON
-      </ActionButton>
+      {onViewJson && (
+        <ActionButton
+          variant="outline"
+          onClick={() => onViewJson(rule, `Rule ${rule?.rule_id}`)}
+        >
+          View JSON
+        </ActionButton>
+      )}
       <ActionButton
         variant="secondary"
         onClick={onBack}

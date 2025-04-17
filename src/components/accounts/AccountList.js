@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GenericListView, AccountConfig, FilterBadge } from '../common';
-import { formatBalance, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters';
+import { formatBalance, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
 import apiService from '../../services/apiService';
 import useAccounts from '../../hooks/useAccounts';
 import { useDashboard } from '../../context/DashboardContext';

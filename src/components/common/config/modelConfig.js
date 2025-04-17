@@ -2,7 +2,7 @@
  * Model configuration for the application
  * Centralizes common definitions for different model types
  */
-import { formatBalance, formatAccountCode, getCountryDisplay, getAccountType, getBalanceClass, getCurrencyInfo } from '../../../utils/formatters';
+import { formatBalance, formatAccountCode, getCountryDisplay, getAccountType, getBalanceClass, getCurrencyInfo } from '../../../utils/formatters/index';
 
 /**
  * Entity model configuration
@@ -467,7 +467,7 @@ export const ProcessedEventConfig = {
 export const RuleConfig = {
   title: 'Rule',
   idField: 'rule_id',
-  displayField: 'name',
+  displayField: 'rule_id',
   
   // Column definitions for list view
   listColumns: [
@@ -475,30 +475,6 @@ export const RuleConfig = {
       key: 'rule_id',
       header: 'ID',
       cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
-    },
-    {
-      key: 'name',
-      header: 'Name',
-      cellClassName: 'font-medium text-gray-900',
-    },
-    {
-      key: 'type',
-      header: 'Type',
-      cellClassName: 'text-gray-500',
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      cellClassName: (item) => {
-        return item.status === 'ACTIVE' 
-          ? 'text-green-600 font-medium' 
-          : 'text-gray-500';
-      }
-    },
-    {
-      key: 'created_date',
-      header: 'Created',
-      render: (item) => new Date(item.created_date * 1000).toLocaleString()
     }
   ]
 };
