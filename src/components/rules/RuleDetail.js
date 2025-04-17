@@ -55,8 +55,8 @@ const RuleDetail = ({ rule, onBack, onViewJson }) => {
 
   return (
     <DetailCard
-      title={null} // Don't show title since it's already in the nav bar
-      subtitle={null} // Don't show subtitle for rules
+      title="Rule Detail"
+      subtitle={null}
       sections={sections}
       actions={actions}
     />

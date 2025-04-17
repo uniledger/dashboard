@@ -204,7 +204,7 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
 
   return (
     <DetailCard
-      title={null}
+      title="Processed Event Detail"
       subtitle={null}
       sections={basicSections}
       actions={detailActions}

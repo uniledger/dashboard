@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { DetailCard, ActionButton } from '../common';
 import { formatBalance, getCountryDisplay } from '../../utils/formatters';
-
-const API_BASE_URL = 'https://ledger.dev.ledgerrocket.com';
+import apiService from '../../services/apiService';
+import { LEDGER_API_BASE_URL } from '../../config/api';
 
 /**
  * Ledger Detail component to display a single ledger with its accounts
@@ -30,7 +30,7 @@ const LedgerDetail = ({
     
     const fetchEntity = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/${ledger.entity_id}`);
+        const response = await fetch(`${LEDGER_API_BASE_URL}/api/v1/enriched-entities/${ledger.entity_id}`);
         const data = await response.json();
         setEntity(data);
       } catch (err) {
@@ -45,7 +45,7 @@ const LedgerDetail = ({
   useEffect(() => {
     const fetchEntities = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/enriched-entities/`);
+        const response = await fetch(`${LEDGER_API_BASE_URL}/api/v1/enriched-entities/`);
         const data = await response.json();
         setEntities(data);
       } catch (err) {
@@ -160,10 +160,10 @@ const LedgerDetail = ({
   
   return (
     <div>
-      {/* Ledger Details Card using standard DetailCard component - no title/subtitle */}
+      {/* Ledger Details Card using standard DetailCard component */}
       <DetailCard
-        title={null}
-        subtitle={null}
+        title="Ledger Detail"
+        subtitle={ledger.name}
         sections={detailSections}
         actions={detailActions}
       />

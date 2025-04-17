@@ -158,8 +158,8 @@ const TemplateDetail = ({ template, onBack, onViewJson, onUseTemplate }) => {
 
   return (
     <DetailCard
-      title={null}
-      subtitle={null}
+      title="Template Detail"
+      subtitle={template.name}
       sections={basicSections}
       actions={detailActions}
     />

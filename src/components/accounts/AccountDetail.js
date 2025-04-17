@@ -182,8 +182,8 @@ const AccountDetail = ({
   return (
     <div>
       <DetailCard
-        title={null}
-        subtitle={null}
+        title="Account Detail"
+        subtitle={account.name}
         sections={basicInfoSections}
         actions={detailActions}
       />
