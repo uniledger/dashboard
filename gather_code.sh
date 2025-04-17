@@ -10,6 +10,9 @@ EXCLUDE_DIRS=("node_modules" "dist" "build" ".git")
 # Relevant file extensions
 RELEVANT_EXTENSIONS=("js" "jsx" "ts" "tsx" "json" "env" "eslintrc" "config")
 
+EXCLUDE_FILES=("package-lock.json" "yarn.lock" "pnpm-lock.yaml")
+
+
 # Generate directory structure using tree command
 echo "Generating directory structure..."
 echo "Directory Structure:" > "$OUTPUT_FILE"
@@ -18,6 +21,14 @@ echo "" >> "$OUTPUT_FILE"
 
 # Function to check if a file has a relevant extension
 is_relevant_file() {
+    # Check if file is in exclude list
+    local filename=$(basename "$file")
+    for exclude in "${EXCLUDE_FILES[@]}"; do
+        if [[ "$filename" == "$exclude" ]]; then
+            return 1
+        fi
+    done
+
     local file="$1"
     for ext in "${RELEVANT_EXTENSIONS[@]}"; do
         if [[ "$file" == *".$ext" ]]; then
