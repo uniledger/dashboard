@@ -1,16 +1,53 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GenericListView, LedgerConfig } from '../common';
+import useLedgers from '../../hooks/useLedgers';
+import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * Ledger List component using GenericListView
  */
-const LedgerList = ({ 
-  ledgers,
-  onViewDetails,
-  onViewJson,
-  onRefresh,
-  onViewEntity
-}) => {
+const LedgerList = () => {
+  const navigate = useNavigate();
+  const { handleViewJson } = useDashboard();
+  const { ledgers, loading, fetchLedgers } = useLedgers();
+  
+  // Fetch ledgers when component mounts
+  useEffect(() => {
+    fetchLedgers();
+  }, [fetchLedgers]);
+  
+  // Navigate to entity detail view
+  const handleViewEntity = (entity) => {
+    console.log("Entity to navigate to:", entity);
+    
+    // Handle different entity structures
+    let entityId;
+    
+    if (typeof entity === 'string') {
+      // If it's already a string ID
+      entityId = entity;
+    } else if (typeof entity === 'object' && entity !== null) {
+      // Try all possible locations for entity_id
+      entityId = entity.entity_id;
+    }
+    
+    console.log("Extracted entityId:", entityId);
+    
+    if (entityId) {
+      navigate(`/entities/${entityId}`);
+    } else {
+      console.error("Could not extract entity ID from:", entity);
+    }
+  };
+  
+  // Navigate to ledger detail view
+  const handleViewLedger = (ledger) => {
+    // Make sure we have a string ID, not an object
+    const id = typeof ledger === 'object' ? ledger.ledger_id : ledger;
+    navigate(`/ledgers/${id}`);
+  };
+  
   // Add entity navigation to columns
   const columns = [...LedgerConfig.listColumns];
   
@@ -24,11 +61,30 @@ const LedgerList = ({
         return entityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
       },
       onClick: (ledger) => {
-        const entityId = ledger.r_entity?.entity_id || ledger.entity_id || (ledger.entity && ledger.entity.entity_id);
-        if (entityId && onViewEntity) {
-          onViewEntity(entityId);
+        console.log("Ledger clicked:", ledger);
+        
+        // Get entity ID directly from various possible locations
+        let entityId;
+        
+        if (ledger.r_entity && ledger.r_entity.entity_id) {
+          // If we have a nested r_entity object
+          entityId = ledger.r_entity.entity_id;
+        } else if (ledger.entity && ledger.entity.entity_id) {
+          // If we have a nested entity object
+          entityId = ledger.entity.entity_id;
+        } else if (ledger.entity_id) {
+          // If we have a direct entity_id property
+          entityId = ledger.entity_id;
+        }
+        
+        console.log("Entity ID from ledger:", entityId);
+        
+        if (entityId) {
+          // Navigate directly with the ID, not the object
+          navigate(`/entities/${entityId}`);
           return true; // Prevent row click propagation
         }
+        
         return false;
       }
     };
@@ -40,11 +96,12 @@ const LedgerList = ({
       columns={columns}
       title="Ledgers"
       idField={LedgerConfig.idField}
-      onItemClick={onViewDetails}
-      onViewJson={onViewJson}
-      onRefresh={onRefresh}
+      onItemClick={handleViewLedger}
+      onViewJson={handleViewJson}
+      onRefresh={fetchLedgers}
       searchPlaceholder="Search ledgers..."
       emptyMessage="No ledgers found"
+      loading={loading}
     />
   );
 };

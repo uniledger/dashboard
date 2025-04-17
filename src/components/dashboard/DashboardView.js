@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '../shared/PageHeader';
 import { formatBalance } from '../../utils/formatters';
+import useDashboardData from '../../hooks/useDashboardData';
 
 /**
  * Dashboard View component to display a system overview with financial statements
  */
-const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccounts }) => {
+const DashboardView = () => {
+  const navigate = useNavigate();
+  const { dashboardData, loading, fetchAllDashboardData, refreshAccountBalances } = useDashboardData();
+  const { entities = [], ledgers = [], accounts = [] } = dashboardData;
+  
+  // Fetch dashboard data when component mounts
+  useEffect(() => {
+    fetchAllDashboardData();
+  }, [fetchAllDashboardData]);
   const [balanceSheetData, setBalanceSheetData] = useState({
     assets: 0,
     liabilities: 0,
@@ -188,12 +198,24 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
   // Calculate total equity including retained earnings
   const totalEquity = balanceSheetData.equity + balanceSheetData.retainedEarnings;
 
+  // Show loading indicator
+  if (loading && (!entities.length || !accounts.length)) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-3 text-gray-700">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <PageHeader 
         title={`Financial Overview as of ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`}
         refreshButton={true}
-        onRefresh={onRefresh}
+        onRefresh={refreshAccountBalances}
       />
       
 
@@ -220,7 +242,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
                   <td className="py-2 text-gray-700">Total Assets</td>
                   <td 
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${balanceSheetData.assets < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => onDrillToAccounts('ASSET')}
+                    onClick={() => navigate('/accounts?type=ASSET')}
                     title="Click to view all asset accounts"
                   >
                     {formatCurrency(-balanceSheetData.assets)}
@@ -238,7 +260,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
                   <td className="py-2 text-gray-700">Total Liabilities</td>
                   <td 
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${balanceSheetData.liabilities < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => onDrillToAccounts('LIABILITY')}
+                    onClick={() => navigate('/accounts?type=LIABILITY')}
                     title="Click to view all liability accounts"
                   >
                     {formatCurrency(balanceSheetData.liabilities)}
@@ -256,7 +278,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
                   <td className="py-2 text-gray-700">Contributed Capital</td>
                   <td 
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${balanceSheetData.equity < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => onDrillToAccounts('EQUITY')}
+                    onClick={() => navigate('/accounts?type=EQUITY')}
                     title="Click to view all equity accounts"
                   >
                     {formatCurrency(balanceSheetData.equity)}
@@ -308,7 +330,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
                   <td className="py-2 text-gray-700">Total Revenue</td>
                   <td 
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${incomeStatementData.revenue < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => onDrillToAccounts('REVENUE')}
+                    onClick={() => navigate('/accounts?type=REVENUE')}
                     title="Click to view all revenue accounts"
                   >
                     {formatCurrency(incomeStatementData.revenue)}
@@ -326,7 +348,7 @@ const DashboardView = ({ entities, ledgers, accounts, onRefresh, onDrillToAccoun
                   <td className="py-2 text-gray-700">Total Expenses</td>
                   <td 
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${incomeStatementData.expenses < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => onDrillToAccounts('EXPENSE')}
+                    onClick={() => navigate('/accounts?type=EXPENSE')}
                     title="Click to view all expense accounts"
                   >
                     {formatCurrency(incomeStatementData.expenses)}

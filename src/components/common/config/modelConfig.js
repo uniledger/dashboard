@@ -89,7 +89,11 @@ export const LedgerConfig = {
     {
       key: 'entity',
       header: 'Owner',
-      render: (ledger) => ledger.r_entity ? ledger.r_entity.name : (ledger.entity ? ledger.entity.name : 'N/A')
+      // Use a more explicit render function that includes the entity ID in a data attribute
+      render: (ledger) => {
+        // Just return the name - clicking will be handled by the column's onClick handler
+        return ledger.r_entity ? ledger.r_entity.name : (ledger.entity ? ledger.entity.name : 'N/A');
+      }
     },
     {
       key: 'currency',

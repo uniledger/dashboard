@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 
 // Using unicode emojis instead of icon libraries to avoid dependencies
 const icons = {
@@ -20,26 +21,26 @@ const icons = {
 /**
  * Sidebar navigation component
  */
-const Sidebar = ({ activeTab, onTabChange, collapsed, setCollapsed }) => {
+const Sidebar = ({ collapsed, setCollapsed }) => {
   // Define navigation items with icons and categories
   const mainTabs = [
-    { id: 'dashboard', name: 'Balance Sheet', icon: 'BarChart2' },
-    { id: 'ledgers', name: 'Ledgers', icon: 'Book' },
-    { id: 'accounts', name: 'Accounts', icon: 'Briefcase' },
-    { id: 'entities', name: 'Entities', icon: 'Users' },
+    { id: 'dashboard', path: '/dashboard', name: 'Balance Sheet', icon: 'BarChart2' },
+    { id: 'ledgers', path: '/ledgers', name: 'Ledgers', icon: 'Book' },
+    { id: 'accounts', path: '/accounts', name: 'Accounts', icon: 'Briefcase' },
+    { id: 'entities', path: '/entities', name: 'Entities', icon: 'Users' },
   ];
 
   const referenceTabs = [
-    { id: 'currencies', name: 'Currencies', icon: 'DollarSign' },
-    { id: 'countries', name: 'Countries', icon: 'Globe' },
-    { id: 'account-codes', name: 'Account Codes', icon: 'Tag' },
+    { id: 'currencies', path: '/currencies', name: 'Currencies', icon: 'DollarSign' },
+    { id: 'countries', path: '/countries', name: 'Countries', icon: 'Globe' },
+    { id: 'account-codes', path: '/account-codes', name: 'Account Codes', icon: 'Tag' },
   ];
 
   const transactionTabs = [
-    { id: 'templates', name: 'Templates', icon: 'FileText' },
-    { id: 'event-entry', name: 'Event Entry', icon: 'PlusCircle' }, // New menu item
-    { id: 'processed-events', name: 'Processed Events', icon: 'CheckSquare' },
-    { id: 'rules', name: 'Rules', icon: 'Shield' },
+    { id: 'templates', path: '/templates', name: 'Templates', icon: 'FileText' },
+    { id: 'event-entry', path: '/event-entry', name: 'Event Entry', icon: 'PlusCircle' },
+    { id: 'processed-events', path: '/processed-events', name: 'Processed Events', icon: 'CheckSquare' },
+    { id: 'rules', path: '/rules', name: 'Rules', icon: 'Shield' },
   ];
 
   // Render navigation item
@@ -47,18 +48,17 @@ const Sidebar = ({ activeTab, onTabChange, collapsed, setCollapsed }) => {
     const icon = icons[tab.icon];
     
     return (
-      <button
+      <NavLink
         key={tab.id}
-        onClick={() => onTabChange(tab.id)}
-        className={`flex items-center w-full py-2 px-3 my-1 rounded ${collapsed ? 'justify-center' : 'px-4'} ${
-          activeTab === tab.id
-            ? 'bg-blue-50 text-blue-600'
-            : 'text-gray-600 hover:bg-gray-50'
-        }`}
+        to={tab.path}
+        className={({ isActive }) => `
+          flex items-center w-full py-2 px-3 my-1 rounded ${collapsed ? 'justify-center' : 'px-4'} 
+          ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}
+        `}
       >
         <span className={`${collapsed ? '' : 'mr-3'} text-lg`}>{icon}</span>
         {!collapsed && <span className="text-sm">{tab.name}</span>}
-      </button>
+      </NavLink>
     );
   };
 
