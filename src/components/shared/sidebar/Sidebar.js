@@ -1,21 +1,22 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-
-// Using unicode emojis instead of icon libraries to avoid dependencies
+import {
+  BarChart, BookOpen, Briefcase, Users, DollarSign, Globe, Tag, FileText,
+  CheckSquare, Shield, PlusCircle, ChevronLeft, ChevronRight,
+} from 'lucide-react';
+ 
 const icons = {
-  BarChart2: '📊',
-  Book: '📘',
-  Briefcase: '💼',
-  Users: '👥',
-  DollarSign: '💱',
-  Globe: '🌎',
-  Tag: '🏷️',
-  FileText: '📄',
-  CheckSquare: '✅',
-  Shield: '🛡️',
-  ChevronLeft: '◀️',
-  ChevronRight: '▶️',
-  PlusCircle: '➕' // Added for Event Entry
+  BarChart2: BarChart,
+  Book: BookOpen,
+  Briefcase: Briefcase, 
+  Users: Users,
+  DollarSign: DollarSign,
+  Globe: Globe,
+  Tag: Tag,
+  FileText: FileText,
+  CheckSquare: CheckSquare,
+  Shield: Shield,  
+  PlusCircle: PlusCircle
 };
 
 /**
@@ -45,21 +46,21 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   // Render navigation item
   const renderNavItem = (tab) => {
-    const icon = icons[tab.icon];
+    const IconComponent = icons[tab.icon];
     
     return (
       <NavLink
         key={tab.id}
         to={tab.path}
-        className={({ isActive }) => `
+        className={({ isActive }) => ` 
           flex items-center w-full py-2 px-3 my-1 rounded ${collapsed ? 'justify-center' : 'px-4'} 
           ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}
         `}
       >
-        <span className={`${collapsed ? '' : 'mr-3'} text-lg`}>{icon}</span>
+        <span className={`${collapsed ? '' : 'mr-3'} text-lg`}><IconComponent /></span>
         {!collapsed && <span className="text-sm">{tab.name}</span>}
       </NavLink>
-    );
+    ); 
   };
 
   // Render section with header
@@ -78,7 +79,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     <div className={`bg-white border-r border-gray-200 transition-all duration-300 flex flex-col h-full ${collapsed ? 'w-14' : 'w-56'}`}>
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 bg-gray-50">
         {!collapsed && (
-          <div className="text-xl font-bold text-gray-900 flex items-center">
+          <div className="text-xl font-bold text-gray-900 flex items-center mr-2">
             <span className="mr-2">🚀</span>
             Ledger Rocket
           </div>
@@ -90,9 +91,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1 rounded-md text-gray-500 hover:bg-gray-200 ml-auto"
+          className="p-1 rounded-md text-gray-500 hover:bg-gray-200 ml-auto mr-2"
         >
-          <span className="text-lg">{collapsed ? icons.ChevronRight : icons.ChevronLeft}</span>
+          <span className="text-xl">{collapsed ? <ChevronRight /> : <ChevronLeft />}</span>
         </button>
       </div>
       

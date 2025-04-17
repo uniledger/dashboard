@@ -1,5 +1,6 @@
 import React from 'react';
-
+import { FileJson } from 'lucide-react';
+import { Tooltip } from "@nextui-org/react";
 /**
  * Reusable action button component with consistent styling
  * @param {Object} props - Component props
@@ -16,10 +17,24 @@ const ActionButton = ({
   icon, 
   variant = 'primary', 
   onClick, 
-  className = '',
-  disabled = false
+    className = '',
+    disabled = false,
+    jsonButton=false
 }) => {
-  // Define button styles based on variant
+    
+    if (jsonButton)
+    {
+        return (
+          <Tooltip content="View JSON">
+                <button onClick={onClick} className="inline-flex items-center justify-center px-4 py-2 border text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 border-transparent text-white bg-gray-600 hover:bg-gray-700 focus:ring-gray-500">
+                    <FileJson className="mr-2 -ml-1 h-5 w-5"/>
+                </button>
+            </Tooltip>
+      );
+    }
+
+
+    // Define button styles based on variant
   const baseStyle = "inline-flex items-center justify-center px-4 py-2 border text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2";
   
   const variantStyles = {
@@ -47,5 +62,6 @@ const ActionButton = ({
     </button>
   );
 };
-
+    
+    
 export default ActionButton;
