@@ -43,13 +43,12 @@ const StandardList = ({
   emptyMessage = "No items found",
   searchQuery: externalSearchQuery,
   setSearchQuery: setExternalSearchQuery
-}) => {
+}) => {  
   // Use internal state if external search query is not provided
   const [internalSearchQuery, setInternalSearchQuery] = useState('');
   
   // Determine whether to use external or internal search state
-  const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
-  const setSearchQuery = setExternalSearchQuery || setInternalSearchQuery;
+  const setSearchQuery = setExternalSearchQuery || setInternalSearchQuery;  
   
   // Don't do client-side filtering, just use the data as is
   const filteredData = data;
@@ -64,19 +63,6 @@ const StandardList = ({
     }
     return column;
   });
-  
-  /**
-   * Handle search input change
-   * @param {Event} e - Input change event
-   */
-  const handleSearchChange = (e) => {
-    const newValue = e.target.value;
-    setSearchQuery(newValue);
-    
-    if (onSearch) {
-      onSearch(newValue);
-    }
-  };
   
   /**
    * Handle refreshing data
