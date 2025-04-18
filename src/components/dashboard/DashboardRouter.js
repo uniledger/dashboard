@@ -58,8 +58,8 @@ const DashboardRoutes = () => {
         <Route path="account-codes" element={<AccountCodesList />} />
         
         {/* Transactions */}
-        <Route path="templates" element={<TemplatesPage />} />
-        <Route path="event-entry" element={<EventEntryPage />} />
+        <Route path="templates" element={<TemplatesPage onViewJson={handleViewJson} />} />
+        <Route path="event-entry" element={<EventEntryPage onViewJson={handleViewJson} />} />
         <Route path="processed-events" element={<ProcessedEventsView onViewJson={handleViewJson} />} />
         <Route path="rules" element={<RulesView onViewJson={handleViewJson} />} />
         

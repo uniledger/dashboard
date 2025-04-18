@@ -35,12 +35,23 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
     const loadCurrencies = async () => {
       setLoading(true);
       try {
-        const data = await apiService.reference.getCurrencies();
-        setCurrencies(data);
-        setError(null);
+        const response = await apiService.reference.getCurrencies();
+        console.log('CurrenciesList response:', response);
+        
+        // Extract data from the response object
+        if (response.ok && response.data) {
+          setCurrencies(response.data);
+          console.log('CurrenciesList setting currencies:', response.data.length, 'items');
+          setError(null);
+        } else {
+          console.error('Failed to load currencies:', response.error);
+          setError('Failed to load currencies. Please try again.');
+          setCurrencies([]);
+        }
       } catch (err) {
         console.error('Error loading currencies:', err);
         setError('Failed to load currencies. Please try again.');
+        setCurrencies([]);
       } finally {
         setLoading(false);
       }
@@ -55,9 +66,18 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
     } else {
       setLoading(true);
       try {
-        const data = await apiService.reference.getCurrencies();
-        setCurrencies(data);
-        setError(null);
+        const response = await apiService.reference.getCurrencies();
+        console.log('CurrenciesList refresh response:', response);
+        
+        // Extract data from the response object
+        if (response.ok && response.data) {
+          setCurrencies(response.data);
+          console.log('CurrenciesList refresh setting currencies:', response.data.length, 'items');
+          setError(null);
+        } else {
+          console.error('Failed to refresh currencies:', response.error);
+          setError('Failed to refresh currencies. Please try again.');
+        }
       } catch (err) {
         console.error('Error refreshing currencies:', err);
         setError('Failed to refresh currencies. Please try again.');

@@ -31,14 +31,28 @@ const useTransactions = () => {
     setError(prev => ({ ...prev, templates: null }));
     
     try {
-      const data = await apiService.transaction.getTemplates();
-      setTemplates(data);
+      const response = await apiService.transaction.getTemplates();
+      console.log('Templates response:', response);
+      
+      // Extract data from the response object
+      if (response.ok && response.data) {
+        setTemplates(response.data);
+        console.log('Setting templates:', response.data.length, 'items');
+      } else {
+        console.error('Failed to fetch templates:', response.error);
+        setError(prev => ({ 
+          ...prev, 
+          templates: response.error?.message || 'Failed to fetch templates'
+        }));
+        setTemplates([]);
+      }
     } catch (err) {
       console.error('Error fetching templates:', err);
       setError(prev => ({ 
         ...prev, 
         templates: err.message || 'An error occurred while fetching templates'
       }));
+      setTemplates([]);
     } finally {
       setLoading(prev => ({ ...prev, templates: false }));
     }
@@ -82,7 +96,19 @@ const useTransactions = () => {
     
     try {
       const response = await apiService.transaction.submitEvent(eventData);
+      console.log('Event submission response:', response);
+      
       setLoading(prev => ({ ...prev, submission: false }));
+      
+      if (!response.ok) {
+        console.error('Failed to submit event:', response.error);
+        setError(prev => ({ 
+          ...prev, 
+          submission: response.error?.message || 'Failed to submit event'
+        }));
+        throw new Error(response.error?.message || 'Failed to submit event');
+      }
+      
       return response;
     } catch (err) {
       console.error('Error submitting event:', err);

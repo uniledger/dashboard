@@ -25,7 +25,6 @@ const LedgerDetail = () => {
   
   // All hooks must be at the top level
   const [entity, setEntity] = useState(null);
-  const [entities, setEntities] = useState([]);
   
   // Fetch ledger data when component mounts or ledgerId changes
     useEffect(() => {
@@ -53,18 +52,7 @@ const LedgerDetail = () => {
     fetchEntity();
   }, [ledger]);
   
-  // Fetch all entities for linking accounts to their owners
-  useEffect(() => {
-    const fetchEntities = async () => {
-      try {
-        const data = await apiService.entity.getEntities();
-        setEntities(data);
-      } catch (err) {
-        console.error('Error fetching entities:', err);
-      }
-    };
-    fetchEntities();
-  }, []);
+  // We don't need to fetch entities anymore
 
   // Early return if no ledger, but after hooks are declared
   if (!ledger) return null;
@@ -85,20 +73,14 @@ const LedgerDetail = () => {
     return formatAccountCode(account.account_code || account.code);
   };
   
-  // Helper function to find entity for an account
-  const getEntityForAccount = (account) => {
-    // Get entity ID from account or its ledger
-    const entityId = account.entity_id || 
-      (account.enriched_ledger && account.enriched_ledger.entity_id) ||
-      (account.entity && account.entity.entity_id);
-    
-    if (!entityId) {
-      return null;
-    }
-    
-    // Find entity in our fetched list
-    const foundEntity = entities.find(e => e.entity_id === entityId);
-    return foundEntity;
+  // Helper function to get entity information from account object directly
+  const getEntityInfo = (account) => {
+    return {
+      name: account.entity?.name || account.enriched_ledger?.entity?.name || 'N/A',
+      entity_id: account.entity_id || 
+                 (account.enriched_ledger && account.enriched_ledger.entity_id) ||
+                 (account.entity && account.entity.entity_id)
+    };
   };
   
   // Get entity from ledger or from separate fetch
@@ -165,18 +147,15 @@ const LedgerDetail = () => {
             key: 'entity',
             header: 'Account Owner',
             cellClassName: (account) => {
-              const accountEntity = getEntityForAccount(account);
-              const accountEntityId = accountEntity?.entity_id || account.entity_id;
-              return accountEntityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
+              const entityInfo = getEntityInfo(account);
+              return entityInfo.entity_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
             },
             render: (account) => {
-              const accountEntity = getEntityForAccount(account);
-              const entityName = accountEntity ? accountEntity.name : (account.entity ? account.entity.name : 'N/A');
-              const entityId = accountEntity?.entity_id || account.entity_id || (account.entity && account.entity.entity_id);
+              const entityInfo = getEntityInfo(account);
               
-              return entityId ? (
-                <Link to={`/entities/${entityId}`}>{entityName}</Link>
-              ) : entityName;
+              return entityInfo.entity_id ? (
+                <Link to={`/entities/${entityInfo.entity_id}`}>{entityInfo.name}</Link>
+              ) : entityInfo.name;
             }
           },
           {

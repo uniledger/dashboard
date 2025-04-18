@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid'; // You may need to add this dependency
 /**
  * Component for creating and submitting events based on templates
  */
-const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJson }) => {
+const EventForm = ({ template, ledgers, accounts, loading = false, onBack, onSubmitEvent, onViewJson }) => {
   // Helper function to get the ledger ID for a transfer
   const getLedgerId = (transfer) => {
     // Try all possible property paths where ledger ID might be found
@@ -86,19 +86,25 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
     // Analyze the template legs to find account references
     const accountKeys = new Set();
     
-    template.legs.forEach(leg => {
-      // Check if the debit_account contains an accounts reference
-      const debitMatch = leg.debit_account.match(/accounts\['([^']+)'\]/);
-      if (debitMatch) {
-        accountKeys.add(debitMatch[1]);
-      }
-      
-      // Check if the credit_account contains an accounts reference
-      const creditMatch = leg.credit_account.match(/accounts\['([^']+)'\]/);
-      if (creditMatch) {
-        accountKeys.add(creditMatch[1]);
-      }
-    });
+    if (Array.isArray(template.legs)) {
+      template.legs.forEach(leg => {
+        if (leg && typeof leg.debit_account === 'string') {
+          // Check if the debit_account contains an accounts reference
+          const debitMatch = leg.debit_account.match(/accounts\['([^']+)'\]/);
+          if (debitMatch) {
+            accountKeys.add(debitMatch[1]);
+          }
+        }
+        
+        if (leg && typeof leg.credit_account === 'string') {
+          // Check if the credit_account contains an accounts reference
+          const creditMatch = leg.credit_account.match(/accounts\['([^']+)'\]/);
+          if (creditMatch) {
+            accountKeys.add(creditMatch[1]);
+          }
+        }
+      });
+    }
     
     return Array.from(accountKeys);
   };
@@ -187,7 +193,13 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
       };
       
       const response = await onSubmitEvent(eventDataToSubmit);
-      setEventResponse(response);
+      console.log('Event submission response:', response);
+      
+      if (response.ok && response.data) {
+        setEventResponse(response.data);
+      } else {
+        setError(response.error?.message || 'Failed to submit event');
+      }
       setIsLoading(false);
     } catch (err) {
       setError(err.message || 'An error occurred while submitting the event');
@@ -233,28 +245,31 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
         {eventResponse && (
           <div className="mt-4 p-4 border rounded-md bg-gray-50">
             <div className="flex justify-between items-start">
-            <div className="flex items-center space-x-4">
-              <h4 className="text-md font-medium text-gray-900">Event Response</h4>
-            <button
-              type="button"
-              onClick={() => onViewJson && onViewJson(eventData, 'Original Event JSON')}
-                className="text-sm text-blue-600 hover:text-blue-500 px-2 py-1 border border-blue-200 rounded"
-            >
-                View Event JSON
-                </button>
-                </div>
+              <div className="flex items-center space-x-4">
+                <h4 className="text-md font-medium text-gray-900">Event Response</h4>
                 <button
                   type="button"
-                  onClick={resetForm}
-                  className="text-sm text-blue-600 hover:text-blue-500"
+                  onClick={() => {
+                    console.log('Viewing event JSON:', eventData);
+                    if (onViewJson) onViewJson(eventData, 'Original Event JSON');
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-500 px-2 py-1 border border-blue-200 rounded"
                 >
-                  Create Another Event
+                  View Event JSON
                 </button>
               </div>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="text-sm text-blue-600 hover:text-blue-500"
+              >
+                Create Another Event
+              </button>
+            </div>
             <div className="mt-2">
-              <p className="text-sm text-gray-600">Status: {eventResponse.status}</p>
+              <p className="text-sm text-gray-600">Status: {eventResponse.status || 'Complete'}</p>
               
-              {eventResponse.transfers && eventResponse.transfers.length > 0 && (
+              {eventResponse && eventResponse.transfers && eventResponse.transfers.length > 0 && (
                 <div className="mt-3">
                   <h5 className="text-sm font-medium text-gray-900">Generated Transfers:</h5>
                   <div className="mt-2 overflow-x-auto">
@@ -281,7 +296,11 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transfer.code}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
                               <button
-                                onClick={() => onViewJson && onViewJson(transfer, `Transfer: ${formatId(transfer.id)}`)}
+                                type="button"
+                                onClick={() => {
+                                  console.log('Viewing transfer JSON:', transfer);
+                                  if (onViewJson) onViewJson(transfer, `Transfer: ${formatId(transfer.id)}`);
+                                }}
                                 className="text-blue-500 hover:text-blue-700"
                               >
                                 View JSON
@@ -344,12 +363,16 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
                   onChange={(e) => setEventData({ ...eventData, ledger_id: e.target.value })}
                   required
                 >
-                  <option value="">Select a ledger</option>
-                  {ledgers && ledgers.map((ledger) => (
-                    <option key={ledger.ledger_id} value={ledger.ledger_id}>
-                      {ledger.name} (ID: {ledger.ledger_id})
-                    </option>
-                  ))}
+                  <option value="">{loading ? 'Loading ledgers...' : 'Select a ledger'}</option>
+                  {Array.isArray(ledgers) && ledgers.length > 0 ? (
+                    ledgers.map((ledger) => (
+                      <option key={ledger.ledger_id} value={ledger.ledger_id}>
+                        {ledger.name} (ID: {ledger.ledger_id})
+                      </option>
+                    ))
+                  ) : !loading ? (
+                    <option value="" disabled>No ledgers available</option>
+                  ) : null}
                 </select>
               </div>
             </div>
@@ -392,11 +415,13 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
                         required
                       >
                         <option value="">Select an account</option>
-                        {accounts && accounts.map((account) => (
-                          <option key={account.account_extra_id} value={account.account_extra_id}>
-                            {account.name} (ID: {account.account_extra_id})
+                        {Array.isArray(accounts) ? accounts.map((account) => (
+                          <option key={account.account_extra_id || account.account_id} value={account.account_extra_id || account.account_id}>
+                            {account.name} (ID: {account.account_extra_id || account.account_id})
                           </option>
-                        ))}
+                        )) : (
+                          <option value="" disabled>No accounts available</option>
+                        )}
                       </select>
                     </div>
                   </div>

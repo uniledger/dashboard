@@ -51,22 +51,8 @@ const StandardList = ({
   const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
   const setSearchQuery = setExternalSearchQuery || setInternalSearchQuery;
   
-  // Filter data based on search query if onSearch is not provided
-  const filteredData = onSearch ? data : (
-    searchQuery
-      ? data.filter(item => {
-          // Generic search across all string and number properties
-          return Object.entries(item).some(([key, value]) => {
-            if (typeof value === 'string') {
-              return value.toLowerCase().includes(searchQuery.toLowerCase());
-            } else if (typeof value === 'number') {
-              return value.toString().includes(searchQuery);
-            }
-            return false;
-          });
-        })
-      : data
-  );
+  // Don't do client-side filtering, just use the data as is
+  const filteredData = data;
   
   // Make sure the first column is the ID column and has proper click behavior
   const processedColumns = columns.map((column, index) => {
@@ -116,15 +102,6 @@ const StandardList = ({
   // Render action buttons for the section header
   const renderActions = () => (
     <>
-      <div className="relative mr-2">
-        <input
-          type="text"
-          placeholder={searchPlaceholder}
-          className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-          value={searchQuery}
-          onChange={handleSearchChange}
-        />
-      </div>
       <ActionButton
         variant="outline"
         onClick={handleRefresh}

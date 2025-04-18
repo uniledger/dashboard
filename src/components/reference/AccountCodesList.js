@@ -41,12 +41,23 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
     const loadAccountCodes = async () => {
       setLoading(true);
       try {
-        const data = await apiService.reference.getAccountCodes();
-        setAccountCodes(data);
-        setError(null);
+        const response = await apiService.reference.getAccountCodes();
+        console.log('AccountCodesList response:', response);
+        
+        // Extract data from the response object
+        if (response.ok && response.data) {
+          setAccountCodes(response.data);
+          console.log('AccountCodesList setting account codes:', response.data.length, 'items');
+          setError(null);
+        } else {
+          console.error('Failed to load account codes:', response.error);
+          setError('Failed to load account codes. Please try again.');
+          setAccountCodes([]);
+        }
       } catch (err) {
         console.error('Error loading account codes:', err);
         setError('Failed to load account codes. Please try again.');
+        setAccountCodes([]);
       } finally {
         setLoading(false);
       }
@@ -61,9 +72,18 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
     } else {
       setLoading(true);
       try {
-        const data = await apiService.reference.getAccountCodes();
-        setAccountCodes(data);
-        setError(null);
+        const response = await apiService.reference.getAccountCodes();
+        console.log('AccountCodesList refresh response:', response);
+        
+        // Extract data from the response object
+        if (response.ok && response.data) {
+          setAccountCodes(response.data);
+          console.log('AccountCodesList refresh setting account codes:', response.data.length, 'items');
+          setError(null);
+        } else {
+          console.error('Failed to refresh account codes:', response.error);
+          setError('Failed to refresh account codes. Please try again.');
+        }
       } catch (err) {
         console.error('Error refreshing account codes:', err);
         setError('Failed to refresh account codes. Please try again.');

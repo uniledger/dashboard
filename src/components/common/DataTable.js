@@ -34,8 +34,15 @@ const DataTable = ({
     return column;
   });
 
+  // Debug info section - only used during development and disabled for production
+  const debugInfo = () => {
+    // Debug panel is now disabled
+    return null;
+  };
+
   return (
     <div className={`bg-white shadow overflow-hidden rounded-lg ${className}`}>
+      {debugInfo()}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -59,7 +66,7 @@ const DataTable = ({
                   </div>
                 </td>
               </tr>
-            ) : data.length > 0 ? (
+            ) : data && Array.isArray(data) && data.length > 0 ? (
               data.map((item, index) => (
                 <tr 
                   key={item.id || index} 
