@@ -1,12 +1,15 @@
 import React from 'react';
+import StandardList from './StandardList';
 
 /**
- * Reusable component for creating data tables inside detail views
+ * Data table section for detail views implemented using AG Grid (StandardList)
+ * This provides a consistent table experience across the application.
+ * When used inside DetailCard, do NOT pass a title as the section label is already displayed.
  * 
  * @param {Object} props - Component props
  * @param {Array} props.data - Array of data objects to display
  * @param {Array} props.columns - Column definitions
- * @param {string} props.title - Table section title
+ * @param {string} props.title - Optional title for the table (usually omitted in detail views)
  * @param {function} props.onRowClick - Handler for clicking a row
  * @param {string} props.emptyMessage - Message to display when no data is available
  * @param {function} props.sortFunction - Optional function to sort data
@@ -15,92 +18,69 @@ import React from 'react';
 const DataTableSection = ({
   data = [],
   columns = [],
-  title,
+  title = '',
   onRowClick,
   emptyMessage = 'No data available',
   sortFunction
 }) => {
   // Sort data if a sort function is provided
   const displayData = sortFunction ? [...data].sort(sortFunction) : data;
-
+  
+  // Process columns to match StandardList format
+  const processedColumns = columns.map(column => {
+    const result = {
+      key: column.key,
+      header: column.header,
+    };
+    
+    // Add render function if provided
+    if (column.render) {
+      result.render = column.render;
+    }
+    
+    // Convert cellClassName function to string
+    if (typeof column.cellClassName === 'function') {
+      // We can't directly convert function to string, so we'll handle this in StandardList
+      result.cellClassNameFn = column.cellClassName;
+    } else if (column.cellClassName) {
+      result.cellClassName = column.cellClassName;
+    }
+    
+    // Add alignment classes
+    if (column.align) {
+      const alignClass = column.align === 'right' ? 'text-right' : 
+                         column.align === 'center' ? 'text-center' : 'text-left';
+      result.cellClassName = result.cellClassName ? 
+                             `${result.cellClassName} ${alignClass}` : 
+                             alignClass;
+    }
+    
+    // Add onClick handler if provided
+    if (column.onClick) {
+      result.onClick = column.onClick;
+    }
+    
+    return result;
+  });
+  
+  // Determine idField (use first column key as default)
+  const idField = processedColumns.length > 0 ? processedColumns[0].key : 'id';
+  
+  // Calculate height based on data length (minimum 250px, maximum 500px)
+  const height = Math.min(Math.max(250, displayData.length * 50), 500);
+  
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            {columns.map((column, index) => (
-              <th 
-                key={`header-${index}`}
-                className={`px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                  column.align === 'right' ? 'text-right' : 
-                  column.align === 'center' ? 'text-center' : 'text-left'
-                }`}
-              >
-                {column.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {displayData && displayData.length > 0 ? (
-            displayData.map((item, rowIndex) => (
-              <tr 
-                key={`row-${rowIndex}`} 
-                className="hover:bg-gray-50"
-                onClick={() => onRowClick && onRowClick(item)}
-                style={onRowClick ? { cursor: 'pointer' } : {}}
-              >
-                {columns.map((column, colIndex) => {
-                  // Determine cell content
-                  let content = item[column.key];
-                  if (column.render) {
-                    content = column.render(item);
-                  }
-
-                  // Determine cell className
-                  let className = `px-6 py-4 whitespace-nowrap text-sm ${
-                    column.align === 'right' ? 'text-right' : 
-                    column.align === 'center' ? 'text-center' : 'text-left'
-                  }`;
-                  
-                  if (typeof column.cellClassName === 'function') {
-                    className += ` ${column.cellClassName(item)}`;
-                  } else if (column.cellClassName) {
-                    className += ` ${column.cellClassName}`;
-                  }
-
-                  // Handle cell click
-                  const handleCellClick = (e) => {
-                    if (column.onClick) {
-                      const stopPropagation = column.onClick(item, e);
-                      if (stopPropagation) {
-                        e.stopPropagation();
-                      }
-                    }
-                  };
-
-                  return (
-                    <td 
-                      key={`cell-${rowIndex}-${colIndex}`} 
-                      className={className}
-                      onClick={column.onClick ? handleCellClick : undefined}
-                      style={column.onClick ? { cursor: 'pointer' } : {}}
-                    >
-                      {content}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={columns.length} className="px-6 py-4 text-center text-sm text-gray-500">
-                {emptyMessage}
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+    <div className="bg-white rounded-lg overflow-hidden">
+      <StandardList
+        data={displayData}
+        columns={processedColumns}
+        title={title}
+        idField={idField}
+        onItemClick={onRowClick}
+        emptyMessage={emptyMessage}
+        gridHeight={height}
+        smallHeader={true} /* Use small header to avoid duplicating section title */
+      />
     </div>
   );
 };

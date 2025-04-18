@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDetailContent, isNumericField } from './config/modelConfig';
 
 /**
  * Reusable detail card component for showing entity, ledger, account, etc. details
@@ -84,8 +85,8 @@ const DetailCard = ({ title, subtitle, sections, childrenSections = [], actions 
                 <p className="text-sm font-medium text-gray-500 mb-1">
                   {section.label}
                 </p>
-                <div className="text-sm text-gray-900">
-                  {section.content}
+                <div className={`text-sm text-gray-900 ${isNumericField(section.label) ? 'text-right' : ''}`}>
+                  {formatDetailContent(section.content, section.label)}
                 </div>
               </div>
             ))}
@@ -101,11 +102,6 @@ const DetailCard = ({ title, subtitle, sections, childrenSections = [], actions 
               key={`table-section-${index}`}
               className="bg-white shadow rounded-lg overflow-hidden"
             >
-              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700">
-                  {section.label}
-                </h3>
-              </div>
               <div className="p-0">
                 {section.content}
               </div>

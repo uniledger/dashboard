@@ -195,14 +195,65 @@ const EventForm = ({ template, ledgers, accounts, loading = false, onBack, onSub
       const response = await onSubmitEvent(eventDataToSubmit);
       console.log('Event submission response:', response);
       
+      // More detailed error logging if the response has errors
+      if (!response.ok && response.error) {
+        console.log('Error structure:', JSON.stringify(response.error, null, 2));
+      }
+      
       if (response.ok && response.data) {
         setEventResponse(response.data);
       } else {
-        setError(response.error?.message || 'Failed to submit event');
+        // Extract and display the detailed error message from the API response
+        let errorMessage = 'Failed to submit event';
+        
+        if (response.error) {
+          if (typeof response.error === 'string') {
+            errorMessage = response.error;
+          } else if (response.error.detail) {
+            // Django REST Framework often returns errors in a 'detail' field
+            errorMessage = response.error.detail;
+          } else if (response.error.message) {
+            errorMessage = response.error.message;
+          } else if (response.error.error) {
+            errorMessage = response.error.error;
+          } else if (response.error.details) {
+            errorMessage = response.error.details;
+          }
+          
+          // If there's a more detailed error structure, try to extract useful information
+          if (response.error.errors && Array.isArray(response.error.errors)) {
+            errorMessage = response.error.errors.join('; ');
+          }
+        }
+        
+        setError(errorMessage);
       }
       setIsLoading(false);
     } catch (err) {
-      setError(err.message || 'An error occurred while submitting the event');
+      // Also improve the error handling for exceptions
+      let errorMessage = 'An error occurred while submitting the event';
+      
+      if (err) {
+        if (typeof err === 'string') {
+          errorMessage = err;
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        
+        // Check if there's a more detailed error structure in the error object
+        if (err.error) {
+          if (typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err.error.detail) {
+            // Django REST Framework often returns errors in a 'detail' field
+            errorMessage = err.error.detail;
+          } else if (err.error.message) {
+            errorMessage = err.error.message;
+          }
+        }
+      }
+      
+      setError(errorMessage);
       setIsLoading(false);
     }
   };
@@ -473,7 +524,7 @@ const EventForm = ({ template, ledgers, accounts, loading = false, onBack, onSub
               </div>
             </div>
             
-            {/* Error Message */}
+            {/* Error Message - Enhanced to show more details */}
             {error && (
               <div className="rounded-md bg-red-50 p-4">
                 <div className="flex">
@@ -482,10 +533,20 @@ const EventForm = ({ template, ledgers, accounts, loading = false, onBack, onSub
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
                   </div>
-                  <div className="ml-3">
+                  <div className="ml-3 flex-grow">
                     <h3 className="text-sm font-medium text-red-800">
                       {error}
                     </h3>
+                    
+                    {/* If we have a nested error object or additional details */}
+                    {typeof error === 'object' && error.details && (
+                      <p className="mt-2 text-sm text-red-700">{error.details}</p>
+                    )}
+                    
+                    {/* Show error cause if available */}
+                    {error.cause && (
+                      <p className="mt-2 text-sm text-red-700">Cause: {typeof error.cause === 'string' ? error.cause : error.cause.message || JSON.stringify(error.cause)}</p>
+                    )}
                   </div>
                 </div>
               </div>

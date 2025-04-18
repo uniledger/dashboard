@@ -102,21 +102,82 @@ const useTransactions = () => {
       
       if (!response.ok) {
         console.error('Failed to submit event:', response.error);
+        
+        // Extract the most detailed error message available
+        let errorMessage = 'Failed to submit event';
+        if (response.error) {
+          if (typeof response.error === 'string') {
+            errorMessage = response.error;
+          } else if (response.error.detail) {
+            // Django REST Framework often returns errors in a 'detail' field
+            errorMessage = response.error.detail;
+          } else if (response.error.message) {
+            errorMessage = response.error.message;
+          } else if (response.error.error) {
+            errorMessage = response.error.error;
+          } else if (response.error.details) {
+            errorMessage = response.error.details;
+          }
+          
+          // If there's a more detailed error structure, try to extract useful information
+          if (response.error.errors && Array.isArray(response.error.errors)) {
+            errorMessage = response.error.errors.join('; ');
+          }
+        }
+        
         setError(prev => ({ 
           ...prev, 
-          submission: response.error?.message || 'Failed to submit event'
+          submission: errorMessage
         }));
-        throw new Error(response.error?.message || 'Failed to submit event');
+        
+        // Pass the full error object rather than just a message
+        const errorObject = new Error(errorMessage);
+        errorObject.error = response.error;
+        errorObject.statusCode = response.status;
+        throw errorObject;
       }
       
       return response;
     } catch (err) {
       console.error('Error submitting event:', err);
+      
+      // Extract the most detailed error message
+      let errorMessage = 'An error occurred while submitting the event';
+      
+      if (err) {
+        if (typeof err === 'string') {
+          errorMessage = err;
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        
+        // Check if there's a nested error object
+        if (err.error) {
+          if (typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err.error.detail) {
+            // Django REST Framework often returns errors in a 'detail' field
+            errorMessage = err.error.detail;
+          } else if (err.error.message) {
+            errorMessage = err.error.message;
+          } else if (err.error.details) {
+            errorMessage = err.error.details;
+          }
+          
+          // If there's a more detailed error array
+          if (err.error.errors && Array.isArray(err.error.errors)) {
+            errorMessage = err.error.errors.join('; ');
+          }
+        }
+      }
+      
       setError(prev => ({ 
         ...prev, 
-        submission: err.message || 'An error occurred while submitting the event'
+        submission: errorMessage
       }));
-      throw err;
+      
+      // Ensure we're passing the full error object
+      throw err.error ? err : new Error(errorMessage);
     }
   }, []);
 

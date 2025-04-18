@@ -74,7 +74,6 @@ const LedgerList = () => {
       title="Ledgers"
       idField={LedgerConfig.idField}
       onItemClick={handleViewLedger}
-      onViewJson={handleViewJson}
       onRefresh={fetchLedgers}
       searchPlaceholder="Search ledgers..."
       emptyMessage="No ledgers found"
