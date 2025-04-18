@@ -64,8 +64,8 @@ const DashboardView = () => {
         accountType = account.account_code.type.toUpperCase();
       }
       
-      // Get the account's raw balance
-      const rawBalance = account.balance || 0;
+      // Get the account's raw balance - ensure it's a number
+      const rawBalance = typeof account.balance === 'number' ? account.balance : 0;
       
       // Determine currency scale for this account
       let scale = currencyScale;

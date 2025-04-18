@@ -12,30 +12,53 @@ import { endpoints } from '../config/api';
  * @returns {Promise<Object>} - The response data
  */
 const fetchWithErrorHandling = async (url, options = {}) => {
+    console.log(`%c 🌐 API Request: ${options.method || 'GET'} ${url}`, 'background: #ddd; color: #0066cc; font-weight: bold; padding: 3px 5px; border-radius: 3px;');
+    
     try {
+        // Log that we're making a network request
+        console.log(`%c 🔄 Fetching: ${url}`, 'color: #6b7280;');
+        
         const response = await fetch(url, options);
+        console.log(`%c ✅ API Response: ${url} - Status: ${response.status}`, 'background: #e6ffe6; color: #008800; font-weight: bold; padding: 3px 5px; border-radius: 3px;');
 
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(e => ({ message: 'Invalid JSON in error response' }));
+            console.error(`%c ❌ API Error: ${url}`, 'background: #ffe6e6; color: #cc0000; font-weight: bold; padding: 3px 5px; border-radius: 3px;', errorData);
             return {
                 ok: false,
                 status: response.status,
                 error: errorData,
             };
         }
-        const data = await response.json();
-        return {
-            ok: true,
-            data,
-        };
+        
+        try {
+            const data = await response.json();
+            console.log(`%c 📦 API Success: ${url}`, 'background: #e6ffe6; color: #008800; font-weight: bold; padding: 3px 5px; border-radius: 3px;', data);
+            return {
+                ok: true,
+                data,
+            };
+        } catch (jsonError) {
+            console.error(`%c ❌ JSON Parse Error: ${url}`, 'background: #ffe6e6; color: #cc0000; font-weight: bold; padding: 3px 5px; border-radius: 3px;', jsonError);
+            return {
+                ok: false,
+                error: { message: 'Invalid JSON response from server' },
+            };
+        }
     } catch (error) {
+        console.error(`%c ❌ API Exception: ${url}`, 'background: #ffe6e6; color: #cc0000; font-weight: bold; padding: 3px 5px; border-radius: 3px;', error);
+        
         if (error instanceof TypeError && error.message === 'Failed to fetch') {
             return {
                 ok: false,
                 error: { message: 'Network error: Could not connect to the API.' },
             };
         }
-        return { ok: false, error: { message: error.message } };
+        
+        return { 
+            ok: false, 
+            error: { message: error.message } 
+        };
     }
 };
 

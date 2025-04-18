@@ -25,12 +25,23 @@ const RulesView = ({ onViewJson }) => {
     setError(null);
     
     try {
-      const data = await apiService.transaction.getRules();
-      setRules(data);
+      const response = await apiService.transaction.getRules();
+      console.log('Rules response:', response);
+      
+      // Extract data from the response object
+      if (response.ok && response.data) {
+        setRules(response.data);
+        console.log('Setting rules:', response.data.length, 'items');
+      } else {
+        console.error('Failed to fetch rules:', response.error);
+        setError(response.error?.message || 'Failed to fetch rules');
+        setRules([]);
+      }
       setIsLoading(false);
     } catch (err) {
       console.error('Error fetching rules:', err);
       setError(err.message || 'An error occurred while fetching rules');
+      setRules([]);
       setIsLoading(false);
     }
   };

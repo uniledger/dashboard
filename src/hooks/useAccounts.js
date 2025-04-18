@@ -77,10 +77,16 @@ const useAccounts = () => {
    */
   const refreshAccountBalances = useCallback(async () => {
     try {
-      const data = await fetchAllAccounts();
-      setAccounts(data);
-      applyFilter(data, filter);
-      return true;
+      const response = await fetchAllAccounts();
+      if (response.ok && response.data) {
+        const data = response.data;
+        setAccounts(data);
+        applyFilter(data, filter);
+        return true;
+      } else {
+        console.error('Failed to refresh account balances:', response.error);
+        return false;
+      }
     } catch (err) {
       console.error('Error refreshing account balances:', err);
       return false;

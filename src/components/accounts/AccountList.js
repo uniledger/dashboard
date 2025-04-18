@@ -17,8 +17,6 @@ const AccountList = () => {
   const { handleViewJson, setAccountsFilter } = useDashboard();
   const { accounts, loading: accountsLoading, fetchAccounts, refreshAccountBalances } = useAccounts(); 
   
-  const [entities, setEntities] = useState([]);
-  const [ledgers, setLedgers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Apply filter based on URL query param if present
@@ -40,57 +38,11 @@ const AccountList = () => {
 
   // Fetch accounts when component mounts
   useEffect(() => {
-    fetchAccounts();
+    setLoading(true);
+    fetchAccounts()
+      .finally(() => setLoading(false));
   }, [fetchAccounts]);
 
-  // Fetch entity and ledger data for display and drilldown
-  useEffect(() => {
-    const fetchReferenceData = async () => {
-      setLoading(true);
-      try {
-        // Fetch entities
-        const entitiesData = await apiService.entity.getEntities();
-        setEntities(entitiesData);
-        
-        // Fetch ledgers
-        const ledgersData = await apiService.ledger.getLedgers();
-        setLedgers(ledgersData);
-      } catch (err) {
-        console.error('Error fetching reference data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchReferenceData();
-  }, []);
-
-  // Helper function to find entity for an account
-  const getEntityForAccount = (account) => {
-    // Get entity ID from account or its ledger
-    const entityId = account.entity_id || 
-      (account.enriched_ledger && account.enriched_ledger.entity_id) ||
-      (account.entity && account.entity.entity_id);
-    
-    if (!entityId) {
-      return null;
-    }
-    
-    // Find entity in our fetched list
-    const foundEntity = entities.find(e => e.entity_id === entityId);
-    return foundEntity;
-  };
-  
-  const getLedgerForAccount = (account) => {
-    // Get ledger ID directly
-    const ledgerId = account.ledger_id || 
-      (account.enriched_ledger && account.enriched_ledger.ledger_id);
-    
-    if (!ledgerId) return null;
-    
-    // Find ledger in our fetched list
-    return ledgers.find(l => l.ledger_id === ledgerId);
-  };
 
   const getCurrencyCode = (account) => {
     return (account.enriched_ledger && account.enriched_ledger.r_currency && account.enriched_ledger.r_currency.currency_code) || 
@@ -135,19 +87,18 @@ const AccountList = () => {
     key: 'entity',
     header: 'Account Owner',
     render: (account) => {
-      const entity = getEntityForAccount(account);
-      return entity ? entity.name : (account.entity ? account.entity.name : 'N/A');
+      return account.entity?.name || 
+             account.enriched_ledger?.entity?.name || 
+             'N/A';
     },
     cellClassName: (account) => {
-      const entityId = getEntityForAccount(account)?.entity_id || 
-                       account.entity_id || 
+      const entityId = account.entity_id || 
                        (account.enriched_ledger && account.enriched_ledger.entity_id) || 
                        (account.entity && account.entity.entity_id);
       return entityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
     },
     onClick: (account) => {
-      const entityId = getEntityForAccount(account)?.entity_id || 
-                       account.entity_id || 
+      const entityId = account.entity_id || 
                        (account.enriched_ledger && account.enriched_ledger.entity_id) || 
                        (account.entity && account.entity.entity_id);
       if (entityId) {
@@ -164,18 +115,18 @@ const AccountList = () => {
     key: 'ledger',
     header: 'Ledger',
     render: (account) => {
-      const ledger = getLedgerForAccount(account);
-      return ledger ? ledger.name : (account.enriched_ledger?.name || account.ledger?.name || account.ledger_name || 'N/A');
+      return account.enriched_ledger?.name || 
+             account.ledger?.name || 
+             account.ledger_name || 
+             'N/A';
     },
     cellClassName: (account) => {
-      const ledgerId = getLedgerForAccount(account)?.ledger_id || 
-                       account.ledger_id || 
+      const ledgerId = account.ledger_id || 
                        (account.enriched_ledger && account.enriched_ledger.ledger_id);
       return ledgerId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
     },
     onClick: (account) => {
-      const ledgerId = getLedgerForAccount(account)?.ledger_id || 
-                       account.ledger_id || 
+      const ledgerId = account.ledger_id || 
                        (account.enriched_ledger && account.enriched_ledger.ledger_id);
       if (ledgerId) {
         handleViewLedger(ledgerId);

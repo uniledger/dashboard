@@ -10,6 +10,7 @@ import { StandardList, LoadingSpinner } from '../common';
  * Allows users to create new events directly from the navbar
  */
 const EventEntryPage = ({ onViewJson }) => {
+  console.log('EventEntryPage received onViewJson:', onViewJson);
   const { 
     templates,
     selectedTemplate,
@@ -39,10 +40,21 @@ const EventEntryPage = ({ onViewJson }) => {
   const fetchLedgers = async () => {
     setLoadingLedgers(true);
     try {
-      const data = await apiService.ledger.getLedgers();
-      setLedgers(data);
+      const response = await apiService.ledger.getLedgers();
+      console.log('EventEntryPage ledgers response:', response);
+      
+      // Extract data from the response object
+      if (response.ok && response.data) {
+        const ledgersData = response.data;
+        console.log('Setting ledgers:', ledgersData.length, 'items');
+        setLedgers(ledgersData);
+      } else {
+        console.error('Failed to fetch ledgers:', response.error);
+        setLedgers([]);
+      }
     } catch (error) {
       console.error('Error fetching ledgers:', error);
+      setLedgers([]);
     } finally {
       setLoadingLedgers(false);
     }
@@ -59,10 +71,10 @@ const EventEntryPage = ({ onViewJson }) => {
   };
 
   // Show loading state if data is still loading
-  if ((loading.templates || loadingLedgers) && !templates.length) {
+  if (loading.templates || loadingLedgers) {
     return (
       <div className="h-64 flex items-center justify-center">
-        <LoadingSpinner size="lg" message="Loading templates and ledgers..." />
+        <LoadingSpinner size="lg" message="Loading data..." />
       </div>
     );
   }

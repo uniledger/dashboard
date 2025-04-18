@@ -35,12 +35,23 @@ const CountriesList = ({ onViewJson, onRefresh }) => {
     const loadCountries = async () => {
       setLoading(true);
       try {
-        const data = await apiService.reference.getCountries();
-        setCountries(data);
-        setError(null);
+        const response = await apiService.reference.getCountries();
+        console.log('CountriesList response:', response);
+        
+        // Extract data from the response object
+        if (response.ok && response.data) {
+          setCountries(response.data);
+          console.log('CountriesList setting countries:', response.data.length, 'items');
+          setError(null);
+        } else {
+          console.error('Failed to load countries:', response.error);
+          setError('Failed to load countries. Please try again.');
+          setCountries([]);
+        }
       } catch (err) {
         console.error('Error loading countries:', err);
         setError('Failed to load countries. Please try again.');
+        setCountries([]);
       } finally {
         setLoading(false);
       }
@@ -55,9 +66,18 @@ const CountriesList = ({ onViewJson, onRefresh }) => {
     } else {
       setLoading(true);
       try {
-        const data = await apiService.reference.getCountries();
-        setCountries(data);
-        setError(null);
+        const response = await apiService.reference.getCountries();
+        console.log('CountriesList refresh response:', response);
+        
+        // Extract data from the response object
+        if (response.ok && response.data) {
+          setCountries(response.data);
+          console.log('CountriesList refresh setting countries:', response.data.length, 'items');
+          setError(null);
+        } else {
+          console.error('Failed to refresh countries:', response.error);
+          setError('Failed to refresh countries. Please try again.');
+        }
       } catch (err) {
         console.error('Error refreshing countries:', err);
         setError('Failed to refresh countries. Please try again.');
