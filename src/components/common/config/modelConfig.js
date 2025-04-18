@@ -33,11 +33,6 @@ export const EntityConfig = {
       key: 'country',
       header: 'Country',
       render: (entity) => getCountryDisplay(entity)
-    },
-    {
-      key: 'ledger_count',
-      header: 'Ledgers',
-      render: (entity) => entity.ledger_count || (entity.ledgers && entity.ledgers.length) || 0
     }
   ],
   

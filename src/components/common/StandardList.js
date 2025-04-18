@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { 
-  DataTable, 
   SectionHeader, 
+  DataTable,
+  DataTableSection,
   ActionButton,
   ErrorAlert,
   LoadingSpinner
@@ -44,6 +45,9 @@ const StandardList = ({
   searchQuery: externalSearchQuery,
   setSearchQuery: setExternalSearchQuery
 }) => {  
+  // Imports from AG Grid
+  const { AgGridReact, AgGridColumn } = require('ag-grid-react');
+  
   // Use internal state if external search query is not provided
   const [internalSearchQuery, setInternalSearchQuery] = useState('');
   
@@ -55,15 +59,35 @@ const StandardList = ({
   
   // Make sure the first column is the ID column and has proper click behavior
   const processedColumns = columns.map((column, index) => {
+    // Process cellClassName into cellStyle
+    const cellStyle = {};
+    if (column.cellClassName) {
+      const classes = column.cellClassName.split(' ');
+      classes.forEach(className => {
+        switch(className) {
+          case 'text-blue-600': cellStyle.color = '#2563eb'; break;
+          case 'hover:underline': cellStyle.textDecoration = 'underline'; break;
+          case 'cursor-pointer': cellStyle.cursor = 'pointer'; break;
+          case 'font-medium': cellStyle.fontWeight = '500'; break;
+        }
+      });
+    }
+    
     if (index === 0 && column.key === idField) {
       return {
         ...column,
-        cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
+        cellStyle: cellStyle,
       };
     }
-    return column;
+      return {
+        ...column,
+        cellStyle: cellStyle
+      };
   });
   
+
+
+
   /**
    * Handle refreshing data
    */
@@ -85,6 +109,33 @@ const StandardList = ({
     }
   };
   
+  /**
+   * Transform column definitions for AgGrid
+   */
+  const columnDefs = processedColumns.map(column => {
+      let cellRenderer = undefined;
+
+      // Handle custom render functions
+      if (column.render) {
+        cellRenderer = (params) => {
+          return column.render(params.data);
+        };
+      }
+
+      return {
+        headerName: column.header,
+        field: column.key,
+        sortable: true,
+        resizable: true,
+        cellRenderer: cellRenderer,
+        cellStyle: column.cellStyle,
+        onCellClicked: column.onClick ? (params) => {
+            column.onClick(params.data);
+        } : undefined
+      };
+  });
+  
+
   // Render action buttons for the section header
   const renderActions = () => (
     <>
@@ -102,6 +153,13 @@ const StandardList = ({
       </ActionButton>
     </>
   );
+  
+  // AG Grid settings
+  const defaultColDef = {
+    sortable: true,
+    resizable: true,
+    suppressMovable: false
+  };
   
   // Show loading spinner if data is loading and there's no data
   if (loading && data.length === 0) {
@@ -127,15 +185,25 @@ const StandardList = ({
           className="mb-4"
         />
       )}
-      
-      <DataTable
-        columns={processedColumns}
-        data={filteredData}
-        loading={loading}
-        onRowClick={handleItemClick}
-        emptyMessage={emptyMessage}
-        colSpan={columns.length}
-        idField={idField}
+
+      <div className="ag-theme-alpine" style={{ height: '500px', width: '100%' }}>
+        <AgGridReact
+          rowData={filteredData}
+          columnDefs={columnDefs}
+          defaultColDef={defaultColDef}
+          onGridReady={() => {}}
+          onRowClicked={(event) => {
+            const firstColumn = processedColumns[0];
+            if (event.column.colId === firstColumn.key) {
+                handleItemClick(event.data);
+            } else if(event.column.colId === firstColumn.key && firstColumn.onClick){
+                firstColumn.onClick(event.data);
+            } else if (firstColumn.onClick && event.data[firstColumn.key]){
+                firstColumn.onClick(event.data);
+            }
+          }}
+          domLayout='autoHeight'
+        />
       />
     </div>
   );
