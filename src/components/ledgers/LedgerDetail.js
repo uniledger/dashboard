@@ -169,22 +169,6 @@ const LedgerDetail = () => {
               return formatBalance(account.balance, currency, true);
             }
           },
-          {
-            key: 'actions',
-            header: 'Actions',
-            align: 'center',
-            render: (account) => (
-              <button 
-                className="text-gray-600 hover:text-gray-800"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleViewJson(account, `Account: ${account.name || 'N/A'}`);
-                }}
-              >
-                JSON
-              </button>
-            )
-          }
         ]}
         sortFunction={(a, b) => {
           // Extract account code from account_code or name

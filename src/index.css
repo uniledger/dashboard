@@ -15,3 +15,52 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* AgGrid Customizations */
+.ag-theme-alpine .ag-cell[col-id="balance"] {
+  text-align: right !important;
+}
+
+.ag-theme-alpine .ag-cell[col-id="balance"] .ag-cell-value,
+.ag-theme-alpine .ag-cell[col-id="balance"] .ag-cell-wrapper {
+  text-align: right !important;
+  justify-content: flex-end !important;
+  display: flex !important;
+  width: 100% !important;
+}
+
+.ag-theme-alpine .ag-header-cell[col-id="balance"],
+.ag-theme-alpine div[col-id="balance"].ag-header-cell,
+.ag-theme-alpine [role="columnheader"][col-id="balance"],
+.ag-theme-alpine [role="columnheader"][aria-colindex="balance"] {
+  text-align: right !important;
+}
+
+.ag-theme-alpine .ag-header-cell[col-id="balance"] .ag-header-cell-label,
+.ag-theme-alpine div[col-id="balance"].ag-header-cell .ag-header-cell-label,
+.ag-theme-alpine [role="columnheader"][col-id="balance"] .ag-header-cell-label {
+  justify-content: flex-end !important;
+  flex-direction: row !important;
+  width: 100% !important;
+  display: flex !important;
+}
+
+.ag-theme-alpine .ag-header-cell[col-id="balance"] .ag-header-cell-text,
+.ag-theme-alpine div[col-id="balance"].ag-header-cell .ag-header-cell-text {
+  text-align: right !important;
+}
+
+.negative-balance-row {
+  color: #dc2626;
+}
+
+/* Additional balance header classes */
+.ag-theme-alpine .balance-header .ag-header-cell-label {
+  justify-content: flex-end !important;
+  display: flex !important;
+}
+
+.ag-theme-alpine .right-align-header .ag-header-cell-label {
+  justify-content: flex-end !important;
+  display: flex !important;
+}

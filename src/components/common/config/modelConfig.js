@@ -2,7 +2,9 @@
  * Model configuration for the application
  * Centralizes common definitions for different model types
  */
+import React from 'react';
 import { formatBalance, formatAccountCode, getCountryDisplay, getAccountType, getBalanceClass, getCurrencyInfo } from '../../../utils/formatters/index';
+import DataTableSection from '../DataTableSection';
 
 /**
  * Entity model configuration
@@ -33,6 +35,11 @@ export const EntityConfig = {
       key: 'country',
       header: 'Country',
       render: (entity) => getCountryDisplay(entity)
+    },
+    {
+      key: 'kyc_status',
+      header: 'KYC Status',
+      render: (entity) => entity.kyc_status || 'N/A'
     }
   ],
   
@@ -55,8 +62,8 @@ export const EntityConfig = {
       content: getCountryDisplay(entity)
     },
     {
-      label: 'Description',
-      content: entity.description || 'No description'
+      label: 'KYC Status',
+      content: entity.kyc_status || 'N/A'
     }
   ]
 };
@@ -202,9 +209,11 @@ export const AccountConfig = {
     {
       label: 'Current Balance',
       content: (
-        <span className={getBalanceClass(account.balance)}>
-          {formatBalance(account.balance, getCurrencyInfo(account), true)}
-        </span>
+        <div className="text-right">
+          <span className={getBalanceClass(account.balance)}>
+            {formatBalance(account.balance, getCurrencyInfo(account), true)}
+          </span>
+        </div>
       )
     }
   ]
@@ -263,112 +272,105 @@ export const TemplateConfig = {
       .join(' ');
   },
   
+  // Variables columns definition
+  variablesColumns: [
+    {
+      key: 'name',
+      header: 'Name',
+      render: (variable) => TemplateConfig.formatFieldName(variable.name),
+      cellClassName: 'font-medium text-gray-900'
+    },
+    {
+      key: 'value',
+      header: 'Value',
+      cellClassName: 'text-gray-500'
+    }
+  ],
+  
+  // Validations columns definition
+  validationsColumns: [
+    {
+      key: 'name',
+      header: 'Name',
+      render: (validation) => TemplateConfig.formatFieldName(validation.name),
+      cellClassName: 'font-medium text-gray-900'
+    },
+    {
+      key: 'expression',
+      header: 'Expression',
+      cellClassName: 'text-gray-500'
+    },
+    {
+      key: 'description',
+      header: 'Description',
+      cellClassName: 'text-gray-500'
+    }
+  ],
+  
+  // Legs columns definition
+  legsColumns: [
+    {
+      key: 'leg_number',
+      header: 'Leg Number',
+      cellClassName: 'font-medium text-gray-900'
+    },
+    {
+      key: 'debit_account',
+      header: 'Debit Account',
+      cellClassName: 'text-gray-500'
+    },
+    {
+      key: 'credit_account',
+      header: 'Credit Account',
+      cellClassName: 'text-gray-500'
+    },
+    {
+      key: 'code',
+      header: 'Code',
+      cellClassName: 'text-gray-500'
+    },
+    {
+      key: 'amount',
+      header: 'Amount',
+      align: 'right',
+      cellClassName: 'text-gray-500'
+    }
+  ],
+  
   // Helper to render variable section
   renderVariablesSection: (template) => {
-    return {
-      label: 'Variables',
-      content: (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {template.variables.map((variable, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {TemplateConfig.formatFieldName(variable.name)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{variable.value}</td>
-                </tr>
-              ))}
-              {template.variables.length === 0 && (
-                <tr>
-                  <td colSpan={2} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No variables defined</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )
-    };
+    return (
+      <DataTableSection
+        data={template.variables || []}
+        columns={TemplateConfig.variablesColumns}
+        title="Variables"
+        emptyMessage="No variables defined"
+      />
+    );
   },
   
   // Helper to render validations section
   renderValidationsSection: (template) => {
-    return {
-      label: 'Validations',
-      content: (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expression</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {template.validations.map((validation, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {TemplateConfig.formatFieldName(validation.name)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{validation.expression}</td>
-                  <td className="px-6 py-4 whitespace-normal text-sm text-gray-500">{validation.description}</td>
-                </tr>
-              ))}
-              {template.validations.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No validations defined</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )
-    };
+    return (
+      <DataTableSection
+        data={template.validations || []}
+        columns={TemplateConfig.validationsColumns}
+        title="Validations"
+        emptyMessage="No validations defined"
+      />
+    );
   },
   
   // Helper to render legs section
   renderLegsSection: (template) => {
-    return {
-      label: 'Template Legs',
-      content: (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Leg Number</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Debit Account</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credit Account</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {template.legs.map((leg, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{leg.leg_number}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{leg.debit_account}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{leg.credit_account}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{leg.code}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{leg.amount}</td>
-                </tr>
-              ))}
-              {template.legs.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No legs defined</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )
-    };
+    return (
+      <DataTableSection
+        data={template.legs || []}
+        columns={TemplateConfig.legsColumns}
+        title="Template Legs"
+        emptyMessage="No legs defined"
+      />
+    );
   },
   
   // Basic section fields for detail view
@@ -399,16 +401,10 @@ export const TemplateConfig = {
     ];
   },
   
-  // Get all sections including tables
+  // This method is deprecated - we now display tables separately
   getAllSections: (template) => {
-    if (!template) return [];
-    
-    return [
-      ...TemplateConfig.detailSections(template),
-      TemplateConfig.renderVariablesSection(template),
-      TemplateConfig.renderValidationsSection(template),
-      TemplateConfig.renderLegsSection(template)
-    ];
+    // Return just the basic sections for backward compatibility
+    return TemplateConfig.detailSections(template);
   }
 };
 
@@ -475,6 +471,64 @@ export const RuleConfig = {
 };
 
 /**
+ * Helper utility to determine if a field is numeric and needs right-alignment
+ * @param {string} fieldName - The field name to check
+ * @returns {boolean} - Whether this is a numeric field
+ */
+export const isNumericField = (fieldName) => {
+  if (!fieldName) return false;
+  
+  const lowerName = fieldName.toLowerCase();
+  
+  // First check exclusions - IDs and codes are not numeric fields even if they contain numbers
+  if (
+    lowerName.includes('id') || 
+    lowerName.includes('code') ||
+    lowerName.includes('reference')
+  ) {
+    return false;
+  }
+  
+  // Then check inclusions
+  return (
+    lowerName === 'balance' ||
+    lowerName === 'amount' ||
+    lowerName === 'value' ||
+    lowerName.includes('total') ||
+    lowerName.includes('price') ||
+    lowerName.includes('cost') ||
+    lowerName.includes('fee') ||
+    lowerName.includes('quantity') ||
+    lowerName.includes('ratio')
+  );
+};
+
+/**
+ * Helper to format content for detail cards, applying correct styling for numeric values
+ * @param {*} content - The content to format
+ * @param {string} fieldName - The field name for context
+ * @returns {*} - Formatted content
+ */
+export const formatDetailContent = (content, fieldName) => {
+  // If it's a number and the field name doesn't contain 'id', format with decimal places
+  if (typeof content === 'number' && !fieldName.toLowerCase().includes('id')) {
+    return (
+      <div className="text-right">
+        {content.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+      </div>
+    );
+  }
+  
+  // If it's a string but represents a numeric field, right-align it
+  if (typeof content === 'string' && isNumericField(fieldName)) {
+    return <div className="text-right">{content}</div>;
+  }
+  
+  // Otherwise return as-is
+  return content;
+};
+
+/**
  * Export all configurations
  */
 const modelConfigs = {
@@ -483,5 +537,7 @@ const modelConfigs = {
   AccountConfig,
   TemplateConfig,
   ProcessedEventConfig,
-  RuleConfig
+  RuleConfig,
+  isNumericField,
+  formatDetailContent
 };export default modelConfigs;

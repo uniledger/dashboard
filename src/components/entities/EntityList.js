@@ -34,7 +34,6 @@ const EntityList = () => {
       title="Entities"
       idField={EntityConfig.idField}
       onItemClick={handleViewDetails}
-      onViewJson={handleViewJson}
       onRefresh={fetchEntities}
       searchPlaceholder="Search entities..."
       emptyMessage="No entities found"

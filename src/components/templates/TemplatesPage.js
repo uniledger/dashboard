@@ -56,9 +56,7 @@ const TemplatesPage = ({ onViewJson }) => {
     }
   };
 
-  const handleUseTemplate = () => {
-    setView('event-form');
-  };
+  // Removed handleUseTemplate functionality
 
   const handleBackToList = () => {
     clearSelectedTemplate();
@@ -74,26 +72,13 @@ const TemplatesPage = ({ onViewJson }) => {
     setView('detail');
   };
 
-  // Determine which view to show based on state
-  if (view === 'event-form' && selectedTemplate) {
-    return (
-      <EventForm 
-        template={selectedTemplate}
-        ledgers={ledgers}
-        accounts={accounts}
-        onBack={handleBackToDetail}
-        onViewJson={handleViewJson}
-        onSubmitEvent={submitEvent}
-      />
-    );
-  }
+  // We no longer use the event-form view since "Use this template" button was removed
 
   if ((view === 'detail' || selectedTemplate) && view !== 'event-form') {
     return (
       <TemplateDetail 
         template={selectedTemplate}
         onViewJson={handleViewJson}
-        onUseTemplate={handleUseTemplate}
         onBack={handleBackToList}
       />
     );

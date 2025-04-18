@@ -11,11 +11,9 @@ const DashboardHeader = () => {
   } = useDashboard();
 
   return (
-    <header className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-gray-900">
-          </h1>
+    <header className="bg-white shadow-sm h-16">
+      <div className="max-w-7xl mx-auto px-4 h-full flex items-center sm:px-6 lg:px-8">
+        <div className="flex justify-end items-center w-full">
           <div className="flex items-center">
             <button 
               onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)}

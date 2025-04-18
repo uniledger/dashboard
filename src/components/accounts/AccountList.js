@@ -148,7 +148,14 @@ const AccountList = () => {
   if (balanceColumnIndex !== -1) {
     columns[balanceColumnIndex] = {
       ...columns[balanceColumnIndex],
-      cellClassName: (account) => getBalanceClass(account.balance),
+      key: 'balance',
+      header: 'Balance',
+      align: 'right', // Explicitly set alignment
+      cellClassName: 'text-right', // Directly add text-right class
+      cellStyle: { 
+        textAlign: 'right !important',  // Direct style override with !important
+        display: 'block'                // Make sure it takes the full width
+      },
       render: (account) => {
         const currency = getCurrencyInfo(account);
         return formatBalance(account.balance, currency, true);
@@ -180,7 +187,6 @@ const AccountList = () => {
       idField="account_id"
       loading={loading || accountsLoading}
       onItemClick={handleViewAccount}
-      onViewJson={handleViewJson}
       onRefresh={refreshAccountBalances}
       filter={filter}
       onClearFilter={handleClearFilter}

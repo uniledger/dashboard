@@ -139,7 +139,6 @@ const DashboardView = () => {
     let currentLiabilities = 0;
     let totalLiabilities = 0;
     let totalEquity = 0;
-    let grossProfit = 0;
     let totalRevenue = 0;
     let netIncome = 0;
     
@@ -195,7 +194,6 @@ const DashboardView = () => {
           break;
         case 'REVENUE':
           totalRevenue += decimalBalance;
-          grossProfit += decimalBalance;
           break;
         case 'EXPENSE':
           // Expenses reduce profit
@@ -274,25 +272,24 @@ const DashboardView = () => {
   }
 
   return (
-    <div>
+    <div className="mx-2 md:mx-6 lg:mx-8">
       <PageHeader 
         title={`Financial Overview as of ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`}
         refreshButton={true}
         onRefresh={refreshAccountBalances}
       />
       
-
-      
-      {/* Balance Sheet */}
-      <div className="bg-white p-4 rounded-lg shadow mb-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-gray-900">Balance Sheet Summary</h3>
-          <div className="text-right text-sm text-gray-500">
-            <div>Values in thousands (GBP)</div>
+      {/* Financial Statements Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Balance Sheet */}
+        <div className="bg-white p-4 rounded-lg shadow transition-all hover:shadow-md">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900">Balance Sheet Summary</h3>
+            <div className="text-right text-sm text-gray-500">
+              <div>Values in thousands (GBP)</div>
+            </div>
           </div>
-        </div>
-        <div className="grid grid-cols-1 gap-6">
-          <div>
+          <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
                 <tr>
@@ -369,18 +366,16 @@ const DashboardView = () => {
             </table>
           </div>
         </div>
-      </div>
-      
-      {/* Income Statement */}
-      <div className="bg-white p-4 rounded-lg shadow mb-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-gray-900">Income Statement Summary</h3>
-          <div className="text-right text-sm text-gray-500">
-            <div>Values in thousands (GBP)</div>
+        
+        {/* Income Statement */}
+        <div className="bg-white p-4 rounded-lg shadow transition-all hover:shadow-md">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900">Income Statement Summary</h3>
+            <div className="text-right text-sm text-gray-500">
+              <div>Values in thousands (GBP)</div>
+            </div>
           </div>
-        </div>
-        <div className="grid grid-cols-1 gap-6">
-          <div>
+          <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
                 <tr>
@@ -430,12 +425,12 @@ const DashboardView = () => {
       </div>
       
       {/* Key Financial Ratios */}
-      <div className="bg-white p-4 rounded-lg shadow mb-4">
-        <div className="mb-4">
+      <div className="bg-white p-4 rounded-lg shadow transition-all hover:shadow-md mb-6">
+        <div className="mb-4 flex justify-between items-center">
           <h3 className="text-lg font-medium text-gray-900">Key Financial Ratios</h3>
         </div>
         
-        <div>
+        <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead>
               <tr>
@@ -461,7 +456,7 @@ const DashboardView = () => {
                 <td className="py-2 text-right font-medium text-gray-900">
                   {typeof ratios.netMargin === 'number' ? `${ratios.netMargin}%` : ratios.netMargin}
                 </td>
-                </tr>
+              </tr>
             </tbody>
           </table>
         </div>

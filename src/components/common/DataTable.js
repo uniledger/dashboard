@@ -1,7 +1,10 @@
 import React from 'react';
+import StandardList from './StandardList';
 
 /**
  * Reusable data table component with universal ID column drilldown
+ * using AG Grid under the hood for consistent UX
+ * 
  * @param {Object} props - Component props
  * @param {Array} props.columns - Table column definitions with keys, headers, and render functions
  * @param {Array} props.data - Data to display in the table
@@ -34,79 +37,25 @@ const DataTable = ({
     return column;
   });
 
-  // Debug info section - only used during development and disabled for production
-  const debugInfo = () => {
-    // Debug panel is now disabled
-    return null;
-  };
-
+  // If no idField provided, use the first column's key
+  const autoIdField = idField || (processedColumns.length > 0 ? processedColumns[0].key : 'id');
+  
+  // Calculate grid height based on data rows (min 200, max 400)
+  const gridHeight = Math.min(Math.max(200, data.length * 40 + 50), 400);
+  
   return (
     <div className={`bg-white shadow overflow-hidden rounded-lg ${className}`}>
-      {debugInfo()}
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              {processedColumns.map(column => (
-                <th 
-                  key={column.key} 
-                  className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${column.headerClassName || ''}`}
-                >
-                  {column.header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan={colSpan} className="px-6 py-4 text-center">
-                  <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                  </div>
-                </td>
-              </tr>
-            ) : data && Array.isArray(data) && data.length > 0 ? (
-              data.map((item, index) => (
-                <tr 
-                  key={item.id || index} 
-                  className="hover:bg-gray-50"
-                  style={onRowClick ? { cursor: 'pointer' } : {}}
-                >
-                  {processedColumns.map((column, colIndex) => (
-                    <td 
-                      key={`${item.id || index}-${column.key}`} 
-                      className={`px-6 py-4 whitespace-nowrap text-sm ${column.cellClassName || 'text-gray-500'}`}
-                      onClick={(e) => {
-                        // If this is the first column, always handle the click
-                        if (colIndex === 0 && onRowClick) {
-                          e.stopPropagation();
-                          onRowClick(item);
-                        } else if (column.onClick) {
-                          // If the column has its own click handler, use that
-                          e.stopPropagation();
-                          column.onClick(item);
-                        } else if (onRowClick && !column.preventRowClick) {
-                          // For other columns, trigger the row click handler unless prevented
-                          onRowClick(item);
-                        }
-                      }}
-                    >
-                      {column.render ? column.render(item) : item[column.key]}
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={colSpan} className="px-6 py-4 text-center text-sm text-gray-500">
-                  {emptyMessage}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <StandardList
+        data={data}
+        columns={processedColumns}
+        title=""
+        idField={autoIdField}
+        onItemClick={onRowClick}
+        loading={loading}
+        emptyMessage={emptyMessage}
+        gridHeight={gridHeight}
+        smallHeader={true}
+      />
     </div>
   );
 };

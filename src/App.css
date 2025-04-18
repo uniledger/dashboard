@@ -14,3 +14,64 @@
 .sidebar-transition {
   transition: width 0.3s ease-in-out;
 }
+
+/* AG Grid custom styling */
+.ag-theme-alpine {
+  --ag-header-foreground-color: #4b5563;
+  --ag-header-background-color: #f9fafb;
+  --ag-odd-row-background-color: #ffffff;
+  --ag-row-hover-color: #f3f4f6;
+  --ag-selected-row-background-color: #ebf5ff;
+  --ag-font-size: 0.875rem;
+  --ag-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.ag-theme-alpine .ag-header-cell-label {
+  font-weight: 600;
+}
+
+/* Right-aligned headers and cells for numeric values */
+.ag-theme-alpine .ag-right-aligned-header .ag-header-cell-label {
+  justify-content: flex-end;
+}
+
+.ag-theme-alpine .ag-right-aligned-cell {
+  text-align: right;
+}
+
+.ag-theme-alpine .ag-row:hover {
+  background-color: #f3f4f6;
+  transition: background-color 0.2s ease;
+}
+
+.negative-balance-row {
+  background-color: #FEF2F2 !important;
+}
+
+.negative-balance-row:hover {
+  background-color: #FEE2E2 !important;
+}
+
+/* Make the Quick Filter Responsive */
+@media (max-width: 640px) {
+  .ag-theme-alpine {
+    --ag-font-size: 0.8125rem;
+  }
+}
+
+/* CSV Export Button */
+.csv-export-btn {
+  font-size: 0.75rem;
+  color: #6b7280;
+  background: transparent;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.csv-export-btn:hover {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}

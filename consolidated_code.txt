@@ -11,8 +11,6 @@ Directory Structure:
 │   ├── favicon.ico
 │   ├── favicon.svg
 │   ├── index.html
-│   ├── logo192.png
-│   ├── logo512.png
 │   ├── manifest.json
 │   └── robots.txt
 ├── README.md
@@ -28,7 +26,6 @@ Directory Structure:
 │   │   │   └── tables
 │   │   │       └── AccountsTable.js
 │   │   ├── analytics
-│   │   │   └── AnalyticsView.js
 │   │   ├── common
 │   │   │   ├── ActionButton.js
 │   │   │   ├── config
@@ -102,23 +99,22 @@ Directory Structure:
 │   ├── services
 │   │   └── apiService.js
 │   └── utils
+│       ├── accountUtils.js
 │       ├── filterUtils
 │       │   ├── accountFilters.js
 │       │   ├── entityFilters.js
 │       │   ├── index.js
 │       │   └── ledgerFilters.js
-│       ├── filterUtils.js
 │       ├── formatters
 │       │   ├── accountFormatters.js
 │       │   ├── balanceFormatters.js
 │       │   ├── dateFormatters.js
 │       │   ├── entityFormatters.js
 │       │   └── index.js
-│       ├── formatters.js
 │       └── useInterval.js
 └── tailwind.config.js
 
-27 directories, 91 files
+27 directories, 87 files
 
 File: ./package.json
 --------------------
@@ -127,10 +123,12 @@ File: ./package.json
   "version": "0.1.1",
   "private": true,
   "dependencies": {
+    "@nextui-org/react": "^2.6.11",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.3.4",
+    "lucide-react": "^0.488.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.5.0",
@@ -139,6 +137,7 @@ File: ./package.json
     "uuid": "^9.0.0",
     "web-vitals": "^2.1.4"
   },
+  "proxy": "https://ledger.dev.ledgerrocket.com",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -188,16 +187,6 @@ File: ./public/manifest.json
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
-    },
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
     }
   ],
   "start_url": ".",
@@ -222,7 +211,7 @@ const reportWebVitals = (onPerfEntry) => {
 export default reportWebVitals;
 File: ./src/App.js
 --------------------
-import React, { useState } from 'react';
+import React from 'react';
 import LedgerDashboard from './components/LedgerDashboard';
 import './App.css';
 
@@ -276,10 +265,55 @@ const useDataFetching = ({
     setError(null);
     
     try {
-      const data = await fetchAll();
-      setItems(data);
-      setLoading(false);
-      return data;
+      const response = await fetchAll();
+      
+      if (response.ok) {
+        // Detailed response inspection
+        console.log('%c 🔍 Data Structure Inspection', 'background: #f0f0f0; color: #0044cc; font-weight: bold; padding: 3px 5px; border-radius: 3px;');
+        console.log('Full response object:', response);
+        console.log('response.data type:', typeof response.data);
+        
+        // Check if response.data exists 
+        let processedData;
+        
+        if (response.data === null || response.data === undefined) {
+          console.log('%c ⚠️ response.data is null/undefined - using empty array', 'color: #cc4400;');
+          processedData = [];
+        } else if (Array.isArray(response.data)) {
+          console.log(`%c ✓ response.data is array with ${response.data.length} items`, 'color: #008800;');
+          processedData = response.data;
+        } else if (typeof response.data === 'object') {
+          console.log('%c ℹ️ response.data is an object (not array)', 'color: #0088cc;');
+          
+          // Many APIs return { results: [...] } or { data: [...] } structure
+          if (response.data.results && Array.isArray(response.data.results)) {
+            console.log(`%c ✓ Using response.data.results with ${response.data.results.length} items`, 'color: #008800;');
+            processedData = response.data.results;
+          } else if (response.data.data && Array.isArray(response.data.data)) {
+            console.log(`%c ✓ Using response.data.data with ${response.data.data.length} items`, 'color: #008800;');
+            processedData = response.data.data;
+          } else if (response.data.items && Array.isArray(response.data.items)) {
+            console.log(`%c ✓ Using response.data.items with ${response.data.items.length} items`, 'color: #008800;');
+            processedData = response.data.items;
+          } else {
+            // Last resort: if it's an object but not containing an array, make it an array of 1
+            console.log('%c ⚠️ Using response.data as single item in array', 'color: #cc4400;');
+            processedData = [response.data];
+          }
+        } else {
+          console.log('%c ⚠️ response.data is neither array nor object - using empty array', 'color: #cc4400;');
+          processedData = [];
+        }
+        
+        setItems(processedData);
+        setLoading(false);
+        return processedData;
+      } else {
+        console.error('API returned error:', response.error);
+        setError(response.error?.message || 'An error occurred while fetching data');
+        setLoading(false);
+        return null;
+      }
     } catch (err) {
       console.error('Error fetching data:', err);
       setError(err.message || 'An error occurred while fetching data');
@@ -300,17 +334,28 @@ const useDataFetching = ({
     
     try {
       // Fetch item details
-      const itemData = await fetchById(id);
+      const itemResponse = await fetchById(id);
+      const itemData = itemResponse.ok && itemResponse.data ? itemResponse.data : null;
+      
+      if (!itemData) {
+        console.error('Failed to fetch item:', itemResponse.error);
+        setError(itemResponse.error?.message || 'Failed to fetch item details');
+        setLoading(false);
+        return null;
+      }
+      
       setSelectedItem(itemData);
       
       // Fetch children for the item
-      const childrenData = await fetchChildren(id);
+      const childrenResponse = await fetchChildren(id);
+      const childrenData = childrenResponse.ok && childrenResponse.data ? childrenResponse.data : [];
       setChildItems(childrenData);
       
       // Fetch secondary children if function is provided
       let secondaryChildrenData = [];
       if (fetchSecondaryChildren) {
-        secondaryChildrenData = await fetchSecondaryChildren(id);
+        const secondaryResponse = await fetchSecondaryChildren(id);
+        secondaryChildrenData = secondaryResponse.ok && secondaryResponse.data ? secondaryResponse.data : [];
         setSecondaryChildItems(secondaryChildrenData);
       }
       
@@ -343,13 +388,19 @@ const useDataFetching = ({
     if (!id) return;
     
     try {
-      const childrenData = await fetchChildren(id);
-      setChildItems(childrenData);
-      return childrenData;
+      const response = await fetchChildren(id);
+      if (response.ok && response.data) {
+        const childrenData = response.data;
+        setChildItems(childrenData);
+        return childrenData;
+      } else {
+        console.error('Failed to refresh children:', response.error);
+        return [];
+      }
     } catch (err) {
       console.error('Error refreshing children:', err);
       // Don't update error state on refresh to avoid disrupting the UI
-      return null;
+      return [];
     }
   }, [fetchChildren]);
 
@@ -361,13 +412,19 @@ const useDataFetching = ({
     if (!id || !fetchSecondaryChildren) return;
     
     try {
-      const childrenData = await fetchSecondaryChildren(id);
-      setSecondaryChildItems(childrenData);
-      return childrenData;
+      const response = await fetchSecondaryChildren(id);
+      if (response.ok && response.data) {
+        const childrenData = response.data;
+        setSecondaryChildItems(childrenData);
+        return childrenData;
+      } else {
+        console.error('Failed to refresh secondary children:', response.error);
+        return [];
+      }
     } catch (err) {
       console.error('Error refreshing secondary children:', err);
       // Don't update error state on refresh to avoid disrupting the UI
-      return null;
+      return [];
     }
   }, [fetchSecondaryChildren]);
 
@@ -448,22 +505,7 @@ const useAccounts = () => {
     type: ''
   });
 
-  /**
-   * Refresh account balances
-   */
-  const refreshAccountBalances = useCallback(async () => {
-    try {
-      const data = await fetchAllAccounts();
-      setAccounts(data);
-      applyFilter(data, filter);
-      return true;
-    } catch (err) {
-      console.error('Error refreshing account balances:', err);
-      return false;
-    }
-  }, [filter, fetchAllAccounts, setAccounts]);
-
-  /**
+    /**
    * Apply the current filter to accounts data
    * @param {Array} accountsData - Accounts data to filter
    * @param {Object} currentFilter - Current filter settings
@@ -491,10 +533,31 @@ const useAccounts = () => {
     setFilteredAccounts(filtered);
   }, []);
 
+
+
+
+
+
   /**
-   * Filter accounts by type
-   * @param {string} type - Account type to filter by
+   * Refresh account balances
    */
+  const refreshAccountBalances = useCallback(async () => {
+    try {
+      const response = await fetchAllAccounts();
+      if (response.ok && response.data) {
+        const data = response.data;
+        setAccounts(data);
+        applyFilter(data, filter);
+        return true;
+      } else {
+        console.error('Failed to refresh account balances:', response.error);
+        return false;
+      }
+    } catch (err) {
+      console.error('Error refreshing account balances:', err);
+      return false;
+    }
+  }, [filter, fetchAllAccounts, setAccounts, applyFilter]);
   const filterByType = useCallback((type) => {
     const newFilter = {
       active: true,
@@ -504,9 +567,6 @@ const useAccounts = () => {
     applyFilter(accounts, newFilter);
   }, [accounts, applyFilter]);
 
-  /**
-   * Clear the current filter
-   */
   const clearFilter = useCallback(() => {
     const newFilter = {
       active: false,
@@ -515,11 +575,6 @@ const useAccounts = () => {
     setFilter(newFilter);
     applyFilter(accounts, newFilter);
   }, [accounts, applyFilter]);
-
-  /**
-   * Select an account by ID
-   * @param {string|number} accountId - Account ID to select
-   */
   const selectAccount = useCallback((accountId) => {
     const account = accounts.find(acc => 
       acc.account_id === accountId || 
@@ -598,7 +653,6 @@ const useEntities = () => {
     error,
     fetchAllItems: fetchEntities,
     fetchItemById: fetchEntityWithDetails,
-    refreshChildren: refreshEntityLedgers,
     refreshSecondaryChildren: refreshEntityAccounts,
     clearSelectedItem: clearSelectedEntity,
     setSelectedItem: setSelectedEntity
@@ -659,7 +713,11 @@ const useReferenceData = () => {
     setError(null);
     
     try {
-      const data = await apiService.reference.getCurrencies();
+      const response = await apiService.reference.getCurrencies();
+      console.log('Currencies response:', response);
+      
+      // Extract data from the response object
+      const data = response.ok && response.data ? response.data : [];
       setCurrencies(data);
       setLoading(prev => ({ ...prev, currencies: false }));
       return data;
@@ -667,7 +725,7 @@ const useReferenceData = () => {
       console.error('Error fetching currencies:', err);
       setError(err.message || 'An error occurred while fetching currencies');
       setLoading(prev => ({ ...prev, currencies: false }));
-      return null;
+      return [];
     }
   }, []);
 
@@ -679,7 +737,11 @@ const useReferenceData = () => {
     setError(null);
     
     try {
-      const data = await apiService.reference.getCountries();
+      const response = await apiService.reference.getCountries();
+      console.log('Countries response:', response);
+      
+      // Extract data from the response object
+      const data = response.ok && response.data ? response.data : [];
       setCountries(data);
       setLoading(prev => ({ ...prev, countries: false }));
       return data;
@@ -687,7 +749,7 @@ const useReferenceData = () => {
       console.error('Error fetching countries:', err);
       setError(err.message || 'An error occurred while fetching countries');
       setLoading(prev => ({ ...prev, countries: false }));
-      return null;
+      return [];
     }
   }, []);
 
@@ -699,7 +761,11 @@ const useReferenceData = () => {
     setError(null);
     
     try {
-      const data = await apiService.reference.getAccountCodes();
+      const response = await apiService.reference.getAccountCodes();
+      console.log('Account Codes response:', response);
+      
+      // Extract data from the response object
+      const data = response.ok && response.data ? response.data : [];
       setAccountCodes(data);
       setLoading(prev => ({ ...prev, accountCodes: false }));
       return data;
@@ -707,7 +773,7 @@ const useReferenceData = () => {
       console.error('Error fetching account codes:', err);
       setError(err.message || 'An error occurred while fetching account codes');
       setLoading(prev => ({ ...prev, accountCodes: false }));
-      return null;
+      return [];
     }
   }, []);
 
@@ -768,14 +834,28 @@ const useTransactions = () => {
     setError(prev => ({ ...prev, templates: null }));
     
     try {
-      const data = await apiService.transaction.getTemplates();
-      setTemplates(data);
+      const response = await apiService.transaction.getTemplates();
+      console.log('Templates response:', response);
+      
+      // Extract data from the response object
+      if (response.ok && response.data) {
+        setTemplates(response.data);
+        console.log('Setting templates:', response.data.length, 'items');
+      } else {
+        console.error('Failed to fetch templates:', response.error);
+        setError(prev => ({ 
+          ...prev, 
+          templates: response.error?.message || 'Failed to fetch templates'
+        }));
+        setTemplates([]);
+      }
     } catch (err) {
       console.error('Error fetching templates:', err);
       setError(prev => ({ 
         ...prev, 
         templates: err.message || 'An error occurred while fetching templates'
       }));
+      setTemplates([]);
     } finally {
       setLoading(prev => ({ ...prev, templates: false }));
     }
@@ -819,7 +899,19 @@ const useTransactions = () => {
     
     try {
       const response = await apiService.transaction.submitEvent(eventData);
+      console.log('Event submission response:', response);
+      
       setLoading(prev => ({ ...prev, submission: false }));
+      
+      if (!response.ok) {
+        console.error('Failed to submit event:', response.error);
+        setError(prev => ({ 
+          ...prev, 
+          submission: response.error?.message || 'Failed to submit event'
+        }));
+        throw new Error(response.error?.message || 'Failed to submit event');
+      }
+      
       return response;
     } catch (err) {
       console.error('Error submitting event:', err);
@@ -914,7 +1006,7 @@ const useLedgers = () => {
 export default useLedgers;
 File: ./src/hooks/useDashboardData.js
 --------------------
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import apiService from '../services/apiService';
 
 /**
@@ -942,11 +1034,28 @@ const useDashboardData = () => {
     
     try {
       // Get data in parallel for better performance
-      const [entitiesData, ledgersData, accountsData] = await Promise.all([
+      const [entitiesResponse, ledgersResponse, accountsResponse] = await Promise.all([
         apiService.entity.getEntities(),
         apiService.ledger.getLedgers(),
         apiService.account.getAccounts()
       ]);
+      
+      console.log('Dashboard data API responses:', {
+        entities: entitiesResponse,
+        ledgers: ledgersResponse,
+        accounts: accountsResponse
+      });
+      
+      // Extract data from the API responses
+      const entitiesData = entitiesResponse.ok && entitiesResponse.data ? entitiesResponse.data : [];
+      const ledgersData = ledgersResponse.ok && ledgersResponse.data ? ledgersResponse.data : [];
+      const accountsData = accountsResponse.ok && accountsResponse.data ? accountsResponse.data : [];
+      
+      console.log('Setting dashboard data:', {
+        entities: entitiesData.length,
+        ledgers: ledgersData.length,
+        accounts: accountsData.length
+      });
       
       setDashboardData({
         entities: entitiesData,
@@ -958,6 +1067,11 @@ const useDashboardData = () => {
       return { entities: entitiesData, ledgers: ledgersData, accounts: accountsData };
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
+      setDashboardData({
+        entities: [],
+        ledgers: [],
+        accounts: [] // Ensure accounts is an array, even if fetch fails
+      });
       setError(err.message || 'An error occurred while fetching dashboard data');
       setLoading(false);
       return null;
@@ -969,14 +1083,24 @@ const useDashboardData = () => {
    */
   const refreshAccountBalances = useCallback(async () => {
     try {
-      const accountsData = await apiService.account.getAccounts();
+      const accountsResponse = await apiService.account.getAccounts();
+      console.log('Refresh accounts response:', accountsResponse);
       
-      setDashboardData(prev => ({
-        ...prev,
-        accounts: accountsData
-      }));
-      
-      return accountsData;
+      // Extract data from the API response
+      if (accountsResponse.ok && accountsResponse.data) {
+        const accountsData = accountsResponse.data;
+        console.log('Refreshing accounts data with', accountsData.length, 'accounts');
+        
+        setDashboardData(prev => ({
+          ...prev,
+          accounts: accountsData
+        }));
+        
+        return accountsData;
+      } else {
+        console.error('Failed to refresh accounts:', accountsResponse.error);
+        return null;
+      }
     } catch (err) {
       console.error('Error refreshing account balances:', err);
       // Don't update error state on auto-refresh to avoid disrupting the UI
@@ -1139,11 +1263,14 @@ export const endpoints = {
   }
 };
 
-export default {
+const apiConfig = {
   LEDGER_API_BASE_URL,
   TRANSACTIONS_API_BASE_URL,
   endpoints
 };
+
+export default apiConfig;
+
 File: ./src/services/apiService.js
 --------------------
 /**
@@ -1160,20 +1287,54 @@ import { endpoints } from '../config/api';
  * @returns {Promise<Object>} - The response data
  */
 const fetchWithErrorHandling = async (url, options = {}) => {
-  try {
-    const response = await fetch(url, options);
+    console.log(`%c 🌐 API Request: ${options.method || 'GET'} ${url}`, 'background: #ddd; color: #0066cc; font-weight: bold; padding: 3px 5px; border-radius: 3px;');
     
-    if (!response.ok) {
-      // Get the raw response text
-      const errorText = await response.text();
-      throw new Error(errorText);
+    try {
+        // Log that we're making a network request
+        console.log(`%c 🔄 Fetching: ${url}`, 'color: #6b7280;');
+        
+        const response = await fetch(url, options);
+        console.log(`%c ✅ API Response: ${url} - Status: ${response.status}`, 'background: #e6ffe6; color: #008800; font-weight: bold; padding: 3px 5px; border-radius: 3px;');
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(e => ({ message: 'Invalid JSON in error response' }));
+            console.error(`%c ❌ API Error: ${url}`, 'background: #ffe6e6; color: #cc0000; font-weight: bold; padding: 3px 5px; border-radius: 3px;', errorData);
+            return {
+                ok: false,
+                status: response.status,
+                error: errorData,
+            };
+        }
+        
+        try {
+            const data = await response.json();
+            console.log(`%c 📦 API Success: ${url}`, 'background: #e6ffe6; color: #008800; font-weight: bold; padding: 3px 5px; border-radius: 3px;', data);
+            return {
+                ok: true,
+                data,
+            };
+        } catch (jsonError) {
+            console.error(`%c ❌ JSON Parse Error: ${url}`, 'background: #ffe6e6; color: #cc0000; font-weight: bold; padding: 3px 5px; border-radius: 3px;', jsonError);
+            return {
+                ok: false,
+                error: { message: 'Invalid JSON response from server' },
+            };
+        }
+    } catch (error) {
+        console.error(`%c ❌ API Exception: ${url}`, 'background: #ffe6e6; color: #cc0000; font-weight: bold; padding: 3px 5px; border-radius: 3px;', error);
+        
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+            return {
+                ok: false,
+                error: { message: 'Network error: Could not connect to the API.' },
+            };
+        }
+        
+        return { 
+            ok: false, 
+            error: { message: error.message } 
+        };
     }
-    
-    return await response.json();
-  } catch (error) {
-    console.error(`Fetch error for ${url}:`, error);
-    throw error;
-  }
 };
 
 /**
@@ -1361,308 +1522,6 @@ const apiService = {
 };
 
 export default apiService;
-File: ./src/utils/formatters.js
---------------------
-/**
- * Utility functions for consistent data formatting across the dashboard
- */
-
-/**
- * Format account balance using correct scale from currency
- * @param {number} balance - The raw balance value (integer)
- * @param {object} currency - Currency object with scale information
- * @param {boolean} showDecimal - Whether to show the decimal places
- * @param {string} currencySymbol - Optional currency symbol to prepend
- * @returns {string} Formatted balance value
- */
-export const formatBalance = (balance, currency, showDecimal = true, currencySymbol = '') => {
-  if (typeof balance !== 'number') return 'N/A';
-  
-  // Get the scale (decimal places) from the currency
-  let scale = 2; // Default scale
-  
-  if (currency) {
-    if (typeof currency.scale === 'number') {
-      scale = currency.scale;
-    } else if (currency.r_currency && typeof currency.r_currency.scale === 'number') {
-      scale = currency.r_currency.scale;
-    }
-  }
-  
-  // Convert to decimal value
-  const decimalValue = balance / Math.pow(10, scale);
-  
-  // Format with correct number of decimal places
-  let formattedValue;
-  if (showDecimal) {
-    // Fixed decimal places
-    formattedValue = decimalValue.toFixed(scale);
-  } else {
-    // Just round to whole number
-    formattedValue = Math.round(decimalValue).toString();
-  }
-  
-  // Add commas as thousands separators
-  formattedValue = formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  
-  // Handle negative numbers with parentheses
-  if (decimalValue < 0) {
-    // Remove minus sign and add parentheses
-    return `${currencySymbol}(${formattedValue.replace('-', '')})`;
-  } else {
-    return `${currencySymbol}${formattedValue}`;
-  }
-};
-
-/**
- * Get CSS class for balance display
- * @param {number} balance - The balance value
- * @returns {string} - CSS class name for balance display
- */
-export const getBalanceClass = (balance) => {
-  if (typeof balance !== 'number') return '';
-  return balance < 0 ? 'text-red-600 text-right font-medium' : 'text-gray-900 text-right font-medium';
-};
-
-/**
- * Get a readable display of country information
- * @param {object} item - The item (entity, ledger) with country info
- * @param {object} entity - Optional entity context for ledgers
- * @returns {string} Formatted country display
- */
-export const getCountryDisplay = (item, entity) => {
-  if (!item) return 'N/A';
-  
-  // Format function for country objects
-  const formatCountryObj = (country) => {
-    if (country && country.name && country.country_code) {
-      return `${country.name} (${country.country_code})`;
-    }
-    return null;
-  };
-  
-  // First check if r_entity has country info
-  if (item.r_entity && item.r_entity.r_country) {
-    return formatCountryObj(item.r_entity.r_country) || 'N/A';
-  }
-  
-  // Check for direct r_country attribute
-  if (item.r_country) {
-    return formatCountryObj(item.r_country) || 'N/A';
-  }
-  
-  // Check if it's a ledger that belongs to an entity with a country
-  if (entity && entity.r_country) {
-    return formatCountryObj(entity.r_country) || 'N/A';
-  }
-  
-  // Check entity fields
-  if (item.entity && item.entity.r_country) {
-    return formatCountryObj(item.entity.r_country) || 'N/A';
-  }
-  
-  // For ledgers with country_code 'NA', use the entity's country
-  if (item.country_code === 'NA' && entity && entity.r_country) {
-    return formatCountryObj(entity.r_country) || entity.country_code || 'N/A';
-  }
-  
-  // Try to find country by traversing various paths in the object
-  const paths = [
-    'enriched_entity.r_country',
-    'enriched_ledger.r_entity.r_country',
-    'enriched_ledger.r_country',
-    'r_entity.r_country'
-  ];
-  
-  for (const path of paths) {
-    const parts = path.split('.');
-    let obj = item;
-    let valid = true;
-    
-    for (const part of parts) {
-      if (!obj || !obj[part]) {
-        valid = false;
-        break;
-      }
-      obj = obj[part];
-    }
-    
-    if (valid && obj.name && obj.country_code) {
-      return formatCountryObj(obj) || 'N/A';
-    }
-  }
-  
-  // Return country code if available
-  if (item.country_code && item.country_code !== 'NA') {
-    return item.country_code;
-  }
-  
-  // Return any country field
-  if (item.country) {
-    return item.country;
-  }
-  
-  // Try entity property if available
-  if (item.r_entity?.country_code && item.r_entity.country_code !== 'NA') {
-    return item.r_entity.country_code;
-  }
-  
-  if (item.entity?.country_code && item.entity.country_code !== 'NA') {
-    return item.entity.country_code;
-  }
-  
-  return 'N/A';
-};
-
-/**
- * Format account code for display
- * @param {object|string} accountCode - Account code object or string
- * @returns {string} Formatted account code
- */
-export const formatAccountCode = (accountCode) => {
-  if (!accountCode) return 'N/A';
-  
-  // Handle when account_code is a full object
-  if (typeof accountCode === 'object') {
-    return `${accountCode.account_code} - ${accountCode.name || ''}`;
-  }
-  
-  // Handle when it's just the code value
-  return accountCode;
-};
-
-/**
- * Get the account type description from an account object
- * @param {object} account - Account object
- * @returns {string} Account type description
- */
-export const getAccountType = (account) => {
-  if (!account) return 'N/A';
-  
-  // Try different possible paths to get account type
-  if (account.account_type) {
-    return account.account_type;
-  }
-  
-  if (account.type) {
-    return account.type;
-  }
-  
-  if (account.account_code && account.account_code.type) {
-    return account.account_code.type;
-  }
-  
-  if (typeof account.account_code === 'object' && account.account_code.type) {
-    return account.account_code.type;
-  }
-  
-  if (account.code && account.code.type) {
-    return account.code.type;
-  }
-  
-  return 'Unknown';
-};
-
-/**
- * Get currency info from an account or ledger
- * @param {object} item - Account or ledger object
- * @returns {object|null} - Currency object or null if not found
- */
-export const getCurrencyInfo = (item) => {
-  if (!item) return null;
-  
-  // Try to find currency in various locations
-  if (item.r_currency) {
-    return item.r_currency;
-  }
-  
-  if (item.currency) {
-    return item.currency;
-  }
-  
-  if (item.enriched_ledger && item.enriched_ledger.r_currency) {
-    return item.enriched_ledger.r_currency;
-  }
-  
-  if (item.ledger && item.ledger.r_currency) {
-    return item.ledger.r_currency;
-  }
-  
-  // Return a simple object with the currency code if available
-  if (item.currency_code) {
-    return { currency_code: item.currency_code, scale: 2 };
-  }
-  
-  return null;
-};
-
-/**
- * Format a date for display
- * @param {number|string|Date} timestamp - The timestamp or date to format
- * @param {boolean} includeTime - Whether to include the time in the formatted date
- * @returns {string} Formatted date string
- */
-export const formatDate = (timestamp, includeTime = false) => {
-  if (!timestamp) return 'N/A';
-  
-  let date;
-  
-  // Handle Unix timestamps (seconds since epoch)
-  if (typeof timestamp === 'number') {
-    // Check if it's in seconds (10 digits) or milliseconds (13 digits)
-    if (timestamp < 10000000000) {
-      // Convert from seconds to milliseconds
-      date = new Date(timestamp * 1000);
-    } else {
-      date = new Date(timestamp);
-    }
-  } else if (typeof timestamp === 'string') {
-    // Try to parse as ISO date or Unix timestamp
-    if (!isNaN(Number(timestamp))) {
-      const num = Number(timestamp);
-      if (num < 10000000000) {
-        date = new Date(num * 1000);
-      } else {
-        date = new Date(num);
-      }
-    } else {
-      date = new Date(timestamp);
-    }
-  } else if (timestamp instanceof Date) {
-    date = timestamp;
-  } else {
-    return 'N/A';
-  }
-  
-  // Check if the date is valid
-  if (isNaN(date.getTime())) {
-    return 'N/A';
-  }
-  
-  // Format the date
-  const options = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  };
-  
-  if (includeTime) {
-    options.hour = '2-digit';
-    options.minute = '2-digit';
-    options.second = '2-digit';
-  }
-  
-  return date.toLocaleString('en-US', options);
-};
-
-/**
- * Get a display name for an account
- * @param {object} account - Account object
- * @returns {string} Account display name
- */
-export const getAccountDisplayName = (account) => {
-  return account.name || 'N/A';
-};
 File: ./src/utils/formatters/balanceFormatters.js
 --------------------
 /**
@@ -1989,65 +1848,28 @@ export * from './balanceFormatters';
 export * from './dateFormatters';
 export * from './accountFormatters';
 export * from './entityFormatters';
-File: ./src/utils/filterUtils.js
+File: ./src/utils/accountUtils.js
 --------------------
 /**
- * This file is maintained for backwards compatibility.
- * Please use the modular filterUtils directory for new code.
+ * Extracts the account type from an account object.
+ * @param {object} account The account object.
+ * @returns {string} The account type as an uppercase string, or 'OTHER' if not found.
  */
+const getAccountType = (account) => {
+  if (!account) return 'OTHER';
 
-import filterUtilsImport, {
-  filterData,
-  searchData,
-  getSearchFields,
-  filterByModelType,
-  accountFilters,
-  entityFilters,
-  ledgerFilters
-} from './filterUtils/index';
-
-// Re-export the filterAccountsByType function directly
-export const filterAccountsByType = (accounts, accountType) => {
-  if (!accountType) {
-    return accounts;
+  let type;
+  if (account.account_type) {
+    type = account.account_type;
+  } else if (account.type) {
+    type = account.type;
+  } else if (account.account_code && account.account_code.type) {
+    type = account.account_code.type;
+  } else if (account.code && account.code.type) {
+    type = account.code.type;
   }
 
-  const normalizedType = accountType.toUpperCase();
-
-  return accounts.filter(account => {
-    // Extract account type from different possible structures
-    let accountTypeValue = 'OTHER';
-    
-    if (account.account_type) {
-      accountTypeValue = account.account_type.toUpperCase();
-    } else if (account.account_code && account.account_code.type) {
-      accountTypeValue = account.account_code.type.toUpperCase();
-    } else if (typeof account.account_code === 'object' && account.account_code.type) {
-      accountTypeValue = account.account_code.type.toUpperCase();
-    } else if (account.type) {
-      accountTypeValue = account.type.toUpperCase();
-    }
-    
-    return accountTypeValue === normalizedType;
-  });
-};
-
-// Create a filterUtils object with all the functions
-export const filterUtils = {
-  filterData,
-  searchData,
-  getSearchFields,
-  filterByModelType,
-  filterAccountsByType, // Add this directly to filterUtils
-  ...accountFilters,
-  ...entityFilters,
-  ...ledgerFilters
-};
-
-// Export default for direct imports
-export default {
-  ...filterUtilsImport,
-  filterAccountsByType
+  return (typeof type === 'string' ? type : 'OTHER').toUpperCase();
 };
 File: ./src/utils/filterUtils/index.js
 --------------------
@@ -2416,6 +2238,7 @@ File: ./src/utils/filterUtils/accountFilters.js
  * Account-specific filtering logic
  */
 import { filterData } from './index';
+import { getAccountType } from '../accountUtils';
 
 /**
  * Filter account data by account type (handles different structures)
@@ -2430,20 +2253,8 @@ export const filterAccountsByType = (accounts, accountType) => {
 
   const normalizedType = accountType.toUpperCase();
 
-  return accounts.filter(account => {
-    // Extract account type from different possible structures
-    let accountTypeValue = 'OTHER';
-    
-    if (account.account_type) {
-      accountTypeValue = account.account_type.toUpperCase();
-    } else if (account.account_code && account.account_code.type) {
-      accountTypeValue = account.account_code.type.toUpperCase();
-    } else if (typeof account.account_code === 'object' && account.account_code.type) {
-      accountTypeValue = account.account_code.type.toUpperCase();
-    } else if (account.type) {
-      accountTypeValue = account.type.toUpperCase();
-    }
-    
+  return accounts.filter((account) => {
+    const accountTypeValue = getAccountType(account);
     return accountTypeValue === normalizedType;
   });
 };
@@ -2667,13 +2478,13 @@ File: ./src/components/accounts/AccountList.js
 --------------------
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { GenericListView, AccountConfig, FilterBadge } from '../common';
-import { formatBalance, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters';
+import { GenericListView, AccountConfig } from '../common';
+import { formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
 import apiService from '../../services/apiService';
 import useAccounts from '../../hooks/useAccounts';
 import { useDashboard } from '../../context/DashboardContext';
 
-/**
+/** 
  * Account List component using GenericListView
  */
 const AccountList = () => {
@@ -2681,11 +2492,9 @@ const AccountList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const accountTypeFilter = searchParams.get('type');
   
-  const { handleViewJson, accountsFilter, setAccountsFilter, clearFilter } = useDashboard();
-  const { accounts, loading: accountsLoading, fetchAccounts, refreshAccountBalances } = useAccounts();
+  const { handleViewJson, setAccountsFilter } = useDashboard();
+  const { accounts, loading: accountsLoading, fetchAccounts, refreshAccountBalances } = useAccounts(); 
   
-  const [entities, setEntities] = useState([]);
-  const [ledgers, setLedgers] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Apply filter based on URL query param if present
@@ -2707,57 +2516,11 @@ const AccountList = () => {
 
   // Fetch accounts when component mounts
   useEffect(() => {
-    fetchAccounts();
+    setLoading(true);
+    fetchAccounts()
+      .finally(() => setLoading(false));
   }, [fetchAccounts]);
 
-  // Fetch entity and ledger data for display and drilldown
-  useEffect(() => {
-    const fetchReferenceData = async () => {
-      setLoading(true);
-      try {
-        // Fetch entities
-        const entitiesData = await apiService.entity.getEntities();
-        setEntities(entitiesData);
-        
-        // Fetch ledgers
-        const ledgersData = await apiService.ledger.getLedgers();
-        setLedgers(ledgersData);
-      } catch (err) {
-        console.error('Error fetching reference data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchReferenceData();
-  }, []);
-
-  // Helper function to find entity for an account
-  const getEntityForAccount = (account) => {
-    // Get entity ID from account or its ledger
-    const entityId = account.entity_id || 
-      (account.enriched_ledger && account.enriched_ledger.entity_id) ||
-      (account.entity && account.entity.entity_id);
-    
-    if (!entityId) {
-      return null;
-    }
-    
-    // Find entity in our fetched list
-    const foundEntity = entities.find(e => e.entity_id === entityId);
-    return foundEntity;
-  };
-  
-  const getLedgerForAccount = (account) => {
-    // Get ledger ID directly
-    const ledgerId = account.ledger_id || 
-      (account.enriched_ledger && account.enriched_ledger.ledger_id);
-    
-    if (!ledgerId) return null;
-    
-    // Find ledger in our fetched list
-    return ledgers.find(l => l.ledger_id === ledgerId);
-  };
 
   const getCurrencyCode = (account) => {
     return (account.enriched_ledger && account.enriched_ledger.r_currency && account.enriched_ledger.r_currency.currency_code) || 
@@ -2802,19 +2565,18 @@ const AccountList = () => {
     key: 'entity',
     header: 'Account Owner',
     render: (account) => {
-      const entity = getEntityForAccount(account);
-      return entity ? entity.name : (account.entity ? account.entity.name : 'N/A');
+      return account.entity?.name || 
+             account.enriched_ledger?.entity?.name || 
+             'N/A';
     },
     cellClassName: (account) => {
-      const entityId = getEntityForAccount(account)?.entity_id || 
-                       account.entity_id || 
+      const entityId = account.entity_id || 
                        (account.enriched_ledger && account.enriched_ledger.entity_id) || 
                        (account.entity && account.entity.entity_id);
       return entityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
     },
     onClick: (account) => {
-      const entityId = getEntityForAccount(account)?.entity_id || 
-                       account.entity_id || 
+      const entityId = account.entity_id || 
                        (account.enriched_ledger && account.enriched_ledger.entity_id) || 
                        (account.entity && account.entity.entity_id);
       if (entityId) {
@@ -2831,18 +2593,18 @@ const AccountList = () => {
     key: 'ledger',
     header: 'Ledger',
     render: (account) => {
-      const ledger = getLedgerForAccount(account);
-      return ledger ? ledger.name : (account.enriched_ledger?.name || account.ledger?.name || account.ledger_name || 'N/A');
+      return account.enriched_ledger?.name || 
+             account.ledger?.name || 
+             account.ledger_name || 
+             'N/A';
     },
     cellClassName: (account) => {
-      const ledgerId = getLedgerForAccount(account)?.ledger_id || 
-                       account.ledger_id || 
+      const ledgerId = account.ledger_id || 
                        (account.enriched_ledger && account.enriched_ledger.ledger_id);
       return ledgerId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
     },
     onClick: (account) => {
-      const ledgerId = getLedgerForAccount(account)?.ledger_id || 
-                       account.ledger_id || 
+      const ledgerId = account.ledger_id || 
                        (account.enriched_ledger && account.enriched_ledger.ledger_id);
       if (ledgerId) {
         handleViewLedger(ledgerId);
@@ -2911,7 +2673,7 @@ export default AccountList;
 File: ./src/components/accounts/tables/AccountsTable.js
 --------------------
 import React from 'react';
-import { formatBalance, formatAccountCode, getAccountType } from '../../../utils/formatters';
+import { formatBalance, formatAccountCode, getAccountType } from '../../../utils/formatters/index';
 
 /**
  * Reusable accounts table component for displaying a list of accounts
@@ -3142,10 +2904,10 @@ File: ./src/components/templates/TemplatesPage.js
 import React, { useState, useEffect } from 'react';
 import useTransactions from '../../hooks/useTransactions';
 import useAccounts from '../../hooks/useAccounts';
+import useLedgers from '../../hooks/useLedgers';
 import TemplatesList from './TemplatesList';
 import TemplateDetail from './TemplateDetail';
 import EventForm from './EventForm';
-import apiService from '../../services/apiService';
 
 /**
  * Main Templates page component
@@ -3167,9 +2929,12 @@ const TemplatesPage = ({ onViewJson }) => {
     fetchAccounts
   } = useAccounts();
 
+  const {
+    ledgers,
+    fetchLedgers
+  } = useLedgers();
+
   const [view, setView] = useState('list'); // 'list', 'detail', or 'event-form'
-  const [ledgers, setLedgers] = useState([]);
-  const [loadingLedgers, setLoadingLedgers] = useState(false);
 
   // Update the view when selectedTemplate changes
   useEffect(() => {
@@ -3180,25 +2945,13 @@ const TemplatesPage = ({ onViewJson }) => {
     }
   }, [selectedTemplate, view]);
 
-  // Fetch ledgers when needed
+  // Fetch accounts and ledgers when needed
   useEffect(() => {
     if (view === 'event-form') {
-      fetchLedgers();
       fetchAccounts();
+      fetchLedgers();
     }
-  }, [view, fetchAccounts]);
-
-  const fetchLedgers = async () => {
-    setLoadingLedgers(true);
-    try {
-      const data = await apiService.ledger.getLedgers();
-      setLedgers(data);
-    } catch (error) {
-      console.error('Error fetching ledgers:', error);
-    } finally {
-      setLoadingLedgers(false);
-    }
-  };
+  }, [view, fetchAccounts, fetchLedgers]);
 
   const handleViewJson = (data, title) => {
     if (onViewJson) {
@@ -3269,7 +3022,7 @@ import { v4 as uuidv4 } from 'uuid'; // You may need to add this dependency
 /**
  * Component for creating and submitting events based on templates
  */
-const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJson }) => {
+const EventForm = ({ template, ledgers, accounts, loading = false, onBack, onSubmitEvent, onViewJson }) => {
   // Helper function to get the ledger ID for a transfer
   const getLedgerId = (transfer) => {
     // Try all possible property paths where ledger ID might be found
@@ -3351,19 +3104,25 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
     // Analyze the template legs to find account references
     const accountKeys = new Set();
     
-    template.legs.forEach(leg => {
-      // Check if the debit_account contains an accounts reference
-      const debitMatch = leg.debit_account.match(/accounts\['([^']+)'\]/);
-      if (debitMatch) {
-        accountKeys.add(debitMatch[1]);
-      }
-      
-      // Check if the credit_account contains an accounts reference
-      const creditMatch = leg.credit_account.match(/accounts\['([^']+)'\]/);
-      if (creditMatch) {
-        accountKeys.add(creditMatch[1]);
-      }
-    });
+    if (Array.isArray(template.legs)) {
+      template.legs.forEach(leg => {
+        if (leg && typeof leg.debit_account === 'string') {
+          // Check if the debit_account contains an accounts reference
+          const debitMatch = leg.debit_account.match(/accounts\['([^']+)'\]/);
+          if (debitMatch) {
+            accountKeys.add(debitMatch[1]);
+          }
+        }
+        
+        if (leg && typeof leg.credit_account === 'string') {
+          // Check if the credit_account contains an accounts reference
+          const creditMatch = leg.credit_account.match(/accounts\['([^']+)'\]/);
+          if (creditMatch) {
+            accountKeys.add(creditMatch[1]);
+          }
+        }
+      });
+    }
     
     return Array.from(accountKeys);
   };
@@ -3452,7 +3211,13 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
       };
       
       const response = await onSubmitEvent(eventDataToSubmit);
-      setEventResponse(response);
+      console.log('Event submission response:', response);
+      
+      if (response.ok && response.data) {
+        setEventResponse(response.data);
+      } else {
+        setError(response.error?.message || 'Failed to submit event');
+      }
       setIsLoading(false);
     } catch (err) {
       setError(err.message || 'An error occurred while submitting the event');
@@ -3498,28 +3263,31 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
         {eventResponse && (
           <div className="mt-4 p-4 border rounded-md bg-gray-50">
             <div className="flex justify-between items-start">
-            <div className="flex items-center space-x-4">
-              <h4 className="text-md font-medium text-gray-900">Event Response</h4>
-            <button
-              type="button"
-              onClick={() => onViewJson && onViewJson(eventData, 'Original Event JSON')}
-                className="text-sm text-blue-600 hover:text-blue-500 px-2 py-1 border border-blue-200 rounded"
-            >
-                View Event JSON
-                </button>
-                </div>
+              <div className="flex items-center space-x-4">
+                <h4 className="text-md font-medium text-gray-900">Event Response</h4>
                 <button
                   type="button"
-                  onClick={resetForm}
-                  className="text-sm text-blue-600 hover:text-blue-500"
+                  onClick={() => {
+                    console.log('Viewing event JSON:', eventData);
+                    if (onViewJson) onViewJson(eventData, 'Original Event JSON');
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-500 px-2 py-1 border border-blue-200 rounded"
                 >
-                  Create Another Event
+                  View Event JSON
                 </button>
               </div>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="text-sm text-blue-600 hover:text-blue-500"
+              >
+                Create Another Event
+              </button>
+            </div>
             <div className="mt-2">
-              <p className="text-sm text-gray-600">Status: {eventResponse.status}</p>
+              <p className="text-sm text-gray-600">Status: {eventResponse.status || 'Complete'}</p>
               
-              {eventResponse.transfers && eventResponse.transfers.length > 0 && (
+              {eventResponse && eventResponse.transfers && eventResponse.transfers.length > 0 && (
                 <div className="mt-3">
                   <h5 className="text-sm font-medium text-gray-900">Generated Transfers:</h5>
                   <div className="mt-2 overflow-x-auto">
@@ -3546,7 +3314,11 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transfer.code}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 hover:text-blue-800 cursor-pointer">
                               <button
-                                onClick={() => onViewJson && onViewJson(transfer, `Transfer: ${formatId(transfer.id)}`)}
+                                type="button"
+                                onClick={() => {
+                                  console.log('Viewing transfer JSON:', transfer);
+                                  if (onViewJson) onViewJson(transfer, `Transfer: ${formatId(transfer.id)}`);
+                                }}
                                 className="text-blue-500 hover:text-blue-700"
                               >
                                 View JSON
@@ -3609,12 +3381,16 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
                   onChange={(e) => setEventData({ ...eventData, ledger_id: e.target.value })}
                   required
                 >
-                  <option value="">Select a ledger</option>
-                  {ledgers && ledgers.map((ledger) => (
-                    <option key={ledger.ledger_id} value={ledger.ledger_id}>
-                      {ledger.name} (ID: {ledger.ledger_id})
-                    </option>
-                  ))}
+                  <option value="">{loading ? 'Loading ledgers...' : 'Select a ledger'}</option>
+                  {Array.isArray(ledgers) && ledgers.length > 0 ? (
+                    ledgers.map((ledger) => (
+                      <option key={ledger.ledger_id} value={ledger.ledger_id}>
+                        {ledger.name} (ID: {ledger.ledger_id})
+                      </option>
+                    ))
+                  ) : !loading ? (
+                    <option value="" disabled>No ledgers available</option>
+                  ) : null}
                 </select>
               </div>
             </div>
@@ -3657,11 +3433,13 @@ const EventForm = ({ template, ledgers, accounts, onBack, onSubmitEvent, onViewJ
                         required
                       >
                         <option value="">Select an account</option>
-                        {accounts && accounts.map((account) => (
-                          <option key={account.account_extra_id} value={account.account_extra_id}>
-                            {account.name} (ID: {account.account_extra_id})
+                        {Array.isArray(accounts) ? accounts.map((account) => (
+                          <option key={account.account_extra_id || account.account_id} value={account.account_extra_id || account.account_id}>
+                            {account.name} (ID: {account.account_extra_id || account.account_id})
                           </option>
-                        ))}
+                        )) : (
+                          <option value="" disabled>No accounts available</option>
+                        )}
                       </select>
                     </div>
                   </div>
@@ -3785,7 +3563,7 @@ export default TemplatesList;
 File: ./src/components/rules/RuleDetail.js
 --------------------
 import React from 'react';
-import { GenericDetailView, ActionButton, RuleConfig } from '../common';
+import { GenericDetailView, ActionButton } from '../common';
 
 /**
  * Component to display detailed rule information using GenericDetailView
@@ -3795,51 +3573,41 @@ const RuleDetail = ({ rule, onBack, onViewJson }) => {
   const sections = [
     {
       label: 'Rule ID',
-      content: rule?.rule_id
+      content: rule?.rule_id || 'N/A'
     },
     {
       label: 'Description',
-      content: rule?.description
+      content: rule?.description || 'No description available'
     },
     {
       label: 'Action',
-      content: rule?.action && (
+      content: rule?.action ? (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
           {rule.action}
         </span>
-      )
-    },
-    {
-      label: 'Status',
-      content: rule?.status && (
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          rule.status === 'ACTIVE' 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-gray-100 text-gray-800'
-        }`}>
-          {rule.status}
-        </span>
-      )
+      ) : 'N/A'
     },
     {
       label: 'Expression',
-      content: rule?.expression && (
+      content: rule?.expression ? (
         <div className="bg-gray-50 p-4 rounded font-mono overflow-x-auto">
           {rule.expression}
         </div>
-      )
+      ) : 'No expression defined'
     }
   ];
 
   // Define custom actions
   const customActions = (
     <>
-      <ActionButton
-        variant="outline"
-        onClick={() => onViewJson(rule, `Rule ${rule?.rule_id}`)}
-      >
-        View JSON
-      </ActionButton>
+      {onViewJson && (
+        <ActionButton
+          variant="outline"
+          onClick={() => onViewJson(rule, `Rule ${rule?.rule_id}`)}
+        >
+          View JSON
+        </ActionButton>
+      )}
       <ActionButton
         variant="secondary"
         onClick={onBack}
@@ -3872,16 +3640,30 @@ import { GenericListView, RuleConfig } from '../common';
  * Component to display a list of rules using GenericListView
  */
 const RulesList = ({ rules, onSelectRule, onViewJson, onRefresh, loading }) => {
-  // Define additional columns to include with the base configuration
+  // Define columns for the rules list
   const columns = [
     ...RuleConfig.listColumns,
+    {
+      key: 'description',
+      header: 'Description',
+      cellClassName: 'text-gray-500',
+      render: (rule) => rule.description && rule.description.length > 60
+        ? `${rule.description.substring(0, 60)}...`
+        : rule.description || 'No description'
+    },
     {
       key: 'expression',
       header: 'Expression',
       cellClassName: 'text-gray-500 font-mono',
-      render: (rule) => rule.expression && rule.expression.length > 80
-        ? `${rule.expression.substring(0, 80)}...`
-        : rule.expression
+      render: (rule) => rule.expression && rule.expression.length > 60
+        ? `${rule.expression.substring(0, 60)}...`
+        : rule.expression || 'N/A'
+    },
+    {
+      key: 'action',
+      header: 'Action',
+      cellClassName: 'text-gray-500',
+      render: (rule) => rule.action || 'N/A'
     }
   ];
 
@@ -3905,7 +3687,7 @@ export default RulesList;
 File: ./src/components/rules/RulesView.js
 --------------------
 import React, { useState, useEffect } from 'react';
-import { LoadingSpinner, ErrorAlert } from '../common';
+import { ErrorAlert } from '../common';
 import RulesList from './RulesList';
 import RuleDetail from './RuleDetail';
 import apiService from '../../services/apiService';
@@ -3931,12 +3713,23 @@ const RulesView = ({ onViewJson }) => {
     setError(null);
     
     try {
-      const data = await apiService.transaction.getRules();
-      setRules(data);
+      const response = await apiService.transaction.getRules();
+      console.log('Rules response:', response);
+      
+      // Extract data from the response object
+      if (response.ok && response.data) {
+        setRules(response.data);
+        console.log('Setting rules:', response.data.length, 'items');
+      } else {
+        console.error('Failed to fetch rules:', response.error);
+        setError(response.error?.message || 'Failed to fetch rules');
+        setRules([]);
+      }
       setIsLoading(false);
     } catch (err) {
       console.error('Error fetching rules:', err);
       setError(err.message || 'An error occurred while fetching rules');
+      setRules([]);
       setIsLoading(false);
     }
   };
@@ -4034,12 +3827,23 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
     const loadAccountCodes = async () => {
       setLoading(true);
       try {
-        const data = await apiService.reference.getAccountCodes();
-        setAccountCodes(data);
-        setError(null);
+        const response = await apiService.reference.getAccountCodes();
+        console.log('AccountCodesList response:', response);
+        
+        // Extract data from the response object
+        if (response.ok && response.data) {
+          setAccountCodes(response.data);
+          console.log('AccountCodesList setting account codes:', response.data.length, 'items');
+          setError(null);
+        } else {
+          console.error('Failed to load account codes:', response.error);
+          setError('Failed to load account codes. Please try again.');
+          setAccountCodes([]);
+        }
       } catch (err) {
         console.error('Error loading account codes:', err);
         setError('Failed to load account codes. Please try again.');
+        setAccountCodes([]);
       } finally {
         setLoading(false);
       }
@@ -4054,9 +3858,18 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
     } else {
       setLoading(true);
       try {
-        const data = await apiService.reference.getAccountCodes();
-        setAccountCodes(data);
-        setError(null);
+        const response = await apiService.reference.getAccountCodes();
+        console.log('AccountCodesList refresh response:', response);
+        
+        // Extract data from the response object
+        if (response.ok && response.data) {
+          setAccountCodes(response.data);
+          console.log('AccountCodesList refresh setting account codes:', response.data.length, 'items');
+          setError(null);
+        } else {
+          console.error('Failed to refresh account codes:', response.error);
+          setError('Failed to refresh account codes. Please try again.');
+        }
       } catch (err) {
         console.error('Error refreshing account codes:', err);
         setError('Failed to refresh account codes. Please try again.');
@@ -4122,12 +3935,23 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
     const loadCurrencies = async () => {
       setLoading(true);
       try {
-        const data = await apiService.reference.getCurrencies();
-        setCurrencies(data);
-        setError(null);
+        const response = await apiService.reference.getCurrencies();
+        console.log('CurrenciesList response:', response);
+        
+        // Extract data from the response object
+        if (response.ok && response.data) {
+          setCurrencies(response.data);
+          console.log('CurrenciesList setting currencies:', response.data.length, 'items');
+          setError(null);
+        } else {
+          console.error('Failed to load currencies:', response.error);
+          setError('Failed to load currencies. Please try again.');
+          setCurrencies([]);
+        }
       } catch (err) {
         console.error('Error loading currencies:', err);
         setError('Failed to load currencies. Please try again.');
+        setCurrencies([]);
       } finally {
         setLoading(false);
       }
@@ -4142,9 +3966,18 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
     } else {
       setLoading(true);
       try {
-        const data = await apiService.reference.getCurrencies();
-        setCurrencies(data);
-        setError(null);
+        const response = await apiService.reference.getCurrencies();
+        console.log('CurrenciesList refresh response:', response);
+        
+        // Extract data from the response object
+        if (response.ok && response.data) {
+          setCurrencies(response.data);
+          console.log('CurrenciesList refresh setting currencies:', response.data.length, 'items');
+          setError(null);
+        } else {
+          console.error('Failed to refresh currencies:', response.error);
+          setError('Failed to refresh currencies. Please try again.');
+        }
       } catch (err) {
         console.error('Error refreshing currencies:', err);
         setError('Failed to refresh currencies. Please try again.');
@@ -4210,12 +4043,23 @@ const CountriesList = ({ onViewJson, onRefresh }) => {
     const loadCountries = async () => {
       setLoading(true);
       try {
-        const data = await apiService.reference.getCountries();
-        setCountries(data);
-        setError(null);
+        const response = await apiService.reference.getCountries();
+        console.log('CountriesList response:', response);
+        
+        // Extract data from the response object
+        if (response.ok && response.data) {
+          setCountries(response.data);
+          console.log('CountriesList setting countries:', response.data.length, 'items');
+          setError(null);
+        } else {
+          console.error('Failed to load countries:', response.error);
+          setError('Failed to load countries. Please try again.');
+          setCountries([]);
+        }
       } catch (err) {
         console.error('Error loading countries:', err);
         setError('Failed to load countries. Please try again.');
+        setCountries([]);
       } finally {
         setLoading(false);
       }
@@ -4230,9 +4074,18 @@ const CountriesList = ({ onViewJson, onRefresh }) => {
     } else {
       setLoading(true);
       try {
-        const data = await apiService.reference.getCountries();
-        setCountries(data);
-        setError(null);
+        const response = await apiService.reference.getCountries();
+        console.log('CountriesList refresh response:', response);
+        
+        // Extract data from the response object
+        if (response.ok && response.data) {
+          setCountries(response.data);
+          console.log('CountriesList refresh setting countries:', response.data.length, 'items');
+          setError(null);
+        } else {
+          console.error('Failed to refresh countries:', response.error);
+          setError('Failed to refresh countries. Please try again.');
+        }
       } catch (err) {
         console.error('Error refreshing countries:', err);
         setError('Failed to refresh countries. Please try again.');
@@ -4368,22 +4221,23 @@ File: ./src/components/shared/sidebar/Sidebar.js
 --------------------
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-
-// Using unicode emojis instead of icon libraries to avoid dependencies
+import {
+  BarChart, BookOpen, Briefcase, Users, DollarSign, Globe, Tag, FileText,
+  CheckSquare, Shield, PlusCircle, ChevronLeft, ChevronRight,
+} from 'lucide-react';
+ 
 const icons = {
-  BarChart2: '📊',
-  Book: '📘',
-  Briefcase: '💼',
-  Users: '👥',
-  DollarSign: '💱',
-  Globe: '🌎',
-  Tag: '🏷️',
-  FileText: '📄',
-  CheckSquare: '✅',
-  Shield: '🛡️',
-  ChevronLeft: '◀️',
-  ChevronRight: '▶️',
-  PlusCircle: '➕' // Added for Event Entry
+  BarChart2: BarChart,
+  Book: BookOpen,
+  Briefcase: Briefcase, 
+  Users: Users,
+  DollarSign: DollarSign,
+  Globe: Globe,
+  Tag: Tag,
+  FileText: FileText,
+  CheckSquare: CheckSquare,
+  Shield: Shield,  
+  PlusCircle: PlusCircle
 };
 
 /**
@@ -4413,21 +4267,21 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   // Render navigation item
   const renderNavItem = (tab) => {
-    const icon = icons[tab.icon];
+    const IconComponent = icons[tab.icon];
     
     return (
       <NavLink
         key={tab.id}
         to={tab.path}
-        className={({ isActive }) => `
+        className={({ isActive }) => ` 
           flex items-center w-full py-2 px-3 my-1 rounded ${collapsed ? 'justify-center' : 'px-4'} 
           ${isActive ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50'}
         `}
       >
-        <span className={`${collapsed ? '' : 'mr-3'} text-lg`}>{icon}</span>
+        <span className={`${collapsed ? '' : 'mr-3'} text-lg`}><IconComponent /></span>
         {!collapsed && <span className="text-sm">{tab.name}</span>}
       </NavLink>
-    );
+    ); 
   };
 
   // Render section with header
@@ -4446,7 +4300,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     <div className={`bg-white border-r border-gray-200 transition-all duration-300 flex flex-col h-full ${collapsed ? 'w-14' : 'w-56'}`}>
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 bg-gray-50">
         {!collapsed && (
-          <div className="text-xl font-bold text-gray-900 flex items-center">
+          <div className="text-xl font-bold text-gray-900 flex items-center mr-2">
             <span className="mr-2">🚀</span>
             Ledger Rocket
           </div>
@@ -4458,9 +4312,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1 rounded-md text-gray-500 hover:bg-gray-200 ml-auto"
+          className="p-1 rounded-md text-gray-500 hover:bg-gray-200 ml-auto mr-2"
         >
-          <span className="text-lg">{collapsed ? icons.ChevronRight : icons.ChevronLeft}</span>
+          <span className="text-xl">{collapsed ? <ChevronRight /> : <ChevronLeft />}</span>
         </button>
       </div>
       
@@ -4479,162 +4333,6 @@ File: ./src/components/shared/sidebar/index.js
 import Sidebar from './Sidebar';
 
 export default Sidebar;
-File: ./src/components/analytics/AnalyticsView.js
---------------------
-import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import PageHeader from '../shared/PageHeader';
-
-// Colors for charts
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
-
-/**
- * Analytics View component to display financial analytics
- * with refresh capability
- */
-const AnalyticsView = ({ accounts, entities, onRefresh }) => {
-  // Calculate account type breakdown data
-  const calculateAccountTypeData = () => {
-    if (!accounts || accounts.length === 0) {
-      return [];
-    }
-
-    const typeMap = {
-      'ASSET': 'Assets',
-      'LIABILITY': 'Liabilities',
-      'EQUITY': 'Equity',
-      'REVENUE': 'Revenue',
-      'EXPENSE': 'Expenses',
-      'CONTINGENT': 'Contingent',
-      'MEMO': 'Memo'
-    };
-    
-    const typeBalances = {};
-    
-    accounts.forEach(account => {
-      let type = 'Unknown';
-      
-      // Extract account type from different possible locations in data structure
-      if (account.account_code) {
-        if (typeof account.account_code === 'object' && account.account_code.type) {
-          type = typeMap[account.account_code.type] || account.account_code.type;
-        } else {
-          type = account.account_code;
-        }
-      } else if (account.account_type) {
-        type = typeMap[account.account_type] || account.account_type;
-      } else if (account.type) {
-        type = typeMap[account.type] || account.type;
-      }
-      
-      typeBalances[type] = (typeBalances[type] || 0) + (account.balance || 0);
-    });
-    
-    return Object.keys(typeBalances).map(type => ({
-      type,
-      value: typeBalances[type] / 100 // Convert cents to dollars for better visualization
-    }));
-  };
-
-  // Accounts by entity data for pie chart
-  const accountsByEntityData = () => {
-    if (!accounts || accounts.length === 0 || !entities || entities.length === 0) {
-      return [];
-    }
-
-    const entityCounts = {};
-    
-    accounts.forEach(account => {
-      const entityId = account.entity_id || 
-        (account.enriched_ledger && account.enriched_ledger.entity_id) ||
-        (account.entity && account.entity.entity_id);
-        
-      if (entityId) {
-        entityCounts[entityId] = (entityCounts[entityId] || 0) + 1;
-      }
-    });
-    
-    return Object.keys(entityCounts).map(entityId => {
-      const entity = entities.find(e => e.entity_id === entityId);
-      return {
-        name: entity ? entity.name : 'Unknown',
-        value: entityCounts[entityId]
-      };
-    });
-  };
-
-  const accountTypeData = calculateAccountTypeData();
-  const entityAccountsData = accountsByEntityData();
-
-  return (
-    <div>
-      <PageHeader 
-        title="Financial Analytics" 
-        refreshButton={true}
-        onRefresh={onRefresh}
-      />
-      
-      <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Account Type Breakdown</h3>
-        <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={accountTypeData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="type" />
-            <YAxis 
-              tickFormatter={(value) => 
-                value.toLocaleString('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0
-                })
-              } 
-            />
-            <Tooltip 
-              formatter={(value) => [
-                value.toLocaleString('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                }), 
-                'Amount'
-              ]} 
-            />
-            <Legend />
-            <Bar dataKey="value" fill="#3B82F6" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Accounts Distribution by Entity</h3>
-        <ResponsiveContainer width="100%" height={400}>
-          <PieChart>
-            <Pie
-              data={entityAccountsData}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              outerRadius={160}
-              fill="#8884d8"
-              dataKey="value"
-              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-            >
-              {entityAccountsData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip formatter={(value) => [value, 'Accounts']} />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-};
-
-export default AnalyticsView;
 File: ./src/components/common/LoadingSpinner.js
 --------------------
 import React from 'react';
@@ -4803,7 +4501,7 @@ File: ./src/components/common/config/modelConfig.js
  * Model configuration for the application
  * Centralizes common definitions for different model types
  */
-import { formatBalance, formatAccountCode, getCountryDisplay, getAccountType, getBalanceClass, getCurrencyInfo } from '../../../utils/formatters';
+import { formatBalance, formatAccountCode, getCountryDisplay, getAccountType, getBalanceClass, getCurrencyInfo } from '../../../utils/formatters/index';
 
 /**
  * Entity model configuration
@@ -5268,7 +4966,7 @@ export const ProcessedEventConfig = {
 export const RuleConfig = {
   title: 'Rule',
   idField: 'rule_id',
-  displayField: 'name',
+  displayField: 'rule_id',
   
   // Column definitions for list view
   listColumns: [
@@ -5276,43 +4974,21 @@ export const RuleConfig = {
       key: 'rule_id',
       header: 'ID',
       cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
-    },
-    {
-      key: 'name',
-      header: 'Name',
-      cellClassName: 'font-medium text-gray-900',
-    },
-    {
-      key: 'type',
-      header: 'Type',
-      cellClassName: 'text-gray-500',
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      cellClassName: (item) => {
-        return item.status === 'ACTIVE' 
-          ? 'text-green-600 font-medium' 
-          : 'text-gray-500';
-      }
-    },
-    {
-      key: 'created_date',
-      header: 'Created',
-      render: (item) => new Date(item.created_date * 1000).toLocaleString()
     }
   ]
 };
 
-// Export all configurations
-export default {
+/**
+ * Export all configurations
+ */
+const modelConfigs = {
   EntityConfig,
   LedgerConfig,
   AccountConfig,
   TemplateConfig,
   ProcessedEventConfig,
   RuleConfig
-};
+};export default modelConfigs;
 File: ./src/components/common/FilterBadge.js
 --------------------
 import React from 'react';
@@ -5418,8 +5094,6 @@ const DataTable = ({
   className = '',
   idField = null
 }) => {
-  // If idField is not explicitly specified, use the key of the first column
-  const actualIdField = idField || (columns.length > 0 ? columns[0].key : null);
   
   // Make sure the first column is styled as a drilldown link if we have an onRowClick handler
   const processedColumns = columns.map((column, index) => {
@@ -5432,8 +5106,15 @@ const DataTable = ({
     return column;
   });
 
+  // Debug info section - only used during development and disabled for production
+  const debugInfo = () => {
+    // Debug panel is now disabled
+    return null;
+  };
+
   return (
     <div className={`bg-white shadow overflow-hidden rounded-lg ${className}`}>
+      {debugInfo()}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -5457,7 +5138,7 @@ const DataTable = ({
                   </div>
                 </td>
               </tr>
-            ) : data.length > 0 ? (
+            ) : data && Array.isArray(data) && data.length > 0 ? (
               data.map((item, index) => (
                 <tr 
                   key={item.id || index} 
@@ -5638,7 +5319,8 @@ export default GenericDetailView;
 File: ./src/components/common/ActionButton.js
 --------------------
 import React from 'react';
-
+import { FileJson } from 'lucide-react';
+import { Tooltip } from "@nextui-org/react";
 /**
  * Reusable action button component with consistent styling
  * @param {Object} props - Component props
@@ -5655,10 +5337,24 @@ const ActionButton = ({
   icon, 
   variant = 'primary', 
   onClick, 
-  className = '',
-  disabled = false
+    className = '',
+    disabled = false,
+    jsonButton=false
 }) => {
-  // Define button styles based on variant
+    
+    if (jsonButton)
+    {
+        return (
+          <Tooltip content="View JSON">
+                <button onClick={onClick} className="inline-flex items-center justify-center px-4 py-2 border text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 border-transparent text-white bg-gray-600 hover:bg-gray-700 focus:ring-gray-500">
+                    <FileJson className="mr-2 -ml-1 h-5 w-5"/>
+                </button>
+            </Tooltip>
+      );
+    }
+
+
+    // Define button styles based on variant
   const baseStyle = "inline-flex items-center justify-center px-4 py-2 border text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2";
   
   const variantStyles = {
@@ -5686,7 +5382,8 @@ const ActionButton = ({
     </button>
   );
 };
-
+    
+    
 export default ActionButton;
 File: ./src/components/common/StandardList.js
 --------------------
@@ -5743,22 +5440,8 @@ const StandardList = ({
   const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
   const setSearchQuery = setExternalSearchQuery || setInternalSearchQuery;
   
-  // Filter data based on search query if onSearch is not provided
-  const filteredData = onSearch ? data : (
-    searchQuery
-      ? data.filter(item => {
-          // Generic search across all string and number properties
-          return Object.entries(item).some(([key, value]) => {
-            if (typeof value === 'string') {
-              return value.toLowerCase().includes(searchQuery.toLowerCase());
-            } else if (typeof value === 'number') {
-              return value.toString().includes(searchQuery);
-            }
-            return false;
-          });
-        })
-      : data
-  );
+  // Don't do client-side filtering, just use the data as is
+  const filteredData = data;
   
   // Make sure the first column is the ID column and has proper click behavior
   const processedColumns = columns.map((column, index) => {
@@ -5805,25 +5488,9 @@ const StandardList = ({
     }
   };
   
-  // Define JSON view function for the Actions column
-  const handleViewJson = (item) => {
-    if (onViewJson) {
-      onViewJson(item, `${title}: ${item[idField] || 'Detail'}`);
-    }
-  };
-  
   // Render action buttons for the section header
   const renderActions = () => (
     <>
-      <div className="relative mr-2">
-        <input
-          type="text"
-          placeholder={searchPlaceholder}
-          className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
-          value={searchQuery}
-          onChange={handleSearchChange}
-        />
-      </div>
       <ActionButton
         variant="outline"
         onClick={handleRefresh}
@@ -5880,7 +5547,7 @@ const StandardList = ({
 export default StandardList;
 File: ./src/components/common/GenericListView.js
 --------------------
-import React, { useState } from 'react';
+import React from 'react';
 import { StandardList, FilterBadge, ErrorAlert, LoadingSpinner } from './index';
 
 /**
@@ -6385,7 +6052,6 @@ File: ./src/components/dashboard/DashboardView.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../shared/PageHeader';
-import { formatBalance } from '../../utils/formatters';
 import useDashboardData from '../../hooks/useDashboardData';
 
 /**
@@ -6394,8 +6060,8 @@ import useDashboardData from '../../hooks/useDashboardData';
 const DashboardView = () => {
   const navigate = useNavigate();
   const { dashboardData, loading, fetchAllDashboardData, refreshAccountBalances } = useDashboardData();
-  const { entities = [], ledgers = [], accounts = [] } = dashboardData;
-  
+  const { entities = [], accounts = [] } = dashboardData;
+
   // Fetch dashboard data when component mounts
   useEffect(() => {
     fetchAllDashboardData();
@@ -6413,7 +6079,7 @@ const DashboardView = () => {
     netIncome: 0
   });
   
-  const [ratios, setRatios] = useState({
+  const [, setRatios] = useState({
     currentRatio: 0,
     debtToEquityRatio: 0,
     grossMargin: 0,
@@ -6422,6 +6088,10 @@ const DashboardView = () => {
 
   // Process accounts data to create financial statements
   useEffect(() => {
+    if (!Array.isArray(accounts)) {
+      return;
+    }
+
     if (!accounts || accounts.length === 0) return;
     
     let assets = 0;
@@ -6429,6 +6099,9 @@ const DashboardView = () => {
     let equity = 0;
     let revenue = 0;
     let expenses = 0;
+    
+    // Default currency scale (2 for GBP/USD, etc.)
+    const currencyScale = 2;
     
     accounts.forEach(account => {
       // Get account type (normalize to uppercase)
@@ -6442,26 +6115,41 @@ const DashboardView = () => {
         accountType = account.account_code.type.toUpperCase();
       }
       
-      // Normalize balance (if in cents)
-      const balance = account.balance || 0;
-      let normalizedBalance = balance;
+      // Get the account's raw balance - ensure it's a number
+      const rawBalance = typeof account.balance === 'number' ? account.balance : 0;
+      
+      // Determine currency scale for this account
+      let scale = currencyScale;
+      if (account.r_currency && typeof account.r_currency.scale === 'number') {
+        scale = account.r_currency.scale;
+      } else if (account.currency && typeof account.currency.scale === 'number') {
+        scale = account.currency.scale;
+      } else if (account.ledger && account.ledger.r_currency && typeof account.ledger.r_currency.scale === 'number') {
+        scale = account.ledger.r_currency.scale;
+      } else if (account.enriched_ledger && account.enriched_ledger.r_currency && 
+                typeof account.enriched_ledger.r_currency.scale === 'number') {
+        scale = account.enriched_ledger.r_currency.scale;
+      }
+      
+      // Convert raw integer balance to decimal value
+      const decimalBalance = rawBalance / Math.pow(10, scale);
       
       // Update financial statement data
       switch (accountType) {
         case 'ASSET':
-          assets += normalizedBalance;
+          assets += decimalBalance;
           break;
         case 'LIABILITY':
-          liabilities += normalizedBalance;
+          liabilities += decimalBalance;
           break;
         case 'EQUITY':
-          equity += normalizedBalance;
+          equity += decimalBalance;
           break;
         case 'REVENUE':
-          revenue += normalizedBalance;
+          revenue += decimalBalance;
           break;
         case 'EXPENSE':
-          expenses += normalizedBalance;
+          expenses += decimalBalance;
           break;
         default:
           // Other account types
@@ -6472,7 +6160,8 @@ const DashboardView = () => {
     // Calculate net income
     const netIncome = revenue - expenses;
     
-    // Update balance sheet data (include net income in equity)
+    // Values are already in decimal form, convert to thousands for display
+    // For example, if assets = 1,000,000.00, we want to show 1,000 (thousands)
     setBalanceSheetData({
       assets: assets / 1000,
       liabilities: liabilities / 1000,
@@ -6480,7 +6169,7 @@ const DashboardView = () => {
       retainedEarnings: netIncome / 1000  // Include net income as retained earnings
     });
     
-    // Update income statement data
+    // Update income statement data (also in thousands)
     setIncomeStatementData({
       revenue: revenue / 1000,
       expenses: expenses / 1000,
@@ -6490,6 +6179,10 @@ const DashboardView = () => {
   
   // Calculate financial ratios based on account data
   useEffect(() => {
+    if (!Array.isArray(accounts)) {
+      return;
+    }
+
     if (!accounts || accounts.length === 0) return;
     
     // For detailed ratio calculation, we need to categorize assets and liabilities further
@@ -6500,6 +6193,9 @@ const DashboardView = () => {
     let grossProfit = 0;
     let totalRevenue = 0;
     let netIncome = 0;
+    
+    // Default currency scale (2 for GBP/USD, etc.)
+    const currencyScale = 2;
     
     // We're making simplified assumptions here for demo purposes:
     // - All assets are considered current assets
@@ -6517,24 +6213,40 @@ const DashboardView = () => {
         accountType = account.account_code.type.toUpperCase();
       }
       
-      // Normalize balance
-      const balance = account.balance || 0;
+      // Get the account's raw balance
+      const rawBalance = account.balance || 0;
+      
+      // Determine currency scale for this account
+      let scale = currencyScale;
+      if (account.r_currency && typeof account.r_currency.scale === 'number') {
+        scale = account.r_currency.scale;
+      } else if (account.currency && typeof account.currency.scale === 'number') {
+        scale = account.currency.scale;
+      } else if (account.ledger && account.ledger.r_currency && typeof account.ledger.r_currency.scale === 'number') {
+        scale = account.ledger.r_currency.scale;
+      } else if (account.enriched_ledger && account.enriched_ledger.r_currency && 
+                typeof account.enriched_ledger.r_currency.scale === 'number') {
+        scale = account.enriched_ledger.r_currency.scale;
+      }
+      
+      // Convert raw integer balance to decimal value
+      const decimalBalance = rawBalance / Math.pow(10, scale);
       
       // Update ratio-specific values
       switch (accountType) {
         case 'ASSET':
-          currentAssets += balance;
+          currentAssets += decimalBalance;
           break;
         case 'LIABILITY':
-          currentLiabilities += balance;
-          totalLiabilities += balance;
+          currentLiabilities += decimalBalance;
+          totalLiabilities += decimalBalance;
           break;
         case 'EQUITY':
-          totalEquity += balance;
+          totalEquity += decimalBalance;
           break;
         case 'REVENUE':
-          totalRevenue += balance;
-          grossProfit += balance;
+          totalRevenue += decimalBalance;
+          grossProfit += decimalBalance;
           break;
         case 'EXPENSE':
           // Expenses reduce profit
@@ -6544,8 +6256,8 @@ const DashboardView = () => {
       }
     });
     
-    // Calculate net income
-    netIncome = totalRevenue - (accounts
+    // Calculate net income from expense accounts
+    const totalExpenses = accounts
       .filter(a => {
         const type = a.account_type || 
                     (a.account_code && a.account_code.type) || 
@@ -6553,7 +6265,25 @@ const DashboardView = () => {
                     '';
         return type.toUpperCase() === 'EXPENSE';
       })
-      .reduce((sum, a) => sum + (a.balance || 0), 0));
+      .reduce((sum, a) => {
+        // Get currency scale
+        let scale = currencyScale;
+        if (a.r_currency && typeof a.r_currency.scale === 'number') {
+          scale = a.r_currency.scale;
+        } else if (a.currency && typeof a.currency.scale === 'number') {
+          scale = a.currency.scale;
+        } else if (a.ledger && a.ledger.r_currency && typeof a.ledger.r_currency.scale === 'number') {
+          scale = a.ledger.r_currency.scale;
+        } else if (a.enriched_ledger && a.enriched_ledger.r_currency && 
+                  typeof a.enriched_ledger.r_currency.scale === 'number') {
+          scale = a.enriched_ledger.r_currency.scale;
+        }
+        
+        // Convert to decimal and add to sum
+        return sum + ((a.balance || 0) / Math.pow(10, scale));
+      }, 0);
+    
+    netIncome = totalRevenue - totalExpenses;
     
     // Calculate the ratios
     const calculatedRatios = {
@@ -6796,7 +6526,7 @@ File: ./src/components/dashboard/DashboardRouter.js
 --------------------
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { DashboardProvider } from '../../context/DashboardContext';
+import { DashboardProvider, useDashboard } from '../../context/DashboardContext';
 
 // Import layout component
 import DashboardLayout from './layout/DashboardLayout';
@@ -6816,7 +6546,55 @@ import TemplatesPage from '../templates/TemplatesPage';
 import EventEntryPage from '../events/EventEntryPage';
 import ProcessedEventsView from '../processed-events/ProcessedEventsView';
 import RulesView from '../rules/RulesView';
-import DetailModal from '../shared/DetailModal';
+
+/**
+ * Dashboard Routes component that contains the actual routes
+ */
+const DashboardRoutes = () => {
+  const { handleViewJson } = useDashboard();
+  
+  return (
+    <Routes>
+      <Route path="/" element={<DashboardLayout />}>
+        {/* Dashboard */}
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<DashboardView />} />
+        
+        {/* Entities */}
+        <Route path="entities">
+          <Route index element={<EntityList />} />
+          <Route path=":entityId" element={<EntityDetail />} />
+        </Route>
+        
+        {/* Ledgers */}
+        <Route path="ledgers">
+          <Route index element={<LedgerList />} />
+          <Route path=":ledgerId" element={<LedgerDetail />} />
+        </Route>
+        
+        {/* Accounts */}
+        <Route path="accounts">
+          <Route index element={<AccountList />} />
+          <Route path=":accountId" element={<AccountDetail />} />
+        </Route>
+        
+        {/* Reference Data */}
+        <Route path="currencies" element={<CurrenciesList />} />
+        <Route path="countries" element={<CountriesList />} />
+        <Route path="account-codes" element={<AccountCodesList />} />
+        
+        {/* Transactions */}
+        <Route path="templates" element={<TemplatesPage onViewJson={handleViewJson} />} />
+        <Route path="event-entry" element={<EventEntryPage onViewJson={handleViewJson} />} />
+        <Route path="processed-events" element={<ProcessedEventsView onViewJson={handleViewJson} />} />
+        <Route path="rules" element={<RulesView onViewJson={handleViewJson} />} />
+        
+        {/* Fallback route */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Route>
+    </Routes>
+  );
+};
 
 /**
  * Dashboard Router component that handles navigation between dashboard views
@@ -6825,45 +6603,7 @@ import DetailModal from '../shared/DetailModal';
 const DashboardRouter = () => {
   return (
     <DashboardProvider>
-      <Routes>
-        <Route path="/" element={<DashboardLayout />}>
-          {/* Dashboard */}
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardView />} />
-          
-          {/* Entities */}
-          <Route path="entities">
-            <Route index element={<EntityList />} />
-            <Route path=":entityId" element={<EntityDetail />} />
-          </Route>
-          
-          {/* Ledgers */}
-          <Route path="ledgers">
-            <Route index element={<LedgerList />} />
-            <Route path=":ledgerId" element={<LedgerDetail />} />
-          </Route>
-          
-          {/* Accounts */}
-          <Route path="accounts">
-            <Route index element={<AccountList />} />
-            <Route path=":accountId" element={<AccountDetail />} />
-          </Route>
-          
-          {/* Reference Data */}
-          <Route path="currencies" element={<CurrenciesList />} />
-          <Route path="countries" element={<CountriesList />} />
-          <Route path="account-codes" element={<AccountCodesList />} />
-          
-          {/* Transactions */}
-          <Route path="templates" element={<TemplatesPage />} />
-          <Route path="event-entry" element={<EventEntryPage />} />
-          <Route path="processed-events" element={<ProcessedEventsView />} />
-          <Route path="rules" element={<RulesView />} />
-          
-          {/* Fallback route */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Route>
-      </Routes>
+      <DashboardRoutes />
     </DashboardProvider>
   );
 };
@@ -6874,7 +6614,7 @@ File: ./src/components/entities/EntityDetail.js
 import React, { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GenericDetailView, DataTableSection, EntityConfig } from '../common';
-import { getCountryDisplay, formatAccountCode, formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters';
+import { getCountryDisplay, formatAccountCode, formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
 import useEntities from '../../hooks/useEntities';
 import { useDashboard } from '../../context/DashboardContext';
 
@@ -7152,6 +6892,7 @@ import { StandardList, LoadingSpinner } from '../common';
  * Allows users to create new events directly from the navbar
  */
 const EventEntryPage = ({ onViewJson }) => {
+  console.log('EventEntryPage received onViewJson:', onViewJson);
   const { 
     templates,
     selectedTemplate,
@@ -7181,10 +6922,21 @@ const EventEntryPage = ({ onViewJson }) => {
   const fetchLedgers = async () => {
     setLoadingLedgers(true);
     try {
-      const data = await apiService.ledger.getLedgers();
-      setLedgers(data);
+      const response = await apiService.ledger.getLedgers();
+      console.log('EventEntryPage ledgers response:', response);
+      
+      // Extract data from the response object
+      if (response.ok && response.data) {
+        const ledgersData = response.data;
+        console.log('Setting ledgers:', ledgersData.length, 'items');
+        setLedgers(ledgersData);
+      } else {
+        console.error('Failed to fetch ledgers:', response.error);
+        setLedgers([]);
+      }
     } catch (error) {
       console.error('Error fetching ledgers:', error);
+      setLedgers([]);
     } finally {
       setLoadingLedgers(false);
     }
@@ -7201,10 +6953,10 @@ const EventEntryPage = ({ onViewJson }) => {
   };
 
   // Show loading state if data is still loading
-  if ((loading.templates || loadingLedgers) && !templates.length) {
+  if (loading.templates || loadingLedgers) {
     return (
       <div className="h-64 flex items-center justify-center">
-        <LoadingSpinner size="lg" message="Loading templates and ledgers..." />
+        <LoadingSpinner size="lg" message="Loading data..." />
       </div>
     );
   }
@@ -7293,8 +7045,8 @@ File: ./src/components/ledgers/LedgerDetail.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GenericDetailView, DataTableSection, LedgerConfig } from '../common';
-import { formatBalance, getCountryDisplay, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters';
-import apiService from '../../services/apiService';
+import { formatBalance, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
+import apiService from '../../services/apiService'; // Assuming apiService is defined elsewhere
 import useLedgers from '../../hooks/useLedgers';
 import { useDashboard } from '../../context/DashboardContext';
 
@@ -7302,6 +7054,7 @@ import { useDashboard } from '../../context/DashboardContext';
  * Ledger Detail component using GenericDetailView
  */
 const LedgerDetail = () => {
+  // Destructure the object returned by useParams
   const { ledgerId } = useParams();
   const navigate = useNavigate();
   const { handleViewJson } = useDashboard();
@@ -7316,10 +7069,9 @@ const LedgerDetail = () => {
   
   // All hooks must be at the top level
   const [entity, setEntity] = useState(null);
-  const [entities, setEntities] = useState([]);
   
   // Fetch ledger data when component mounts or ledgerId changes
-  useEffect(() => {
+    useEffect(() => {
     if (ledgerId) {
       fetchLedgerById(ledgerId);
     }
@@ -7338,25 +7090,13 @@ const LedgerDetail = () => {
         setEntity(data);
       } catch (err) {
         console.error('Error fetching entity details:', err);
-      }
+    }
     };
 
     fetchEntity();
   }, [ledger]);
   
-  // Fetch all entities for linking accounts to their owners
-  useEffect(() => {
-    const fetchEntities = async () => {
-      try {
-        const data = await apiService.entity.getEntities();
-        setEntities(data);
-      } catch (err) {
-        console.error('Error fetching entities:', err);
-      }
-    };
-    
-    fetchEntities();
-  }, []);
+  // We don't need to fetch entities anymore
 
   // Early return if no ledger, but after hooks are declared
   if (!ledger) return null;
@@ -7377,20 +7117,14 @@ const LedgerDetail = () => {
     return formatAccountCode(account.account_code || account.code);
   };
   
-  // Helper function to find entity for an account
-  const getEntityForAccount = (account) => {
-    // Get entity ID from account or its ledger
-    const entityId = account.entity_id || 
-      (account.enriched_ledger && account.enriched_ledger.entity_id) ||
-      (account.entity && account.entity.entity_id);
-    
-    if (!entityId) {
-      return null;
-    }
-    
-    // Find entity in our fetched list
-    const foundEntity = entities.find(e => e.entity_id === entityId);
-    return foundEntity;
+  // Helper function to get entity information from account object directly
+  const getEntityInfo = (account) => {
+    return {
+      name: account.entity?.name || account.enriched_ledger?.entity?.name || 'N/A',
+      entity_id: account.entity_id || 
+                 (account.enriched_ledger && account.enriched_ledger.entity_id) ||
+                 (account.entity && account.entity.entity_id)
+    };
   };
   
   // Get entity from ledger or from separate fetch
@@ -7457,18 +7191,15 @@ const LedgerDetail = () => {
             key: 'entity',
             header: 'Account Owner',
             cellClassName: (account) => {
-              const accountEntity = getEntityForAccount(account);
-              const accountEntityId = accountEntity?.entity_id || account.entity_id;
-              return accountEntityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
+              const entityInfo = getEntityInfo(account);
+              return entityInfo.entity_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
             },
             render: (account) => {
-              const accountEntity = getEntityForAccount(account);
-              const entityName = accountEntity ? accountEntity.name : (account.entity ? account.entity.name : 'N/A');
-              const entityId = accountEntity?.entity_id || account.entity_id || (account.entity && account.entity.entity_id);
+              const entityInfo = getEntityInfo(account);
               
-              return entityId ? (
-                <Link to={`/entities/${entityId}`}>{entityName}</Link>
-              ) : entityName;
+              return entityInfo.entity_id ? (
+                <Link to={`/entities/${entityInfo.entity_id}`}>{entityInfo.name}</Link>
+              ) : entityInfo.name;
             }
           },
           {
@@ -7561,29 +7292,6 @@ const LedgerList = () => {
     fetchLedgers();
   }, [fetchLedgers]);
   
-  // Navigate to entity detail view
-  const handleViewEntity = (entity) => {
-    console.log("Entity to navigate to:", entity);
-    
-    // Handle different entity structures
-    let entityId;
-    
-    if (typeof entity === 'string') {
-      // If it's already a string ID
-      entityId = entity;
-    } else if (typeof entity === 'object' && entity !== null) {
-      // Try all possible locations for entity_id
-      entityId = entity.entity_id;
-    }
-    
-    console.log("Extracted entityId:", entityId);
-    
-    if (entityId) {
-      navigate(`/entities/${entityId}`);
-    } else {
-      console.error("Could not extract entity ID from:", entity);
-    }
-  };
   
   // Navigate to ledger detail view
   const handleViewLedger = (ledger) => {
@@ -7884,7 +7592,7 @@ export default ProcessedEventDetail;
 File: ./src/components/processed-events/ProcessedEventsView.js
 --------------------
 import React, { useState, useEffect } from 'react';
-import { LoadingSpinner, ErrorAlert } from '../common';
+import { ErrorAlert } from '../common';
 import ProcessedEventsList from './ProcessedEventsList';
 import ProcessedEventDetail from './ProcessedEventDetail';
 import apiService from '../../services/apiService';

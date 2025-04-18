@@ -83,22 +83,6 @@ const EntityDetail = () => {
             header: 'Country',
             render: (ledger) => getCountryDisplay(ledger, entity)
           },
-          {
-            key: 'actions',
-            header: 'Actions',
-            align: 'center',
-            render: (ledger) => (
-              <button 
-                className="text-gray-600 hover:text-gray-800"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleViewJson(ledger, `Ledger: ${ledger.name}`);
-                }}
-              >
-                JSON
-              </button>
-            )
-          }
         ]}
         onRowClick={(ledger) => navigate(`/ledgers/${ledger.ledger_id}`)}
         emptyMessage="No ledgers found for this entity"
@@ -159,22 +143,6 @@ const EntityDetail = () => {
               return formatBalance(account.balance, currency, true);
             }
           },
-          {
-            key: 'actions',
-            header: 'Actions',
-            align: 'center',
-            render: (account) => (
-              <button 
-                className="text-gray-600 hover:text-gray-800"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleViewJson(account, `Account: ${account.name || 'N/A'}`);
-                }}
-              >
-                JSON
-              </button>
-            )
-          }
         ]}
         sortFunction={(a, b) => {
           // Extract account code from account_code or name

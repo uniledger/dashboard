@@ -78,23 +78,22 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
   return (
     <div className={`bg-white border-r border-gray-200 transition-all duration-300 flex flex-col h-full ${collapsed ? 'w-14' : 'w-56'}`}>
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 bg-gray-50">
-        {!collapsed && (
-          <div className="text-xl font-bold text-gray-900 flex items-center mr-2">
+        {!collapsed ? (
+          <div 
+            className="text-xl font-bold text-gray-900 flex items-center cursor-pointer"
+            onClick={() => setCollapsed(!collapsed)}
+          >
             <span className="mr-2">🚀</span>
-            Ledger Rocket
+            <span>Ledger Rocket</span>
           </div>
-        )}
-        {collapsed && (
-          <div className="mx-auto text-xl">
+        ) : (
+          <div 
+            className="mx-auto text-xl cursor-pointer" 
+            onClick={() => setCollapsed(!collapsed)}
+          >
             🚀
           </div>
         )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-1 rounded-md text-gray-500 hover:bg-gray-200 ml-auto mr-2"
-        >
-          <span className="text-xl">{collapsed ? <ChevronRight /> : <ChevronLeft />}</span>
-        </button>
       </div>
       
       <div className="overflow-y-auto flex-grow py-4">
