@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GenericListView, AccountConfig } from '../common';
 import { formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
-import apiService from '../../services/apiService';
 import useAccounts from '../../hooks/useAccounts';
 import { useDashboard } from '../../context/DashboardContext';
 

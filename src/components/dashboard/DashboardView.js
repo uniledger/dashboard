@@ -28,7 +28,7 @@ const DashboardView = () => {
     netIncome: 0
   });
   
-  const [, setRatios] = useState({
+  const [ratios, setRatios] = useState({
     currentRatio: 0,
     debtToEquityRatio: 0,
     grossMargin: 0,
@@ -238,7 +238,7 @@ const DashboardView = () => {
     const calculatedRatios = {
       currentRatio: currentLiabilities !== 0 ? (currentAssets / currentLiabilities).toFixed(2) : 'N/A',
       debtToEquityRatio: totalEquity !== 0 ? (totalLiabilities / totalEquity).toFixed(2) : 'N/A',
-      grossMargin: totalRevenue !== 0 ? ((grossProfit / totalRevenue) * 100).toFixed(2) : 'N/A',
+
       netMargin: totalRevenue !== 0 ? ((netIncome / totalRevenue) * 100).toFixed(2) : 'N/A'
     };
     
@@ -447,21 +447,21 @@ const DashboardView = () => {
               <tr>
                 <td className="py-2 text-gray-700">Current Ratio</td>
                 <td className="py-2 text-right font-medium text-gray-900">
-                  35,000 / 29,903 = 1.17
+                  {typeof ratios.currentRatio === 'number' ? ratios.currentRatio : ratios.currentRatio}
                 </td>
               </tr>
               <tr>
                 <td className="py-2 text-gray-700">Debt-to-Equity Ratio</td>
                 <td className="py-2 text-right font-medium text-gray-900">
-                  29,903 / 5,097 = 5.87
+                  {typeof ratios.debtToEquityRatio === 'number' ? ratios.debtToEquityRatio : ratios.debtToEquityRatio}
                 </td>
               </tr>
               <tr>
                 <td className="py-2 text-gray-700">Net Margin</td>
                 <td className="py-2 text-right font-medium text-gray-900">
-                  97 / 97 = 100%
+                  {typeof ratios.netMargin === 'number' ? `${ratios.netMargin}%` : ratios.netMargin}
                 </td>
-              </tr>
+                </tr>
             </tbody>
           </table>
         </div>
