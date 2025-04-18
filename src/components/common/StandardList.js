@@ -1,12 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { 
   SectionHeader, 
-  DataTable,
-  DataTableSection,
   ActionButton,
   ErrorAlert,
   LoadingSpinner
 } from './index';
+import { AgGridReact } from 'ag-grid-react';
 
 /**
  * Standard List component that can be used for any type of data
@@ -45,14 +44,11 @@ const StandardList = ({
   searchQuery: externalSearchQuery,
   setSearchQuery: setExternalSearchQuery
 }) => {  
-  // Imports from AG Grid
-  const { AgGridReact, AgGridColumn } = require('ag-grid-react');
-  
   // Use internal state if external search query is not provided
-  const [internalSearchQuery, setInternalSearchQuery] = useState('');
+  const [, setInternalSearchQuery] = useState('');
   
   // Determine whether to use external or internal search state
-  const setSearchQuery = setExternalSearchQuery || setInternalSearchQuery;  
+  setExternalSearchQuery || setInternalSearchQuery;  
   
   // Don't do client-side filtering, just use the data as is
   const filteredData = data;
@@ -66,11 +62,13 @@ const StandardList = ({
       classes.forEach(className => {
         switch(className) {
           case 'text-blue-600': cellStyle.color = '#2563eb'; break;
-          case 'hover:underline': cellStyle.textDecoration = 'underline'; break;
+          case 'hover:underline': cellStyle.textDecoration = 'underline'; break;          
           case 'cursor-pointer': cellStyle.cursor = 'pointer'; break;
           case 'font-medium': cellStyle.fontWeight = '500'; break;
+          default: break;
         }
       });
+
     }
     
     if (index === 0 && column.key === idField) {
@@ -84,8 +82,6 @@ const StandardList = ({
         cellStyle: cellStyle
       };
   });
-  
-
 
 
   /**
@@ -202,9 +198,9 @@ const StandardList = ({
                 firstColumn.onClick(event.data);
             }
           }}
-          domLayout='autoHeight'
-        />
-      />
+          domLayout='autoHeight'>
+          </AgGridReact>
+      </div>
     </div>
   );
 };
