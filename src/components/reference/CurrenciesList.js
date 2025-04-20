@@ -28,6 +28,12 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
       header: 'Decimal Places',
       cellClassName: 'text-gray-500',
       render: (currency) => typeof currency.scale === 'number' ? currency.scale : 'N/A'
+    },
+    {
+      key: 'symbol',
+      header: 'Symbol',
+      cellClassName: 'text-gray-500',
+      render: (currency) => currency.symbol || 'N/A'
     }
   ];
 

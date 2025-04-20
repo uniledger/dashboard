@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * Reusable PageHeader component that optionally includes back and refresh buttons
  */
-const PageHeader = ({ title, backButton, refreshButton, onBack, onRefresh }) => {
+const PageHeader = ({ title, backButton, refreshButton, onBack, onRefresh, children }) => {
   return (
     <div className="flex justify-between items-center mb-6">
       <div className="flex items-center">
@@ -16,6 +16,7 @@ const PageHeader = ({ title, backButton, refreshButton, onBack, onRefresh }) => 
           </button>
         )}
         <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+        {children}
       </div>
       {refreshButton && (
         <button

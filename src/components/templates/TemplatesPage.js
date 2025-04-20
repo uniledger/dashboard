@@ -1,35 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import useTransactions from '../../hooks/useTransactions';
-import useAccounts from '../../hooks/useAccounts';
-import useLedgers from '../../hooks/useLedgers';
+// Removed unused useAccounts and useLedgers imports
 import TemplatesList from './TemplatesList';
 import TemplateDetail from './TemplateDetail';
-import EventForm from './EventForm';
+// Removed unused EventForm import
 
 /**
  * Main Templates page component
- * Manages whether to show the list, detail, or event form view
+ * Manages whether to show the list or detail view
  */
 const TemplatesPage = ({ onViewJson }) => {
   const { 
     templates,
     selectedTemplate,
     fetchTemplates,
-    submitEvent,
     clearSelectedTemplate,
     selectTemplate,
     loading
   } = useTransactions();
 
-  const {
-    accounts,
-    fetchAccounts
-  } = useAccounts();
+  // Removed unused accounts hook
 
-  const {
-    ledgers,
-    fetchLedgers
-  } = useLedgers();
+  // Removed unused ledgers hook
 
   const [view, setView] = useState('list'); // 'list', 'detail', or 'event-form'
 
@@ -42,13 +34,7 @@ const TemplatesPage = ({ onViewJson }) => {
     }
   }, [selectedTemplate, view]);
 
-  // Fetch accounts and ledgers when needed
-  useEffect(() => {
-    if (view === 'event-form') {
-      fetchAccounts();
-      fetchLedgers();
-    }
-  }, [view, fetchAccounts, fetchLedgers]);
+  // Removed unused event-form fetch logic
 
   const handleViewJson = (data, title) => {
     if (onViewJson) {
@@ -63,9 +49,7 @@ const TemplatesPage = ({ onViewJson }) => {
     setView('list');
   };
 
-  const handleBackToDetail = () => {
-    setView('detail');
-  };
+  // Removed unused handleBackToDetail
 
   const handleSelectTemplate = (template) => {
     selectTemplate(template);

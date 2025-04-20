@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '../shared/PageHeader';
 import useDashboardData from '../../hooks/useDashboardData';
@@ -9,7 +10,85 @@ import useDashboardData from '../../hooks/useDashboardData';
 const DashboardView = () => {
   const navigate = useNavigate();
   const { dashboardData, loading, fetchAllDashboardData, refreshAccountBalances } = useDashboardData();
-  const { entities = [], accounts = [] } = dashboardData;
+  const { entities = [], accounts = [], ledgers = [] } = dashboardData;
+  const [selectedLedgerId, setSelectedLedgerId] = useState('');
+  // Set default selected ledger on load
+  useEffect(() => {
+    if (!selectedLedgerId && ledgers.length > 0) {
+      setSelectedLedgerId(String(ledgers[0].ledger_id));
+    }
+  }, [ledgers, selectedLedgerId]);
+  // Filter accounts by selected ledger ID (in-memory)
+  const filteredAccounts = useMemo(() => {
+    return accounts.filter(account => {
+      const accLedgerId = account.ledger_id || (account.enriched_ledger && account.enriched_ledger.ledger_id);
+      return String(accLedgerId) === String(selectedLedgerId);
+    });
+  }, [accounts, selectedLedgerId]);
+  // Determine selected ledger and its currency
+  const selectedLedger = ledgers.find(l => String(l.ledger_id) === String(selectedLedgerId));
+  const currencyCode = selectedLedger?.r_currency?.currency_code || selectedLedger?.currency_code || '';
+  
+  // Treeview state for Assets section
+  const [assetExpanded, setAssetExpanded] = useState(false);
+  const [liabilityExpanded, setLiabilityExpanded] = useState(false);
+  const [revenueExpanded, setRevenueExpanded] = useState(false);
+  const [expenseExpanded, setExpenseExpanded] = useState(false);
+  
+  // Helper to determine account type
+  const getAccountType = (account) => {
+    if (account.account_type) return account.account_type.toUpperCase();
+    if (account.account_code && account.account_code.type) return account.account_code.type.toUpperCase();
+    if (typeof account.account_code === 'object' && account.account_code.type) return account.account_code.type.toUpperCase();
+    return 'OTHER';
+  };
+  
+  // Helper to compute decimal balance
+  const getDecimalBalance = (account) => {
+    const rawBalance = typeof account.balance === 'number' ? account.balance : 0;
+    const DEFAULT_SCALE = 2;
+    let scale = DEFAULT_SCALE;
+    if (account.r_currency && typeof account.r_currency.scale === 'number') {
+      scale = account.r_currency.scale;
+    } else if (account.currency && typeof account.currency.scale === 'number') {
+      scale = account.currency.scale;
+    } else if (account.ledger && account.ledger.r_currency && typeof account.ledger.r_currency.scale === 'number') {
+      scale = account.ledger.r_currency.scale;
+    } else if (account.enriched_ledger && account.enriched_ledger.r_currency && typeof account.enriched_ledger.r_currency.scale === 'number') {
+      scale = account.enriched_ledger.r_currency.scale;
+    }
+    return rawBalance / Math.pow(10, scale);
+  };
+  
+  // Prepare asset accounts with balances in thousands
+  const assetAccounts = filteredAccounts
+    .filter((account) => getAccountType(account) === 'ASSET')
+    .map((account) => {
+      const decimalBalance = getDecimalBalance(account);
+      const thousandsBalance = decimalBalance / 1000;
+      return { account, balance: thousandsBalance };
+    });
+  const liabilityAccounts = filteredAccounts
+    .filter((account) => getAccountType(account) === 'LIABILITY')
+    .map((account) => {
+      const decimalBalance = getDecimalBalance(account);
+      const thousandsBalance = decimalBalance / 1000;
+      return { account, balance: thousandsBalance };
+    });
+  const revenueAccounts = filteredAccounts
+    .filter((account) => getAccountType(account) === 'REVENUE')
+    .map((account) => {
+      const decimalBalance = getDecimalBalance(account);
+      const thousandsBalance = decimalBalance / 1000;
+      return { account, balance: thousandsBalance };
+    });
+  const expenseAccounts = filteredAccounts
+    .filter((account) => getAccountType(account) === 'EXPENSE')
+    .map((account) => {
+      const decimalBalance = getDecimalBalance(account);
+      const thousandsBalance = decimalBalance / 1000;
+      return { account, balance: thousandsBalance };
+    });
 
   // Fetch dashboard data when component mounts
   useEffect(() => {
@@ -37,11 +116,11 @@ const DashboardView = () => {
 
   // Process accounts data to create financial statements
   useEffect(() => {
-    if (!Array.isArray(accounts)) {
+    if (!Array.isArray(filteredAccounts)) {
       return;
     }
 
-    if (!accounts || accounts.length === 0) return;
+    if (!filteredAccounts || filteredAccounts.length === 0) return;
     
     let assets = 0;
     let liabilities = 0;
@@ -52,7 +131,7 @@ const DashboardView = () => {
     // Default currency scale (2 for GBP/USD, etc.)
     const currencyScale = 2;
     
-    accounts.forEach(account => {
+    filteredAccounts.forEach(account => {
       // Get account type (normalize to uppercase)
       let accountType = 'OTHER';
       
@@ -124,15 +203,15 @@ const DashboardView = () => {
       expenses: expenses / 1000,
       netIncome: netIncome / 1000
     });
-  }, [accounts]);
+  }, [filteredAccounts]);
   
   // Calculate financial ratios based on account data
   useEffect(() => {
-    if (!Array.isArray(accounts)) {
+    if (!Array.isArray(filteredAccounts)) {
       return;
     }
 
-    if (!accounts || accounts.length === 0) return;
+    if (!filteredAccounts || filteredAccounts.length === 0) return;
     
     // For detailed ratio calculation, we need to categorize assets and liabilities further
     let currentAssets = 0;
@@ -149,7 +228,7 @@ const DashboardView = () => {
     // - All assets are considered current assets
     // - All liabilities are considered current liabilities
     // - Gross profit is the same as revenue (no COGS separation in the demo data)
-    accounts.forEach(account => {
+    filteredAccounts.forEach(account => {
       // Get account type (normalize to uppercase)
       let accountType = 'OTHER';
       
@@ -204,7 +283,7 @@ const DashboardView = () => {
     });
     
     // Calculate net income from expense accounts
-    const totalExpenses = accounts
+    const totalExpenses = filteredAccounts
       .filter(a => {
         const type = a.account_type || 
                     (a.account_code && a.account_code.type) || 
@@ -241,7 +320,7 @@ const DashboardView = () => {
     };
     
     setRatios(calculatedRatios);
-  }, [accounts]);
+  }, [filteredAccounts]);
 
   // Format currency for display
   const formatCurrency = (amount) => {
@@ -273,11 +352,26 @@ const DashboardView = () => {
 
   return (
     <div className="mx-2 md:mx-6 lg:mx-8">
-      <PageHeader 
+      <PageHeader
         title={`Financial Overview as of ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`}
         refreshButton={true}
         onRefresh={refreshAccountBalances}
-      />
+      >
+        <div className="ml-4">
+          <select
+            aria-label="Ledger"
+            className="shadow-sm focus:ring-blue-500 focus:border-blue-500 border-gray-300 rounded-md"
+            value={selectedLedgerId}
+            onChange={e => setSelectedLedgerId(e.target.value)}
+          >
+            {ledgers.map(ledger => (
+              <option key={ledger.ledger_id} value={ledger.ledger_id}>
+                {ledger.name} (ID: {ledger.ledger_id})
+              </option>
+            ))}
+          </select>
+        </div>
+      </PageHeader>
       
       {/* Financial Statements Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -285,47 +379,101 @@ const DashboardView = () => {
         <div className="bg-white p-4 rounded-lg shadow transition-all hover:shadow-md">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium text-gray-900">Balance Sheet Summary</h3>
-            <div className="text-right text-sm text-gray-500">
-              <div>Values in thousands (GBP)</div>
-            </div>
+          <div className="text-right text-sm text-gray-500">
+            <div>Values in thousands ({currencyCode})</div>
+          </div>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
                 <tr>
-                  <th className="text-left text-lg font-semibold pb-2">Assets</th>
+                  <th
+                    className="text-left text-lg font-semibold pb-2 cursor-pointer flex items-center"
+                    onClick={() => setAssetExpanded(!assetExpanded)}
+                  >
+                    {assetExpanded ? (
+                      <ChevronDown className="inline-block mr-2" />
+                    ) : (
+                      <ChevronRight className="inline-block mr-2" />
+                    )}
+                    Assets
+                  </th>
                   <th className="text-right text-lg pb-2"></th>
                 </tr>
               </thead>
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Assets</td>
-                  <td 
+                  <td
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${balanceSheetData.assets < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => navigate('/accounts?type=ASSET')}
-                    title="Click to view all asset accounts"
+                    onClick={() => navigate(`/accounts?type=ASSET&ledgerId=${selectedLedgerId}`)}
+                    title="Click to view asset accounts for the selected ledger"
                   >
                     {formatCurrency(-balanceSheetData.assets)}
                   </td>
                 </tr>
+                {assetExpanded &&
+                  assetAccounts.map(({ account, balance }) => (
+                    <tr key={account.account_id || account.account_extra_id} className="bg-gray-50">
+                      <td
+                        className="py-2 text-gray-700 pl-6 cursor-pointer hover:underline"
+                        onClick={() => navigate(
+                          `/accounts/${account.account_extra_id}`
+                        )}
+                        title="Click to view account details"
+                      >
+                        {account.name}
+                      </td>
+                      <td className="py-2 text-right text-gray-900">
+                        {formatCurrency(-balance)}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
               <thead>
                 <tr>
-                  <th className="text-left text-lg font-semibold pb-2 pt-4">Liabilities</th>
+                  <th
+                    className="text-left text-lg font-semibold pb-2 pt-4 cursor-pointer flex items-center"
+                    onClick={() => setLiabilityExpanded(!liabilityExpanded)}
+                  >
+                    {liabilityExpanded ? (
+                      <ChevronDown className="inline-block mr-2" />
+                    ) : (
+                      <ChevronRight className="inline-block mr-2" />
+                    )}
+                    Liabilities
+                  </th>
                   <th className="text-right text-lg pb-2 pt-4"></th>
                 </tr>
               </thead>
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Liabilities</td>
-                  <td 
+                  <td
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${balanceSheetData.liabilities < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => navigate('/accounts?type=LIABILITY')}
-                    title="Click to view all liability accounts"
+                    onClick={() => navigate(`/accounts?type=LIABILITY&ledgerId=${selectedLedgerId}`)}
+                    title="Click to view liability accounts for the selected ledger"
                   >
                     {formatCurrency(balanceSheetData.liabilities)}
                   </td>
                 </tr>
+                {liabilityExpanded &&
+                  liabilityAccounts.map(({ account, balance }) => (
+                    <tr key={account.account_id || account.account_extra_id} className="bg-gray-50">
+                      <td
+                        className="py-2 text-gray-700 pl-6 cursor-pointer hover:underline"
+                        onClick={() => navigate(
+                          `/accounts/${account.account_id || account.account_extra_id}`
+                        )}
+                        title="Click to view account details"
+                      >
+                        {account.name}
+                      </td>
+                      <td className="py-2 text-right text-gray-900">
+                        {formatCurrency(balance)}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
               <thead>
                 <tr>
@@ -338,8 +486,8 @@ const DashboardView = () => {
                   <td className="py-2 text-gray-700">Contributed Capital</td>
                   <td 
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${balanceSheetData.equity < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => navigate('/accounts?type=EQUITY')}
-                    title="Click to view all equity accounts"
+                    onClick={() => navigate(`/accounts?type=EQUITY&ledgerId=${selectedLedgerId}`)}
+                    title="Click to view equity accounts for the selected ledger"
                   >
                     {formatCurrency(balanceSheetData.equity)}
                   </td>
@@ -379,39 +527,93 @@ const DashboardView = () => {
             <table className="min-w-full">
               <thead>
                 <tr>
-                  <th className="text-left text-lg font-semibold pb-2">Revenue</th>
+                  <th
+                    className="text-left text-lg font-semibold pb-2 cursor-pointer flex items-center"
+                    onClick={() => setRevenueExpanded(!revenueExpanded)}
+                  >
+                    {revenueExpanded ? (
+                      <ChevronDown className="inline-block mr-2" />
+                    ) : (
+                      <ChevronRight className="inline-block mr-2" />
+                    )}
+                    Revenue
+                  </th>
                   <th className="text-right text-lg pb-2"></th>
                 </tr>
               </thead>
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Revenue</td>
-                  <td 
+                  <td
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${incomeStatementData.revenue < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => navigate('/accounts?type=REVENUE')}
-                    title="Click to view all revenue accounts"
+                    onClick={() => navigate(`/accounts?type=REVENUE&ledgerId=${selectedLedgerId}`)}
+                    title="Click to view revenue accounts for the selected ledger"
                   >
                     {formatCurrency(incomeStatementData.revenue)}
                   </td>
                 </tr>
+                {revenueExpanded &&
+                  revenueAccounts.map(({ account, balance }) => (
+                    <tr key={account.account_id || account.account_extra_id} className="bg-gray-50">
+                      <td
+                        className="py-2 text-gray-700 pl-6 cursor-pointer hover:underline"
+                        onClick={() => navigate(
+                          `/accounts/${account.account_id || account.account_extra_id}`
+                        )}
+                        title="Click to view account details"
+                      >
+                        {account.name}
+                      </td>
+                      <td className="py-2 text-right text-gray-900">
+                        {formatCurrency(balance)}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
               <thead>
                 <tr>
-                  <th className="text-left text-lg font-semibold pb-2 pt-4">Expenses</th>
+                  <th
+                    className="text-left text-lg font-semibold pb-2 pt-4 cursor-pointer flex items-center"
+                    onClick={() => setExpenseExpanded(!expenseExpanded)}
+                  >
+                    {expenseExpanded ? (
+                      <ChevronDown className="inline-block mr-2" />
+                    ) : (
+                      <ChevronRight className="inline-block mr-2" />
+                    )}
+                    Expenses
+                  </th>
                   <th className="text-right text-lg pb-2 pt-4"></th>
                 </tr>
               </thead>
               <tbody className="border-t border-gray-200">
                 <tr>
                   <td className="py-2 text-gray-700">Total Expenses</td>
-                  <td 
+                  <td
                     className={`py-2 text-right font-medium cursor-pointer hover:underline ${incomeStatementData.expenses < 0 ? 'text-red-600' : 'text-gray-900'}`}
-                    onClick={() => navigate('/accounts?type=EXPENSE')}
-                    title="Click to view all expense accounts"
+                    onClick={() => navigate(`/accounts?type=EXPENSE&ledgerId=${selectedLedgerId}`)}
+                    title="Click to view expense accounts for the selected ledger"
                   >
                     {formatCurrency(incomeStatementData.expenses)}
                   </td>
                 </tr>
+                {expenseExpanded &&
+                  expenseAccounts.map(({ account, balance }) => (
+                    <tr key={account.account_id || account.account_extra_id} className="bg-gray-50">
+                      <td
+                        className="py-2 text-gray-700 pl-6 cursor-pointer hover:underline"
+                        onClick={() => navigate(
+                          `/accounts/${account.account_id || account.account_extra_id}`
+                        )}
+                        title="Click to view account details"
+                      >
+                        {account.name}
+                      </td>
+                      <td className="py-2 text-right text-gray-900">
+                        {formatCurrency(balance)}
+                      </td>
+                    </tr>
+                  ))}
                 <tr className="border-t-2 border-gray-300">
                   <td className="py-2 font-bold">Net Income</td>
                   <td className={`py-2 text-right font-bold ${incomeStatementData.netIncome < 0 ? 'text-red-600' : 'text-gray-900'}`}>

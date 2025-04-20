@@ -204,22 +204,80 @@ const transactionApi = {
    * Get all templates
    * @returns {Promise<Array>} - List of templates
    */
-  getTemplates: () => 
-    fetchWithErrorHandling(endpoints.transaction.templates),
+  /**
+   * Get all templates
+   * @returns {Promise<Array>} - List of templates
+   */
+  getTemplates: async () => {
+    const response = await fetchWithErrorHandling(endpoints.transaction.templates);
+    if (response.ok && response.data) {
+      // API returns { templates: [...] }
+      if (Array.isArray(response.data.templates)) {
+        return { ...response, data: response.data.templates };
+      }
+      // fallback: if data itself is array
+      if (Array.isArray(response.data)) {
+        return response;
+      }
+    }
+    return response;
+  },
   
   /**
    * Get all processed events
-   * @returns {Promise<Array>} - List of processed events
+   * @returns {Promise<Object>} - Response with ok flag and data array
    */
-  getProcessedEvents: () => 
-    fetchWithErrorHandling(endpoints.transaction.processedEvents),
+  getProcessedEvents: async () => {
+    const response = await fetchWithErrorHandling(endpoints.transaction.processedEvents);
+    if (response.ok && response.data) {
+      // Unwrap array from response envelope if needed
+      // Check for direct array
+      if (Array.isArray(response.data)) {
+        return response;
+      }
+      // Check for processed_events key
+      if (Array.isArray(response.data.processed_events)) {
+        return { ...response, data: response.data.processed_events };
+      }
+      // Check for processed key
+      if (Array.isArray(response.data.processed)) {
+        return { ...response, data: response.data.processed };
+      }
+      // Check for results key (pagination)
+      if (Array.isArray(response.data.results)) {
+        return { ...response, data: response.data.results };
+      }
+      // Fallback: find any array in the response
+      const arrKey = Object.keys(response.data).find(key => Array.isArray(response.data[key]));
+      if (arrKey) {
+        return { ...response, data: response.data[arrKey] };
+      }
+    }
+    return response;
+  },
   
   /**
    * Get all rules
    * @returns {Promise<Array>} - List of rules
    */
-  getRules: () => 
-    fetchWithErrorHandling(endpoints.transaction.rules),
+  /**
+   * Get all rules
+   * @returns {Promise<Array>} - List of rules
+   */
+  getRules: async () => {
+    const response = await fetchWithErrorHandling(endpoints.transaction.rules);
+    if (response.ok && response.data) {
+      // API returns { rules: [...] }
+      if (Array.isArray(response.data.rules)) {
+        return { ...response, data: response.data.rules };
+      }
+      // fallback: if data itself is array
+      if (Array.isArray(response.data)) {
+        return response;
+      }
+    }
+    return response;
+  },
   
   /**
    * Submit an event based on a template

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ErrorAlert } from '../common';
 import ProcessedEventsList from './ProcessedEventsList';
-import ProcessedEventDetail from './ProcessedEventDetail';
 import apiService from '../../services/apiService';
 
 /**
@@ -9,8 +8,6 @@ import apiService from '../../services/apiService';
  */
 const ProcessedEventsView = ({ onViewJson }) => {
   const [events, setEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [view, setView] = useState('list'); // 'list' or 'detail'
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -25,27 +22,24 @@ const ProcessedEventsView = ({ onViewJson }) => {
     setError(null);
     
     try {
-      const data = await apiService.transaction.getProcessedEvents();
-      setEvents(data);
-      setIsLoading(false);
+      const response = await apiService.transaction.getProcessedEvents();
+      if (response.ok && response.data) {
+        setEvents(response.data);
+      } else {
+        console.error('Failed to fetch processed events:', response.error);
+        setError(response.error?.message || 'Failed to fetch processed events');
+        setEvents([]);
+      }
     } catch (err) {
       console.error('Error fetching processed events:', err);
       setError(err.message || 'An error occurred while fetching processed events');
+      setEvents([]);
+    } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle event selection
-  const handleSelectEvent = (event) => {
-    setSelectedEvent(event);
-    setView('detail');
-  };
-
-  // Handle back button click
-  const handleBack = () => {
-    setSelectedEvent(null);
-    setView('list');
-  };
+  // Handler for list item JSON/view events are handled by Link in list
 
   // Error state
   if (error) {
@@ -59,26 +53,14 @@ const ProcessedEventsView = ({ onViewJson }) => {
     );
   }
 
+  // Always render the list; detail views are now handled by router at /processed-events/:eventId
   return (
-    <div>
-      {view === 'list' && (
-        <ProcessedEventsList 
-          events={events}
-          onSelectEvent={handleSelectEvent}
-          onViewJson={onViewJson}
-          onRefresh={fetchProcessedEvents}
-          loading={isLoading}
-        />
-      )}
-      
-      {view === 'detail' && selectedEvent && (
-        <ProcessedEventDetail 
-          event={selectedEvent}
-          onBack={handleBack}
-          onViewJson={onViewJson}
-        />
-      )}
-    </div>
+    <ProcessedEventsList
+      events={events}
+      onViewJson={onViewJson}
+      onRefresh={fetchProcessedEvents}
+      loading={isLoading}
+    />
   );
 };
 

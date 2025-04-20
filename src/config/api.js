@@ -31,7 +31,8 @@ export const endpoints = {
   // Transactions API endpoints
   transaction: {
     templates: `${TRANSACTIONS_API_BASE_URL}/api/v1/templates/`,
-    processedEvents: `${TRANSACTIONS_API_BASE_URL}/api/v1/processed-events/`,
+    // Processed events endpoint (corrected path)
+    processedEvents: `${TRANSACTIONS_API_BASE_URL}/api/v1/events/processed/`,
     rules: `${TRANSACTIONS_API_BASE_URL}/api/v1/rules/`,
     submitEvent: `${TRANSACTIONS_API_BASE_URL}/api/v1/events/`
   }

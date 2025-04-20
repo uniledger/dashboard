@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   BarChart, BookOpen, Briefcase, Users, DollarSign, Globe, Tag, FileText,
-  CheckSquare, Shield, PlusCircle, ChevronLeft, ChevronRight,
+  CheckSquare, Shield, PlusCircle
 } from 'lucide-react';
  
 const icons = {
@@ -39,9 +39,9 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
 
   const transactionTabs = [
     { id: 'templates', path: '/templates', name: 'Templates', icon: 'FileText' },
-    { id: 'event-entry', path: '/event-entry', name: 'Event Entry', icon: 'PlusCircle' },
+    { id: 'event-entry', path: '/event-entry', name: 'Process Event', icon: 'PlusCircle' },
     { id: 'processed-events', path: '/processed-events', name: 'Processed Events', icon: 'CheckSquare' },
-    { id: 'rules', path: '/rules', name: 'Rules', icon: 'Shield' },
+    { id: 'rules', path: '/rules', name: 'Compliance Rules', icon: 'Shield' },
   ];
 
   // Render navigation item
@@ -98,8 +98,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
       
       <div className="overflow-y-auto flex-grow py-4">
         {renderSection('Main', mainTabs)}
-        {renderSection('Reference', referenceTabs)}
         {renderSection('Transactions', transactionTabs)}
+        {renderSection('Reference', referenceTabs)}
       </div>
     </div>
   );

@@ -19,6 +19,9 @@ import AccountCodesList from '../reference/AccountCodesList';
 import TemplatesPage from '../templates/TemplatesPage';
 import EventEntryPage from '../events/EventEntryPage';
 import ProcessedEventsView from '../processed-events/ProcessedEventsView';
+import ProcessedEventDetailPage from '../processed-events/ProcessedEventDetailPage';
+// Template router detail page
+import TemplateDetailPage from '../templates/TemplateDetailPage';
 import RulesView from '../rules/RulesView';
 
 /**
@@ -57,10 +60,13 @@ const DashboardRoutes = () => {
         <Route path="countries" element={<CountriesList />} />
         <Route path="account-codes" element={<AccountCodesList />} />
         
-        {/* Transactions */}
+        {/* Templates: list and router-based detail */}
         <Route path="templates" element={<TemplatesPage onViewJson={handleViewJson} />} />
+        <Route path="templates/:templateId" element={<TemplateDetailPage onViewJson={handleViewJson} />} />
         <Route path="event-entry" element={<EventEntryPage onViewJson={handleViewJson} />} />
+        {/* Processed Events: list and detail via URL param */}
         <Route path="processed-events" element={<ProcessedEventsView onViewJson={handleViewJson} />} />
+        <Route path="processed-events/:eventId" element={<ProcessedEventDetailPage onViewJson={handleViewJson} />} />
         <Route path="rules" element={<RulesView onViewJson={handleViewJson} />} />
         
         {/* Fallback route */}

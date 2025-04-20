@@ -18,6 +18,18 @@ const CountriesList = ({ onViewJson, onRefresh }) => {
       cellClassName: 'font-medium text-gray-900',
     },
     {
+      key: 'alpha_3_code',
+      header: 'Alpha-3 Code',
+      cellClassName: 'text-gray-500',
+      render: (country) => country.alpha_3_code || 'N/A'
+    },
+    {
+      key: 'numeric_code',
+      header: 'Numeric Code',
+      cellClassName: 'text-gray-500',
+      render: (country) => country.numeric_code || 'N/A'
+    },
+    {
       key: 'name',
       header: 'Name',
       cellClassName: 'text-gray-500',
@@ -28,6 +40,12 @@ const CountriesList = ({ onViewJson, onRefresh }) => {
       header: 'Region',
       cellClassName: 'text-gray-500',
       render: (country) => country.region || 'N/A'
+    },
+    {
+      key: 'currency_code',
+      header: 'Currency Code',
+      cellClassName: 'text-gray-500',
+      render: (country) => country.currency_code || 'N/A'
     }
   ];
 

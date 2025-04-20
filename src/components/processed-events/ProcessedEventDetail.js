@@ -1,62 +1,15 @@
-import React, { useMemo } from 'react';
-import { GenericDetailView, ActionButton, DataTableSection } from '../common';
+import React from 'react';
+import { GenericDetailView, DataTableSection } from '../common';
 
 /**
  * Component to display detailed information about a processed event
  * using the GenericDetailView component for consistency
  */
 const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
-  // Parse original event JSON if available
-  // We need to call useMemo before any conditional returns to follow React Hooks rules
-  const parsedOriginalEvent = useMemo(() => {
-    if (!event) return null;
-    
-    // Extract the original event if available in metadata
-    const originalEvent = event.metadata && event.metadata.original_event_json 
-      ? event.metadata.original_event_json 
-      : event.original_event || null;
-      
-    if (!originalEvent) return null;
-    
-    if (typeof originalEvent === 'string') {
-      try {
-        return JSON.parse(originalEvent);
-      } catch (err) {
-        console.error('Error parsing original event JSON:', err);
-        return null;
-      }
-    }
-    return originalEvent;
-  }, [event]);
   
   // Return null if no event is provided
   if (!event) return null;
 
-  // Define custom actions for the detail view
-  const customActions = (
-    <>
-      <ActionButton
-        variant="outline"
-        onClick={() => onViewJson(event, `Event ${event.event_id}`)}
-      >
-        View JSON
-      </ActionButton>
-      {parsedOriginalEvent && (
-        <ActionButton
-          variant="outline"
-          onClick={() => onViewJson(parsedOriginalEvent, `Original Event ${event.event_id}`)}
-        >
-          View Event JSON
-        </ActionButton>
-      )}
-      <ActionButton
-        variant="secondary"
-        onClick={onBack}
-      >
-        Back
-      </ActionButton>
-    </>
-  );
 
   // Define basic sections for the detail view
   const basicSections = [
@@ -80,19 +33,31 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
     },
     {
       label: 'Ledger',
-      content: event.ledger ? (
-        <div>
-          <p><span className="font-medium">ID:</span> {event.ledger.ledger_id}</p>
-          <p><span className="font-medium">Name:</span> {event.ledger.name}</p>
-          <p><span className="font-medium">Description:</span> {event.ledger.description}</p>
-          {event.ledger.r_currency && (
-            <p>
-              <span className="font-medium">Currency:</span> {event.ledger.r_currency.currency_code} 
-              (Scale: {event.ledger.r_currency.scale})
-            </p>
-          )}
-        </div>
-      ) : 'N/A'
+      content: () => {
+        const enrichedLedger = event.accounts?.from?.enriched_ledger;
+    
+        // If enrichedLedger exists, display its core info. Otherwise 'N/A'.
+        return enrichedLedger ? (
+          <div>
+            {/* Assume ID and Name are present if enrichedLedger is */}
+            <p><span className="font-medium">ID:</span> {enrichedLedger.ledger_id}</p>
+            <p><span className="font-medium">Name:</span> {enrichedLedger.name}</p>
+    
+            {/* Still check for optional description */}
+            {enrichedLedger.description && (
+              <p><span className="font-medium">Description:</span> {enrichedLedger.description}</p>
+            )}
+    
+            {/* Still need to check for r_currency before accessing its properties */}
+            {enrichedLedger.r_currency && (
+              <p>
+                <span className="font-medium">Currency:</span> {enrichedLedger.r_currency.currency_code}
+                (Scale: {enrichedLedger.r_currency.scale})
+              </p>
+            )}
+          </div>
+        ) : 'N/A'; // Fallback if enrichedLedger is null/undefined
+      }
     }
   ];
 
@@ -210,6 +175,38 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
       )
     });
   }
+  
+  // Add any other top-level properties dynamically
+  (() => {
+    const omit = new Set([
+      'event_id', 'template_id', 'amount', 'timestamp', 'ledger',
+      'transfers', 'accounts', 'metadata', 'original_event', 'parsedOriginalEvent'
+    ]);
+    const extras = Object.entries(event)
+      .filter(([key]) => !omit.has(key) && event[key] != null)
+      .map(([key, value]) => ({
+        key,
+        value: typeof value === 'object'
+          ? JSON.stringify(value, null, 2)
+          : String(value)
+      }));
+    if (extras.length > 0) {
+      childrenSections.push({
+        label: 'Other Properties',
+        content: (
+          <DataTableSection
+            data={extras}
+            title=""            
+            columns={[
+              { key: 'key', header: 'Property', cellClassName: 'font-medium text-gray-900' },
+              { key: 'value', header: 'Value', cellClassName: 'whitespace-pre-wrap text-gray-700' }
+            ]}
+            emptyMessage="No additional properties"
+          />
+        )
+      });
+    }
+  })();
 
   return (
     <GenericDetailView
@@ -220,7 +217,6 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
       childrenSections={childrenSections}
       onBack={onBack}
       onViewJson={onViewJson}
-      customActions={customActions}
     />
   );
 };

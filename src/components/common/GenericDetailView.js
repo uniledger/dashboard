@@ -1,5 +1,5 @@
 import React from 'react';
-import { DetailCard, ActionButton, ErrorAlert, LoadingSpinner } from './index';
+import { DetailCard, ErrorAlert, LoadingSpinner } from './index';
 
 /**
  * Generic Detail View component for displaying any model type

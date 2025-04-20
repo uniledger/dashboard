@@ -2,14 +2,12 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GenericListView, LedgerConfig } from '../common';
 import useLedgers from '../../hooks/useLedgers';
-import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * Ledger List component using GenericListView
  */
 const LedgerList = () => {
   const navigate = useNavigate();
-  const { handleViewJson } = useDashboard();
   const { ledgers, loading, fetchLedgers } = useLedgers();
   
   // Fetch ledgers when component mounts

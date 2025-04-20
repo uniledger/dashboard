@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GenericListView, AccountConfig } from '../common';
-import { formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
+import { formatBalance, getCurrencyInfo } from '../../utils/formatters/index';
 import useAccounts from '../../hooks/useAccounts';
 import { useDashboard } from '../../context/DashboardContext';
 
@@ -12,8 +12,9 @@ const AccountList = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const accountTypeFilter = searchParams.get('type');
+  const ledgerIdFilter = searchParams.get('ledgerId');
   
-  const { handleViewJson, setAccountsFilter } = useDashboard();
+  const { setAccountsFilter } = useDashboard();
   const { accounts, loading: accountsLoading, fetchAccounts, refreshAccountBalances } = useAccounts(); 
   
   const [loading, setLoading] = useState(false);
@@ -163,12 +164,20 @@ const AccountList = () => {
     };
   }
 
-  // Get filtered accounts based on URL query parameter
-  const filteredAccounts = accountTypeFilter 
-    ? accounts.filter(account => 
-        account.account_type === accountTypeFilter || 
-        (account.account_code && account.account_code.type === accountTypeFilter))
-    : accounts;
+  // Get filtered accounts based on URL query parameters
+  let filteredAccounts = accounts;
+  if (accountTypeFilter) {
+    filteredAccounts = filteredAccounts.filter(account => 
+      account.account_type === accountTypeFilter || 
+      (account.account_code && account.account_code.type === accountTypeFilter)
+    );
+  }
+  if (ledgerIdFilter) {
+    filteredAccounts = filteredAccounts.filter(account => {
+      const accLedgerId = account.ledger_id || (account.enriched_ledger && account.enriched_ledger.ledger_id);
+      return String(accLedgerId) === ledgerIdFilter;
+    });
+  }
 
   // We don't need custom header anymore, we'll use the standard filter badge
 

@@ -150,7 +150,7 @@ export { entityFilters } from './entityFilters';
 export { ledgerFilters } from './ledgerFilters';
 
 // Export all filter utilities
-export default {
+const filterUtils = {
   filterData,
   searchData,
   getSearchFields,
@@ -159,3 +159,5 @@ export default {
   entityFilters,
   ledgerFilters
 };
+
+export default filterUtils;

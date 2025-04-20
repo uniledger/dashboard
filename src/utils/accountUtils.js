@@ -3,7 +3,7 @@
  * @param {object} account The account object.
  * @returns {string} The account type as an uppercase string, or 'OTHER' if not found.
  */
-const getAccountType = (account) => {
+export const getAccountType = (account) => {
   if (!account) return 'OTHER';
 
   let type;

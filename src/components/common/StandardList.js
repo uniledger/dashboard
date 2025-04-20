@@ -1,17 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   SectionHeader, 
-  ActionButton,
   ErrorAlert,
   LoadingSpinner
 } from './index';
 import { AgGridReact } from 'ag-grid-react';
 import { 
   ClientSideRowModelModule,
-  CsvExportModule,
-  GridApi
+  CsvExportModule
 } from 'ag-grid-community';
-import { formatBalance, getCurrencyInfo } from '../../utils/formatters/index';
+import { formatBalance } from '../../utils/formatters/index';
 // Define locally to avoid circular dependency
 const isNumericField = (fieldName) => {
   if (!fieldName) return false;
@@ -67,16 +65,11 @@ const StandardList = ({
   onSearch,
   searchPlaceholder = "Search...",
   emptyMessage = "No items found",
-  searchQuery: externalSearchQuery,
-  setSearchQuery: setExternalSearchQuery,
+  
   gridHeight = 500,
   smallHeader = false
 }) => {  
-  // Use internal state if external search query is not provided
-  const [, setInternalSearchQuery] = useState('');
-  
-  // Determine which function to use for search query updates
-  const setSearchQuery = setExternalSearchQuery || setInternalSearchQuery;
+  // No external search handling
   
   // Don't do client-side filtering, just use the data as is
   const filteredData = data;

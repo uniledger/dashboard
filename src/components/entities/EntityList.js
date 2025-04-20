@@ -2,14 +2,12 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GenericListView, EntityConfig } from '../common';
 import useEntities from '../../hooks/useEntities';
-import { useDashboard } from '../../context/DashboardContext';
 
 /**
  * Entity List component using GenericListView
  */
 const EntityList = () => {
   const navigate = useNavigate();
-  const { handleViewJson } = useDashboard();
   const { entities, loading, fetchEntities } = useEntities();
   
   // Fetch entities when component mounts
