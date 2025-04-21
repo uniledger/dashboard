@@ -23,6 +23,8 @@ import ProcessedEventDetailPage from '../processed-events/ProcessedEventDetailPa
 // Template router detail page
 import TemplateDetailPage from '../templates/TemplateDetailPage';
 import RulesView from '../rules/RulesView';
+// Transfers components
+import TransfersView from '../transfers/TransfersView';
 
 /**
  * Dashboard Routes component that contains the actual routes
@@ -68,6 +70,10 @@ const DashboardRoutes = () => {
         <Route path="processed-events" element={<ProcessedEventsView onViewJson={handleViewJson} />} />
         <Route path="processed-events/:eventId" element={<ProcessedEventDetailPage onViewJson={handleViewJson} />} />
         <Route path="rules" element={<RulesView onViewJson={handleViewJson} />} />
+        
+        {/* Transfers: list and detail */}
+        <Route path="transfers" element={<TransfersView onViewJson={handleViewJson} />} />
+        <Route path="transfers/:transferId" element={<TransfersView onViewJson={handleViewJson} />} />
         
         {/* Fallback route */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

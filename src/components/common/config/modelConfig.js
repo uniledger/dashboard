@@ -4,6 +4,7 @@
  */
 import React from 'react';
 import { formatBalance, formatAccountCode, getCountryDisplay, getAccountType, getBalanceClass, getCurrencyInfo } from '../../../utils/formatters/index';
+import { formatDate } from '../../../utils/formatters/dateFormatters';
 import DataTableSection from '../DataTableSection';
 
 /**
@@ -529,6 +530,92 @@ export const formatDetailContent = (content, fieldName) => {
 };
 
 /**
+ * Transfer model configuration
+ */
+export const TransferConfig = {
+  title: 'Transfer',
+  idField: 'transfer_id',
+  displayField: 'transfer_id',
+  
+  // Column definitions for list view
+  listColumns: [
+    {
+      key: 'transfer_id',
+      header: 'ID',
+      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
+    },
+    {
+      key: 'account_id',
+      header: 'From Account',
+      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
+      render: (transfer) => transfer.account_id || 'N/A'
+    },
+    {
+      key: 'to_account_id',
+      header: 'To Account',
+      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
+      render: (transfer) => transfer.to_account_id || 'N/A'
+    },
+    {
+      key: 'amount',
+      header: 'Amount',
+      cellClassName: (transfer) => getBalanceClass(transfer.amount),
+      render: (transfer) => formatBalance(transfer.amount, { currency_code: transfer.currency_code })
+    },
+    {
+      key: 'timestamp',
+      header: 'Date',
+      cellClassName: 'text-gray-500',
+      render: (transfer) => formatDate(transfer.timestamp, true)
+    },
+    {
+      key: 'ledger_id',
+      header: 'Ledger',
+      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
+      render: (transfer) => transfer.ledger_id || 'N/A'
+    }
+  ],
+  
+  // Basic section fields for detail view
+  detailSections: (transfer) => [
+    {
+      label: 'Transfer ID',
+      content: transfer.transfer_id
+    },
+    {
+      label: 'From Account',
+      content: transfer.account_id
+    },
+    {
+      label: 'To Account',
+      content: transfer.to_account_id
+    },
+    {
+      label: 'Amount',
+      content: (
+        <div className="text-right">
+          <span className={getBalanceClass(transfer.amount)}>
+            {formatBalance(transfer.amount, { currency_code: transfer.currency_code })}
+          </span>
+        </div>
+      )
+    },
+    {
+      label: 'Timestamp',
+      content: formatDate(transfer.timestamp, true)
+    },
+    {
+      label: 'Ledger ID',
+      content: transfer.ledger_id
+    },
+    {
+      label: 'Event ID',
+      content: transfer.event_id || 'N/A'
+    }
+  ]
+};
+
+/**
  * Export all configurations
  */
 const modelConfigs = {
@@ -538,6 +625,7 @@ const modelConfigs = {
   TemplateConfig,
   ProcessedEventConfig,
   RuleConfig,
+  TransferConfig,
   isNumericField,
   formatDetailContent
 };export default modelConfigs;

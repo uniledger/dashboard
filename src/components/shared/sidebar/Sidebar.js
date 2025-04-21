@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   BarChart, BookOpen, Briefcase, Users, DollarSign, Globe, Tag, FileText,
-  CheckSquare, Shield, PlusCircle
+  CheckSquare, Shield, PlusCircle, CreditCard
 } from 'lucide-react';
  
 const icons = {
@@ -16,7 +16,8 @@ const icons = {
   FileText: FileText,
   CheckSquare: CheckSquare,
   Shield: Shield,  
-  PlusCircle: PlusCircle
+  PlusCircle: PlusCircle,
+  CreditCard: CreditCard
 };
 
 /**
@@ -41,6 +42,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     { id: 'templates', path: '/templates', name: 'Templates', icon: 'FileText' },
     { id: 'event-entry', path: '/event-entry', name: 'Process Event', icon: 'PlusCircle' },
     { id: 'processed-events', path: '/processed-events', name: 'Processed Events', icon: 'CheckSquare' },
+    { id: 'transfers', path: '/transfers', name: 'Transfers', icon: 'CreditCard' },
     { id: 'rules', path: '/rules', name: 'Compliance Rules', icon: 'Shield' },
   ];
 

@@ -167,7 +167,16 @@ const accountApi = {
    * @returns {Promise<Object>} - Account data
    */
   getAccountById: (accountId) => 
-    fetchWithErrorHandling(endpoints.ledger.accountById(ensureIdString(accountId)))
+    fetchWithErrorHandling(endpoints.ledger.accountById(ensureIdString(accountId))),
+    
+  /**
+   * Get transfers for a specific account
+   * @param {string|number} accountId - Account ID
+   * @param {number} limit - Maximum number of transfers to fetch (default: 100)
+   * @returns {Promise<Array>} - List of account transfers
+   */
+  getAccountTransfers: (accountId, limit = 100) => 
+    fetchWithErrorHandling(endpoints.ledger.accountTransfers(ensureIdString(accountId), limit))
 };
 
 /**
@@ -295,6 +304,27 @@ const transactionApi = {
   }
 };
 
+/**
+ * Transfer-related API calls
+ */
+const transferApi = {
+  /**
+   * Get all transfers (default: first 100)
+   * @param {number} limit - Maximum number of transfers to fetch (default: 100)
+   * @returns {Promise<Array>} - List of transfers
+   */
+  getTransfers: (limit = 100) => 
+    fetchWithErrorHandling(`${endpoints.ledger.transfers}?limit=${limit}`),
+  
+  /**
+   * Get a specific transfer by ID
+   * @param {string|number} transferId - Transfer ID
+   * @returns {Promise<Object>} - Transfer data
+   */
+  getTransferById: (transferId) => 
+    fetchWithErrorHandling(endpoints.ledger.transferById(ensureIdString(transferId)))
+};
+
 // Export all API services
 const apiService = {
   entity: entityApi,
@@ -302,6 +332,7 @@ const apiService = {
   account: accountApi,
   reference: referenceApi,
   transaction: transactionApi,
+  transfer: transferApi
 };
 
 export default apiService;

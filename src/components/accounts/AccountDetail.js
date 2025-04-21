@@ -2,7 +2,9 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { GenericDetailView, AccountConfig } from '../common';
 import useAccounts from '../../hooks/useAccounts';
+import useAccountTransfers from '../../hooks/useAccountTransfers';
 import { useDashboard } from '../../context/DashboardContext';
+import AccountTransfersList from './AccountTransfersList';
 
 /**
  * Account Detail component using GenericDetailView
@@ -12,13 +14,18 @@ const AccountDetail = () => {
   const navigate = useNavigate();
   const { handleViewJson } = useDashboard();
   const { selectedAccount: account, loading, selectAccount } = useAccounts();
+  const { 
+    accountTransfers,
+    fetchAccountTransfers 
+  } = useAccountTransfers();
   
   // Fetch account data when component mounts or accountId changes
   useEffect(() => {
     if (accountId) {
       selectAccount(accountId);
+      fetchAccountTransfers(accountId);
     }
-  }, [accountId, selectAccount]);
+  }, [accountId, selectAccount, fetchAccountTransfers]);
   
   if (!account) return null;
   
@@ -30,6 +37,7 @@ const AccountDetail = () => {
   // Handle refresh
   const handleRefresh = () => {
     selectAccount(accountId);
+    fetchAccountTransfers(accountId);
   };
   
   // Extract entity and ledger information
@@ -86,19 +94,28 @@ const AccountDetail = () => {
     sections.splice(insertIndex, 0, ledgerSection);
   }
   
-  // Use GenericDetailView for consistent presentation
+  // Use GenericDetailView for consistent presentation with transfers below
   return (
-    <GenericDetailView
-      data={account}
-      title={AccountConfig.title + " Detail"}
-      subtitle={account?.name}
-      sections={sections}
-      onBack={handleBack}
-      onRefresh={handleRefresh}
-      onViewJson={handleViewJson}
-      loading={loading}
-      loadingMessage="Loading account details..."
-    />
+    <div className="space-y-6">
+      <GenericDetailView
+        data={account}
+        title={AccountConfig.title + " Detail"}
+        subtitle={account?.name}
+        sections={sections}
+        onBack={handleBack}
+        onRefresh={handleRefresh}
+        onViewJson={handleViewJson}
+        loading={loading}
+        loadingMessage="Loading account details..."
+      />
+      
+      {/* Directly render transfers table with auto-growing height */}
+      <AccountTransfersList 
+        transfers={accountTransfers || []} 
+        accountId={accountId}
+        onViewJson={handleViewJson}
+      />
+    </div>
   );
 };
 
