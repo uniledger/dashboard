@@ -82,28 +82,23 @@ const AccountList = () => {
   // Define columns for the DataTable - start with the base AccountConfig columns
   const columns = [...AccountConfig.listColumns];
   
-  // Add entity column
+  // Add entity (Account Owner) column
   columns.push({
     key: 'entity',
     header: 'Account Owner',
     render: (account) => {
-      return account.entity?.name || 
-             account.enriched_ledger?.entity?.name || 
-             'N/A';
+      const owner = account.r_entity || account.enriched_ledger?.r_entity;
+      return owner?.name || '';
     },
     cellClassName: (account) => {
-      const entityId = account.entity_id || 
-                       (account.enriched_ledger && account.enriched_ledger.entity_id) || 
-                       (account.entity && account.entity.entity_id);
-      return entityId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
+      const owner = account.r_entity || account.enriched_ledger?.r_entity;
+      return owner?.entity_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
     },
     onClick: (account) => {
-      const entityId = account.entity_id || 
-                       (account.enriched_ledger && account.enriched_ledger.entity_id) || 
-                       (account.entity && account.entity.entity_id);
-      if (entityId) {
-        handleViewEntity(entityId);
-        return true; // Prevent other click handlers
+      const owner = account.r_entity || account.enriched_ledger?.r_entity;
+      if (owner?.entity_id) {
+        handleViewEntity(owner.entity_id);
+        return true;
       }
       return false;
     },

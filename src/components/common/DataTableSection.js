@@ -70,7 +70,7 @@ const DataTableSection = ({
   const height = Math.min(Math.max(250, displayData.length * 50), 500);
   
   return (
-    <div className="bg-white rounded-lg overflow-hidden">
+    <div className="bg-white rounded-lg overflow-auto">
       <StandardList
         data={displayData}
         columns={processedColumns}
@@ -79,7 +79,7 @@ const DataTableSection = ({
         onItemClick={onRowClick}
         emptyMessage={emptyMessage}
         gridHeight={height}
-        smallHeader={true} /* Use small header to avoid duplicating section title */
+        smallHeader={false} /* Use full header to mimic list views */
       />
     </div>
   );

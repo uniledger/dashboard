@@ -417,9 +417,10 @@ const DashboardView = () => {
                     <tr key={account.account_id || account.account_extra_id} className="bg-gray-50">
                       <td
                         className="py-2 text-gray-700 pl-6 cursor-pointer hover:underline"
-                        onClick={() => navigate(
-                          `/accounts/${account.account_extra_id}`
-                        )}
+                        onClick={() => {
+                          const acctId = account.account_id || account.account_extra_id || account.id;
+                          navigate(acctId ? `/accounts/${acctId}` : '/accounts');
+                        }}
                         title="Click to view account details"
                       >
                         {account.name}
@@ -462,9 +463,10 @@ const DashboardView = () => {
                     <tr key={account.account_id || account.account_extra_id} className="bg-gray-50">
                       <td
                         className="py-2 text-gray-700 pl-6 cursor-pointer hover:underline"
-                        onClick={() => navigate(
-                          `/accounts/${account.account_id || account.account_extra_id}`
-                        )}
+                        onClick={() => {
+                          const acctId = account.account_id || account.account_extra_id || account.id;
+                          navigate(acctId ? `/accounts/${acctId}` : '/accounts');
+                        }}
                         title="Click to view account details"
                       >
                         {account.name}
@@ -557,9 +559,10 @@ const DashboardView = () => {
                     <tr key={account.account_id || account.account_extra_id} className="bg-gray-50">
                       <td
                         className="py-2 text-gray-700 pl-6 cursor-pointer hover:underline"
-                        onClick={() => navigate(
-                          `/accounts/${account.account_id || account.account_extra_id}`
-                        )}
+                        onClick={() => {
+                          const acctId = account.account_id || account.account_extra_id || account.id;
+                          navigate(acctId ? `/accounts/${acctId}` : '/accounts');
+                        }}
                         title="Click to view account details"
                       >
                         {account.name}
@@ -602,9 +605,10 @@ const DashboardView = () => {
                     <tr key={account.account_id || account.account_extra_id} className="bg-gray-50">
                       <td
                         className="py-2 text-gray-700 pl-6 cursor-pointer hover:underline"
-                        onClick={() => navigate(
-                          `/accounts/${account.account_id || account.account_extra_id}`
-                        )}
+                        onClick={() => {
+                          const acctId = account.account_id || account.account_extra_id || account.id;
+                          navigate(acctId ? `/accounts/${acctId}` : '/accounts');
+                        }}
                         title="Click to view account details"
                       >
                         {account.name}

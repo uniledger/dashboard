@@ -7,9 +7,25 @@ import {
 import { AgGridReact } from 'ag-grid-react';
 import { 
   ClientSideRowModelModule,
-  CsvExportModule
+  CsvExportModule,
+  ColumnAutoSizeModule,
+  TextFilterModule,
+  NumberFilterModule,
+  DateFilterModule
 } from 'ag-grid-community';
+import { ModuleRegistry } from 'ag-grid-community';
 import { formatBalance } from '../../utils/formatters/index';
+
+// Register AG Grid modules globally
+ModuleRegistry.registerModules([
+  ClientSideRowModelModule,
+  CsvExportModule,
+  ColumnAutoSizeModule,
+  TextFilterModule,
+  NumberFilterModule,
+  DateFilterModule
+]);
+
 // Define locally to avoid circular dependency
 const isNumericField = (fieldName) => {
   if (!fieldName) return false;
@@ -161,11 +177,21 @@ const StandardList = ({
         sortable: true,
         resizable: true,
         cellRenderer: cellRenderer,
-        onCellClicked: column.onClick ? (params) => {
-            column.onClick(params.data);
-        } : undefined
+        onCellClicked: column.onClick ? (params) => column.onClick(params.data) : undefined
       };
-      
+
+      // Configure filter type and nested value getter for related fields
+      const filterType = isNumericColumn ? 'agNumberColumnFilter' : 'agTextColumnFilter';
+      colDef.filter = filterType;
+      if (column.key.includes('.')) {
+        const parts = column.key.split('.');
+        colDef.valueGetter = params => {
+          const val = parts.reduce((o, k) => o?.[k], params.data);
+          return val != null ? val : '';
+        };
+        delete colDef.field;
+      }
+
       // Special handling for balance column
       if (column.key === 'balance') {
         colDef.type = 'numericColumn';
@@ -354,11 +380,14 @@ const StandardList = ({
     sortable: true,
     resizable: true,
     suppressMovable: false,
-    autoSize: false,
-    filter: true,
+    filter: 'agSetColumnFilter',
+    filterParams: { suppressMiniFilter: true },
+    floatingFilter: false,  // Disable floating filter row; use filter icon in header
+    enableRowGroup: true, // grouping UI requires ag-grid-enterprise
     flex: 1
   };
   
+
   // Show loading spinner if data is loading and there's no data
   if (loading && data.length === 0) {
     return (
@@ -372,45 +401,23 @@ const StandardList = ({
     <div>
       {!smallHeader ? (
         <SectionHeader
-          title={title}
-          description={""}
+          title={
+            <>
+              <span>{title}</span>
+              <span className="ml-2 text-sm text-gray-500">({data.length})</span>
+            </>
+          }
+          description=""
           actions={renderActions()}
         />
       ) : (
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex-grow">
-            <h3 className="text-lg font-medium text-gray-900">{title || ''}</h3>
-          </div>
-          <div className="flex items-center gap-2">
-            {data.length > 0 && (
-              <button 
-                onClick={handleExportCsv}
-                className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
-                title="Export to CSV"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-              </button>
-            )}
-            {onRefresh && (
-              <button 
-                onClick={handleRefresh}
-                className="p-1 rounded-full text-gray-500 hover:bg-gray-100"
-                title="Refresh data"
-              >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </button>
-            )}
-          </div>
+        <div className="flex justify-between items-center mb-4 flex-nowrap">
+          <h3 className="text-lg font-medium text-gray-900 whitespace-nowrap">
+            {title} <span className="text-sm text-gray-500">({data.length})</span>
+          </h3>
+          {renderActions()}
         </div>
       )}
-      
       {error && (
         <ErrorAlert 
           error={error} 
@@ -419,34 +426,13 @@ const StandardList = ({
         />
       )}
 
-      {/* Quick Filter */}
-      {data.length > 5 && (
-        <div className="mb-4">
-          <input 
-            type="text"
-            placeholder="Filter table data..."
-            className="w-full md:w-64 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            onChange={(e) => {
-              if (window.gridApi) {
-                if ('setQuickFilter' in window.gridApi) {
-                  window.gridApi.setQuickFilter(e.target.value);
-                } else if ('api' in window.gridApi && 'setQuickFilter' in window.gridApi.api) {
-                  window.gridApi.api.setQuickFilter(e.target.value);
-                } else {
-                  console.warn('Quick filter not available');
-                }
-              }
-            }}
-          />
-        </div>
-      )}
-      
-      <div className="ag-theme-alpine" style={{ height: `${gridHeight}px`, width: '100%' }}>
+      <div className="ag-theme-alpine" style={{ width: '100%' }}>
         <AgGridReact
+          domLayout="autoHeight"
           rowData={filteredData}
           columnDefs={columnDefs}
           defaultColDef={defaultColDef}
-          modules={[ClientSideRowModelModule, CsvExportModule]}
+          animateRows={true}
           onGridReady={(params) => {
             // Store gridApi in window for easy access
             window.gridApi = params;
@@ -496,7 +482,7 @@ const StandardList = ({
                 handleItemClick(event.data);
             }
           }}
-          domLayout='autoHeight'>
+          >
         </AgGridReact>
       </div>
     </div>

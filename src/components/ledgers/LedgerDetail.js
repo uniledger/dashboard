@@ -23,6 +23,9 @@ const LedgerDetail = () => {
     refreshLedgerAccounts
   } = useLedgers();
   
+  // Debug: log ledgerAccounts shape to inspect entity field name
+  console.log('LedgerDetail ledgerAccounts sample:', ledgerAccounts[0]);
+  
   // All hooks must be at the top level
   const [entity, setEntity] = useState(null);
   
@@ -32,6 +35,14 @@ const LedgerDetail = () => {
       fetchLedgerById(ledgerId);
     }
   }, [ledgerId, fetchLedgerById]);
+  
+  // Fetch raw ledger accounts data to inspect exact field names
+  useEffect(() => {
+    if (ledger && ledger.ledger_id) {
+      apiService.ledger.getLedgerAccounts(ledger.ledger_id)
+        .then(data => console.log('API ledgerAccounts raw:', data));
+    }
+  }, [ledger]);
   
   // Use useEffect for fetching entity details
   useEffect(() => {
@@ -71,16 +82,6 @@ const LedgerDetail = () => {
   const getAccountCodeDisplay = (account) => {
     if (!account) return 'N/A';
     return formatAccountCode(account.account_code || account.code);
-  };
-  
-  // Helper function to get entity information from account object directly
-  const getEntityInfo = (account) => {
-    return {
-      name: account.entity?.name || account.enriched_ledger?.entity?.name || 'N/A',
-      entity_id: account.entity_id || 
-                 (account.enriched_ledger && account.enriched_ledger.entity_id) ||
-                 (account.entity && account.entity.entity_id)
-    };
   };
   
   // Get entity from ledger or from separate fetch
@@ -144,19 +145,14 @@ const LedgerDetail = () => {
             render: (account) => account.account_type || (account.account_code && account.account_code.type) || 'N/A'
           },
           {
-            key: 'entity',
+            key: 'enriched_entity',
             header: 'Account Owner',
-            cellClassName: (account) => {
-              const entityInfo = getEntityInfo(account);
-              return entityInfo.entity_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
-            },
-            render: (account) => {
-              const entityInfo = getEntityInfo(account);
-              
-              return entityInfo.entity_id ? (
-                <Link to={`/entities/${entityInfo.entity_id}`}>{entityInfo.name}</Link>
-              ) : entityInfo.name;
-            }
+            cellClassName: 'text-blue-600 cursor-pointer hover:underline',
+            render: (account) => (
+              <Link to={`/entities/${account.enriched_entity.entity_id}`}>
+                {account.enriched_entity.name}
+              </Link>
+            )
           },
           {
             key: 'balance',

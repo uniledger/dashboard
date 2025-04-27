@@ -11,7 +11,7 @@ import React from 'react';
  */
 const SectionHeader = ({ title, description, actions, className = '' }) => {
   return (
-    <div className={`mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between ${className}`}>
+    <div className={`flex justify-between items-center ${className}`}>
       <div>
         <h3 className="text-lg leading-6 font-medium text-gray-900">
           {title}
@@ -23,7 +23,7 @@ const SectionHeader = ({ title, description, actions, className = '' }) => {
         )}
       </div>
       {actions && (
-        <div className="mt-3 flex sm:mt-0 sm:ml-4 space-x-3">
+        <div className="flex space-x-3">
           {actions}
         </div>
       )}

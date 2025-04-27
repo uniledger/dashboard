@@ -76,24 +76,19 @@ const GenericListView = ({
     <div>
       {customHeader || filterBadge}
       
-      {/* GenericListView provides the main title */}
-      <div className="mb-4">
-        <h1 className="text-2xl font-semibold text-gray-900">{title}</h1>
-      </div>
-      
-      {/* StandardList with empty title to avoid duplication */}
+      {/* Render standard list with full header matching detail-views */}
       <StandardList
         data={data}
         columns={columns}
-        title=""
+        title={title}
         idField={idField}
         onItemClick={onItemClick}
+        onViewJson={onViewJson}
         onRefresh={onRefresh}
         onSearch={onSearch}
         searchPlaceholder={searchPlaceholder || `Search ${title.toLowerCase()}...`}
         emptyMessage={emptyMessage || `No ${title.toLowerCase()} found`}
-        customActions={customActions}
-        smallHeader={true}
+        smallHeader={false}
       />
     </div>
   );
