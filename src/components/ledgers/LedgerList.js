@@ -10,11 +10,12 @@ const LedgerList = () => {
   const navigate = useNavigate();
   const { ledgers, loading, fetchLedgers } = useLedgers();
   
+  // Data loading is now handled by GenericListView via fetchData prop
+  
   // Fetch ledgers when component mounts
   useEffect(() => {
     fetchLedgers();
   }, [fetchLedgers]);
-  
   
   // Navigate to ledger detail view
   const handleViewLedger = (ledger) => {

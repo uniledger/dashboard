@@ -187,6 +187,9 @@ const LedgerDetail = () => {
           navigate(`/accounts/${id}`);
         }}
         emptyMessage="No accounts found for this ledger"
+        onViewJson={handleViewJson}
+        onRefresh={() => refreshLedgerAccounts(ledgerId)}
+        loading={loading}
       />
     )
   };
@@ -199,7 +202,6 @@ const LedgerDetail = () => {
       sections={basicSections}
       childrenSections={[accountsTableSection]}
       onBack={handleBack}
-      onRefresh={handleRefresh}
       onViewJson={handleViewJson}
       loading={loading}
     />

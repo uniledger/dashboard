@@ -346,6 +346,9 @@ export const TemplateConfig = {
         columns={TemplateConfig.variablesColumns}
         title="Variables"
         emptyMessage="No variables defined"
+        onViewJson={null} // Will be injected by parent component
+        onRefresh={null} // Will be injected by parent component
+        loading={false}
       />
     );
   },
@@ -358,6 +361,9 @@ export const TemplateConfig = {
         columns={TemplateConfig.validationsColumns}
         title="Validations"
         emptyMessage="No validations defined"
+        onViewJson={null} // Will be injected by parent component
+        onRefresh={null} // Will be injected by parent component
+        loading={false}
       />
     );
   },
@@ -370,6 +376,9 @@ export const TemplateConfig = {
         columns={TemplateConfig.legsColumns}
         title="Template Legs"
         emptyMessage="No legs defined"
+        onViewJson={null} // Will be injected by parent component
+        onRefresh={null} // Will be injected by parent component
+        loading={false}
       />
     );
   },

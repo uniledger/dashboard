@@ -213,10 +213,6 @@ const transactionApi = {
    * Get all templates
    * @returns {Promise<Array>} - List of templates
    */
-  /**
-   * Get all templates
-   * @returns {Promise<Array>} - List of templates
-   */
   getTemplates: async () => {
     const response = await fetchWithErrorHandling(endpoints.transaction.templates);
     if (response.ok && response.data) {
@@ -266,9 +262,17 @@ const transactionApi = {
   },
   
   /**
-   * Get all rules
-   * @returns {Promise<Array>} - List of rules
+   * Get a single processed event by ID
+   * @param {string|number} eventId - Processed event ID
+   * @returns {Promise<Object>} - Response with event data including transfers
    */
+  getProcessedEventById: async (eventId) => {
+    const response = await fetchWithErrorHandling(
+      endpoints.transaction.processedEventById(ensureIdString(eventId))
+    );
+    return response;
+  },
+  
   /**
    * Get all rules
    * @returns {Promise<Array>} - List of rules

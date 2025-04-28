@@ -40,42 +40,8 @@ const useDataFetching = ({
       const response = await fetchAll();
       
       if (response.ok) {
-        // Detailed response inspection
-        console.log('%c 🔍 Data Structure Inspection', 'background: #f0f0f0; color: #0044cc; font-weight: bold; padding: 3px 5px; border-radius: 3px;');
-        console.log('Full response object:', response);
-        console.log('response.data type:', typeof response.data);
-        
-        // Check if response.data exists 
-        let processedData;
-        
-        if (response.data === null || response.data === undefined) {
-          console.log('%c ⚠️ response.data is null/undefined - using empty array', 'color: #cc4400;');
-          processedData = [];
-        } else if (Array.isArray(response.data)) {
-          console.log(`%c ✓ response.data is array with ${response.data.length} items`, 'color: #008800;');
-          processedData = response.data;
-        } else if (typeof response.data === 'object') {
-          console.log('%c ℹ️ response.data is an object (not array)', 'color: #0088cc;');
-          
-          // Many APIs return { results: [...] } or { data: [...] } structure
-          if (response.data.results && Array.isArray(response.data.results)) {
-            console.log(`%c ✓ Using response.data.results with ${response.data.results.length} items`, 'color: #008800;');
-            processedData = response.data.results;
-          } else if (response.data.data && Array.isArray(response.data.data)) {
-            console.log(`%c ✓ Using response.data.data with ${response.data.data.length} items`, 'color: #008800;');
-            processedData = response.data.data;
-          } else if (response.data.items && Array.isArray(response.data.items)) {
-            console.log(`%c ✓ Using response.data.items with ${response.data.items.length} items`, 'color: #008800;');
-            processedData = response.data.items;
-          } else {
-            // Last resort: if it's an object but not containing an array, make it an array of 1
-            console.log('%c ⚠️ Using response.data as single item in array', 'color: #cc4400;');
-            processedData = [response.data];
-          }
-        } else {
-          console.log('%c ⚠️ response.data is neither array nor object - using empty array', 'color: #cc4400;');
-          processedData = [];
-        }
+        // Standardize the data handling
+        const processedData = Array.isArray(response.data) ? response.data : [];
         
         setItems(processedData);
         setLoading(false);
@@ -159,19 +125,22 @@ const useDataFetching = ({
   const refreshChildren = useCallback(async (id) => {
     if (!id) return;
     
+    setLoading(true);
     try {
       const response = await fetchChildren(id);
       if (response.ok && response.data) {
         const childrenData = response.data;
         setChildItems(childrenData);
+        setLoading(false);
         return childrenData;
       } else {
         console.error('Failed to refresh children:', response.error);
+        setLoading(false);
         return [];
       }
     } catch (err) {
       console.error('Error refreshing children:', err);
-      // Don't update error state on refresh to avoid disrupting the UI
+      setLoading(false);
       return [];
     }
   }, [fetchChildren]);

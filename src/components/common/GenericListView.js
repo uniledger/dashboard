@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StandardList, FilterBadge, ErrorAlert, LoadingSpinner } from './index';
+import DetailModal from '../shared/DetailModal';
 
 /**
  * Generic List View component for displaying any model type in a list
@@ -10,11 +11,8 @@ import { StandardList, FilterBadge, ErrorAlert, LoadingSpinner } from './index';
  * @param {Array} props.columns - Column definitions for the list
  * @param {string} props.title - Title for the list (e.g., "Accounts")
  * @param {string} props.idField - The field to use as the ID (e.g., "account_id")
- * @param {boolean} props.loading - Whether data is loading
- * @param {Object|string} props.error - Error state if present
  * @param {function} props.onItemClick - Handler for clicking an item
  * @param {function} props.onViewJson - Handler for viewing JSON data
- * @param {function} props.onRefresh - Handler for refreshing data
  * @param {Object} props.filter - Active filter (e.g., { field: 'type', value: 'ASSET' })
  * @param {function} props.onClearFilter - Handler for clearing the active filter
  * @param {function} props.onSearch - Custom search handler
@@ -22,6 +20,9 @@ import { StandardList, FilterBadge, ErrorAlert, LoadingSpinner } from './index';
  * @param {string} props.emptyMessage - Message to display when no data is found
  * @param {React.ReactNode} props.customHeader - Custom header content
  * @param {React.ReactNode} props.customActions - Custom actions for the list
+ * @param {function} props.onRefresh - Handler for refreshing the list
+ * @param {boolean} props.loading - Whether data is loading (external)
+ * @param {Object|string} props.error - Error state if present
  * @returns {JSX.Element}
  */
 const GenericListView = ({
@@ -29,11 +30,8 @@ const GenericListView = ({
   columns,
   title,
   idField,
-  loading = false,
-  error = null,
   onItemClick,
   onViewJson,
-  onRefresh,
   filter = null,
   onClearFilter,
   onSearch,
@@ -41,15 +39,14 @@ const GenericListView = ({
   emptyMessage,
   customHeader,
   customActions,
+  onRefresh,
+  loading = false,
+  error = null,
 }) => {
-  // Display loading state
-  if (loading && data.length === 0) {
-    return (
-      <div className="h-64 flex items-center justify-center">
-        <LoadingSpinner size="lg" message={`Loading ${title.toLowerCase()}...`} />
-      </div>
-    );
-  }
+  // JSON modal state
+  const [jsonModalData, setJsonModalData] = useState(null);
+  const handleInternalViewJson = (item) => setJsonModalData(item);
+  const viewJsonHandler = onViewJson || handleInternalViewJson;
 
   // Display error state
   if (error) {
@@ -76,19 +73,27 @@ const GenericListView = ({
     <div>
       {customHeader || filterBadge}
       
-      {/* Render standard list with full header matching detail-views */}
+      {/* Render standard list with JSON view support */}
       <StandardList
         data={data}
         columns={columns}
         title={title}
         idField={idField}
         onItemClick={onItemClick}
-        onViewJson={onViewJson}
+        onViewJson={viewJsonHandler}
         onRefresh={onRefresh}
         onSearch={onSearch}
         searchPlaceholder={searchPlaceholder || `Search ${title.toLowerCase()}...`}
         emptyMessage={emptyMessage || `No ${title.toLowerCase()} found`}
         smallHeader={false}
+        loading={loading}
+      />
+      {/* JSON detail modal */}
+      <DetailModal
+        isOpen={!!jsonModalData}
+        data={jsonModalData}
+        title={`${title} Record`}
+        onClose={() => setJsonModalData(null)}
       />
     </div>
   );

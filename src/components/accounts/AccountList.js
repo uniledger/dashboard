@@ -15,9 +15,12 @@ const AccountList = () => {
   const ledgerIdFilter = searchParams.get('ledgerId');
   
   const { setAccountsFilter } = useDashboard();
-  const { accounts, loading: accountsLoading, fetchAccounts, refreshAccountBalances } = useAccounts(); 
+  const { accounts, loading: accountsLoading, fetchAccounts } = useAccounts(); 
   
-  const [loading, setLoading] = useState(false);
+  // Fetch accounts when component mounts
+  useEffect(() => {
+    fetchAccounts();
+  }, [fetchAccounts]);
 
   // Apply filter based on URL query param if present
   useEffect(() => {
@@ -35,14 +38,6 @@ const AccountList = () => {
       });
     }
   }, [accountTypeFilter, setAccountsFilter]);
-
-  // Fetch accounts when component mounts
-  useEffect(() => {
-    setLoading(true);
-    fetchAccounts()
-      .finally(() => setLoading(false));
-  }, [fetchAccounts]);
-
 
   const getCurrencyCode = (account) => {
     return (account.enriched_ledger && account.enriched_ledger.r_currency && account.enriched_ledger.r_currency.currency_code) || 
@@ -174,8 +169,6 @@ const AccountList = () => {
     });
   }
 
-  // We don't need custom header anymore, we'll use the standard filter badge
-
   // Create filter object for GenericListView if filtering by account type
   const filter = accountTypeFilter ? {
     field: 'account_type',
@@ -189,9 +182,9 @@ const AccountList = () => {
       columns={columns}
       title="Accounts"
       idField="account_id"
-      loading={loading || accountsLoading}
+      loading={accountsLoading}
       onItemClick={handleViewAccount}
-      onRefresh={refreshAccountBalances}
+      onRefresh={fetchAccounts}
       filter={filter}
       onClearFilter={handleClearFilter}
       searchPlaceholder="Search accounts..."

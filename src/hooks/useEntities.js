@@ -56,6 +56,7 @@ const useEntities = () => {
     // Actions
     fetchEntities,
     fetchEntityById: fetchEntityWithDetails,
+    fetchEntityLedgers, // Direct access to fetch ledgers function
     refreshEntityAccounts,
     clearSelectedEntity,
     setSelectedEntity

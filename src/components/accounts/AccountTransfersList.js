@@ -7,7 +7,7 @@ import { getBalanceClass, formatBalance } from '../../utils/formatters/balanceFo
 /**
  * Component to display transfers for an account
  */
-const AccountTransfersList = ({ transfers, accountId, onViewJson }) => {
+const AccountTransfersList = ({ transfers, accountId, onViewJson, onRefresh, loading = false }) => {
   const columns = [
     // Transfer ID (using 'id' field from response)
     {
@@ -84,20 +84,6 @@ const AccountTransfersList = ({ transfers, accountId, onViewJson }) => {
         if (!item.ledger) return 'N/A';
         return <Link to={`/ledgers/${item.ledger}`}>{item.ledger}</Link>;
       }
-    },
-    // Actions column with View JSON button
-    {
-      key: 'actions',
-      header: 'Actions',
-      cellClassName: 'text-right',
-      render: item => (
-        <button
-          className="text-blue-600 hover:text-blue-800 text-sm"
-          onClick={() => onViewJson && onViewJson(item, `Transfer ${item.id}`)}
-        >
-          View JSON
-        </button>
-      )
     }
   ];
 
@@ -114,6 +100,9 @@ const AccountTransfersList = ({ transfers, accountId, onViewJson }) => {
         idField="id"
         emptyMessage="No transfers found for this account"
         gridHeight={gridHeight}
+        onViewJson={onViewJson}
+        onRefresh={onRefresh}
+        loading={loading}
       />
     </div>
   );

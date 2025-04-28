@@ -13,6 +13,9 @@ import StandardList from './StandardList';
  * @param {function} props.onRowClick - Handler for clicking a row
  * @param {string} props.emptyMessage - Message to display when no data is available
  * @param {function} props.sortFunction - Optional function to sort data
+ * @param {function} props.onViewJson - Handler for viewing JSON data
+ * @param {function} props.onRefresh - Handler for refreshing data
+ * @param {boolean} props.loading - Flag indicating if data is being loaded
  * @returns {JSX.Element}
  */
 const DataTableSection = ({
@@ -21,7 +24,10 @@ const DataTableSection = ({
   title = '',
   onRowClick,
   emptyMessage = 'No data available',
-  sortFunction
+  sortFunction,
+  onViewJson,
+  onRefresh,
+  loading = false,
 }) => {
   // Sort data if a sort function is provided
   const displayData = sortFunction ? [...data].sort(sortFunction) : data;
@@ -78,6 +84,9 @@ const DataTableSection = ({
         idField={idField}
         onItemClick={onRowClick}
         emptyMessage={emptyMessage}
+        onViewJson={onViewJson}
+        onRefresh={onRefresh}
+        loading={loading}
         gridHeight={height}
         smallHeader={false} /* Use full header to mimic list views */
       />

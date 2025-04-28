@@ -7,7 +7,7 @@ import apiService from '../../services/apiService';
  */
 const AccountCodesList = ({ onViewJson, onRefresh }) => {
   const [accountCodes, setAccountCodes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Define columns for the DataTable
@@ -37,61 +37,33 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
     }
   ];
 
-  useEffect(() => {
-    const loadAccountCodes = async () => {
-      setLoading(true);
-      try {
-        const response = await apiService.reference.getAccountCodes();
-        console.log('AccountCodesList response:', response);
-        
-        // Extract data from the response object
-        if (response.ok && response.data) {
-          setAccountCodes(response.data);
-          console.log('AccountCodesList setting account codes:', response.data.length, 'items');
-          setError(null);
-        } else {
-          console.error('Failed to load account codes:', response.error);
-          setError('Failed to load account codes. Please try again.');
-          setAccountCodes([]);
-        }
-      } catch (err) {
-        console.error('Error loading account codes:', err);
+  // Unified fetch function for initial load and refresh
+  const fetchAccountCodes = async () => {
+    setLoading(true);
+    try {
+      const response = await apiService.reference.getAccountCodes();
+      
+      if (response.ok && response.data) {
+        setAccountCodes(response.data);
+        setError(null);
+      } else {
+        console.error('Failed to load account codes:', response.error);
         setError('Failed to load account codes. Please try again.');
         setAccountCodes([]);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    loadAccountCodes();
-  }, []);
-
-  const handleRefresh = async () => {
-    if (onRefresh) {
-      onRefresh();
-    } else {
-      setLoading(true);
-      try {
-        const response = await apiService.reference.getAccountCodes();
-        console.log('AccountCodesList refresh response:', response);
-        
-        // Extract data from the response object
-        if (response.ok && response.data) {
-          setAccountCodes(response.data);
-          console.log('AccountCodesList refresh setting account codes:', response.data.length, 'items');
-          setError(null);
-        } else {
-          console.error('Failed to refresh account codes:', response.error);
-          setError('Failed to refresh account codes. Please try again.');
-        }
-      } catch (err) {
-        console.error('Error refreshing account codes:', err);
-        setError('Failed to refresh account codes. Please try again.');
-      } finally {
-        setLoading(false);
-      }
+    } catch (err) {
+      console.error('Error loading account codes:', err);
+      setError('Failed to load account codes. Please try again.');
+      setAccountCodes([]);
+    } finally {
+      setLoading(false);
     }
+    return Promise.resolve(); // Ensure we return a promise for GenericListView
   };
+
+  useEffect(() => {
+    fetchAccountCodes();
+  }, []);
 
   return (
     <GenericListView
@@ -102,7 +74,7 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
       loading={loading}
       error={error}
       onViewJson={onViewJson}
-      onRefresh={handleRefresh}
+      onRefresh={fetchAccountCodes}
       searchPlaceholder="Search account codes..."
       emptyMessage="No account codes found"
     />

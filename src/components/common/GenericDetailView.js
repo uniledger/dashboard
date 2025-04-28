@@ -34,15 +34,6 @@ const GenericDetailView = ({
   loadingMessage,
   customActions,
 }) => {
-  // Display loading state
-  if (loading && !data) {
-    return (
-      <div className="h-64 flex items-center justify-center">
-        <LoadingSpinner size="lg" message={loadingMessage || `Loading ${title.toLowerCase()}...`} />
-      </div>
-    );
-  }
-
   // Display error state
   if (error) {
     return (
@@ -88,6 +79,15 @@ const GenericDetailView = ({
   // Standard actions for the detail card
   const defaultActions = (
     <div className="flex items-center gap-2">
+      {/* Loading indicator */}
+      {loading && (
+        <button className="p-2 rounded-full text-gray-500 hover:bg-gray-100" title="Loading...">
+          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+        </button>
+      )}
       {onViewJson && (
         <button
           className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
@@ -129,13 +129,30 @@ const GenericDetailView = ({
     </div>
   );
 
+  // Automatically inject JSON view and fetchData handlers into child tables
+  const injectedChildren = childrenSections.map(section => {
+    if (!React.isValidElement(section.content)) {
+      return section;
+    }
+    
+    // Clone the element with the correct props
+    return {
+      ...section,
+      content: React.cloneElement(section.content, { 
+        onViewJson, 
+        fetchData: onRefresh, // Use onRefresh as fetchData
+        loading 
+      })
+    };
+  });
+
   return (
     <div>
       <DetailCard
         title={title}
         subtitle={subtitle}
         sections={sections}
-        childrenSections={childrenSections}
+        childrenSections={injectedChildren}
         actions={customActions || defaultActions}
       />
     </div>

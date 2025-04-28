@@ -155,7 +155,7 @@ const StandardList = ({
   /**
    * Transform column definitions for AgGrid
    */
-  const columnDefs = processedColumns.map(column => {
+  const columnDefs = processedColumns.map((column, index) => {
       let cellRenderer = undefined;
 
       // Handle custom render functions
@@ -250,9 +250,32 @@ const StandardList = ({
         };
       }
       
+      // Insert JSON icon into first column cell if handler provided
+      if (index === 0 && onViewJson) {
+        const origRenderer = colDef.cellRenderer;
+        colDef.cellRenderer = params => (
+          <div className="flex items-center">
+            <button
+              className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
+              onClick={e => { e.stopPropagation(); onViewJson(params.data); }}
+              title="View JSON"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <path d="M14 2v6h6" />
+                <path d="M8 16h8" />
+                <path d="M8 12h8" />
+              </svg>
+            </button>
+            <span className="ml-2">
+              {origRenderer ? origRenderer(params) : params.value}
+            </span>
+          </div>
+        );
+      }
+      
       return colDef;
   });
-  
 
   // Handle CSV export - requires CsvExportModule
   const handleExportCsv = () => {
@@ -349,6 +372,7 @@ const StandardList = ({
   // Render action buttons for the section header
   const renderActions = () => (
     <div className="flex items-center gap-2">
+      {loading && <LoadingSpinner size="sm" />}
       {data.length > 0 && (
         <button
           className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
@@ -384,19 +408,8 @@ const StandardList = ({
     filterParams: { suppressMiniFilter: true },
     floatingFilter: false,  // Disable floating filter row; use filter icon in header
     enableRowGroup: true, // grouping UI requires ag-grid-enterprise
-    flex: 1
   };
-  
 
-  // Show loading spinner if data is loading and there's no data
-  if (loading && data.length === 0) {
-    return (
-      <div className="h-64 flex items-center justify-center">
-        <LoadingSpinner size="lg" message={`Loading ${title.toLowerCase()}...`} />
-      </div>
-    );
-  }
-  
   return (
     <div>
       {!smallHeader ? (
@@ -434,29 +447,12 @@ const StandardList = ({
           defaultColDef={defaultColDef}
           animateRows={true}
           onGridReady={(params) => {
-            // Store gridApi in window for easy access
+            // Store gridApi and auto-size columns to fit content
             window.gridApi = params;
-            
-            // Automatically resize columns to fit content
-            if (params.api && typeof params.api.sizeColumnsToFit === 'function') {
-              // Initial sizing
-              params.api.sizeColumnsToFit();
-              
-              // Also auto-size each column for content
-              if (params.columnApi && typeof params.columnApi.autoSizeAllColumns === 'function') {
-                params.columnApi.autoSizeAllColumns();
-              } else if (params.api.autoSizeAllColumns) {
-                params.api.autoSizeAllColumns();
-              }
-              
-              // Add window resize handler for responsive sizing
-              window.addEventListener('resize', () => {
-                setTimeout(() => {
-                  if (params.api && !params.api.isDestroyed()) {
-                    params.api.sizeColumnsToFit();
-                  }
-                }, 100);
-              });
+            if (params.columnApi && typeof params.columnApi.autoSizeAllColumns === 'function') {
+              params.columnApi.autoSizeAllColumns();
+            } else if (params.api.autoSizeAllColumns) {
+              params.api.autoSizeAllColumns();
             }
           }}
           getRowClass={(params) => {
@@ -466,6 +462,11 @@ const StandardList = ({
             return '';
           }}
           onRowClicked={(event) => {
+            // Prevent drilling when clicking the JSON button
+            const domEvent = event.event;
+            if (domEvent?.target?.closest && domEvent.target.closest('button[title="View JSON"]')) {
+              return;
+            }
             // Skip row click handling if there's no handler
             if (!onItemClick) return;
             

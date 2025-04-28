@@ -114,6 +114,8 @@ const AccountDetail = () => {
         transfers={accountTransfers || []} 
         accountId={accountId}
         onViewJson={handleViewJson}
+        onRefresh={() => fetchAccountTransfers(accountId)}
+        loading={loading}
       />
     </div>
   );

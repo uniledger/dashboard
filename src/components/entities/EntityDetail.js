@@ -19,6 +19,7 @@ const EntityDetail = () => {
     entityAccounts,
     loading,
     fetchEntityById,
+    fetchEntityLedgers,
     refreshEntityAccounts
   } = useEntities();
   
@@ -86,6 +87,9 @@ const EntityDetail = () => {
         ]}
         onRowClick={(ledger) => navigate(`/ledgers/${ledger.ledger_id}`)}
         emptyMessage="No ledgers found for this entity"
+        onViewJson={handleViewJson}
+        onRefresh={() => fetchEntityLedgers(entityId)}
+        loading={loading}
       />
     )
   };
@@ -165,6 +169,9 @@ const EntityDetail = () => {
           navigate(`/accounts/${id}`);
         }}
         emptyMessage="No accounts found for this entity"
+        onViewJson={handleViewJson}
+        onRefresh={() => refreshEntityAccounts(entityId)}
+        loading={loading}
       />
     )
   };

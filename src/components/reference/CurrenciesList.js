@@ -7,7 +7,7 @@ import apiService from '../../services/apiService';
  */
 const CurrenciesList = ({ onViewJson, onRefresh }) => {
   const [currencies, setCurrencies] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Define columns for the DataTable
@@ -37,61 +37,33 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
     }
   ];
 
-  useEffect(() => {
-    const loadCurrencies = async () => {
-      setLoading(true);
-      try {
-        const response = await apiService.reference.getCurrencies();
-        console.log('CurrenciesList response:', response);
-        
-        // Extract data from the response object
-        if (response.ok && response.data) {
-          setCurrencies(response.data);
-          console.log('CurrenciesList setting currencies:', response.data.length, 'items');
-          setError(null);
-        } else {
-          console.error('Failed to load currencies:', response.error);
-          setError('Failed to load currencies. Please try again.');
-          setCurrencies([]);
-        }
-      } catch (err) {
-        console.error('Error loading currencies:', err);
+  // Unified fetch function for initial load and refresh
+  const fetchCurrencies = async () => {
+    setLoading(true);
+    try {
+      const response = await apiService.reference.getCurrencies();
+      
+      if (response.ok && response.data) {
+        setCurrencies(response.data);
+        setError(null);
+      } else {
+        console.error('Failed to load currencies:', response.error);
         setError('Failed to load currencies. Please try again.');
         setCurrencies([]);
-      } finally {
-        setLoading(false);
       }
-    };
-
-    loadCurrencies();
-  }, []);
-
-  const handleRefresh = async () => {
-    if (onRefresh) {
-      onRefresh();
-    } else {
-      setLoading(true);
-      try {
-        const response = await apiService.reference.getCurrencies();
-        console.log('CurrenciesList refresh response:', response);
-        
-        // Extract data from the response object
-        if (response.ok && response.data) {
-          setCurrencies(response.data);
-          console.log('CurrenciesList refresh setting currencies:', response.data.length, 'items');
-          setError(null);
-        } else {
-          console.error('Failed to refresh currencies:', response.error);
-          setError('Failed to refresh currencies. Please try again.');
-        }
-      } catch (err) {
-        console.error('Error refreshing currencies:', err);
-        setError('Failed to refresh currencies. Please try again.');
-      } finally {
-        setLoading(false);
-      }
+    } catch (err) {
+      console.error('Error loading currencies:', err);
+      setError('Failed to load currencies. Please try again.');
+      setCurrencies([]);
+    } finally {
+      setLoading(false);
     }
+    return Promise.resolve(); // Ensure we return a promise for GenericListView
   };
+
+  useEffect(() => {
+    fetchCurrencies();
+  }, []);
 
   return (
     <GenericListView
@@ -102,7 +74,7 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
       loading={loading}
       error={error}
       onViewJson={onViewJson}
-      onRefresh={handleRefresh}
+      onRefresh={fetchCurrencies}
       searchPlaceholder="Search currencies..."
       emptyMessage="No currencies found"
     />

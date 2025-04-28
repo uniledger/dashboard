@@ -1,5 +1,6 @@
 import React from 'react';
 import { GenericDetailView, DataTableSection } from '../common';
+import { Link } from 'react-router-dom';
 
 /**
  * Component to display detailed information about a processed event
@@ -10,6 +11,24 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
   // Return null if no event is provided
   if (!event) return null;
 
+  // Create specific refresh functions for each data section
+  const refreshTransfers = () => {
+    // This would call an API to refresh transfers
+    console.log("Refreshing transfers for event", event.event_id);
+    return Promise.resolve(); // Return promise for loading state
+  };
+  
+  const refreshAccounts = () => {
+    // This would call an API to refresh accounts
+    console.log("Refreshing accounts for event", event.event_id);
+    return Promise.resolve(); // Return promise for loading state
+  };
+  
+  const refreshMetadata = () => {
+    // This would call an API to refresh metadata
+    console.log("Refreshing metadata for event", event.event_id);
+    return Promise.resolve(); // Return promise for loading state
+  };
 
   // Define basic sections for the detail view
   const basicSections = [
@@ -64,7 +83,7 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
   // Define children sections (tables)
   const childrenSections = [];
 
-  // Add transfers section if available
+  // Add transfers section using actual API field names
   if (event.transfers && event.transfers.length > 0) {
     childrenSections.push({
       label: 'Transfers',
@@ -72,26 +91,27 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
         <DataTableSection
           data={event.transfers}
           title="Transfers"
+          onRefresh={refreshTransfers}
+          onViewJson={onViewJson}
+          loading={false}
           columns={[
             {
-              key: 'from_account',
+              key: 'debit_account_id',
               header: 'From Account',
-              render: (transfer) => transfer.from_account?.name || transfer.from_account_id || 'N/A'
+              cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
+              render: t => <Link to={`/accounts/${t.debit_account_id}`}>{t.debit_account_id}</Link>
             },
             {
-              key: 'to_account',
+              key: 'credit_account_id',
               header: 'To Account',
-              render: (transfer) => transfer.to_account?.name || transfer.to_account_id || 'N/A'
+              cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
+              render: t => <Link to={`/accounts/${t.credit_account_id}`}>{t.credit_account_id}</Link>
             },
             {
               key: 'amount',
               header: 'Amount',
-              render: (transfer) => transfer.amount || 'N/A'
-            },
-            {
-              key: 'status',
-              header: 'Status',
-              render: (transfer) => transfer.status || 'N/A'
+              cellClassName: 'text-right font-medium',
+              render: t => t.amount
             }
           ]}
           emptyMessage="No transfers found"
@@ -114,6 +134,9 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
         <DataTableSection
           data={accountsArray}
           title="Accounts"
+          onRefresh={refreshAccounts}
+          onViewJson={onViewJson}
+          loading={false}
           columns={[
             {
               key: 'role',
@@ -158,6 +181,9 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
         <DataTableSection
           data={metadataArray}
           title="Metadata"
+          onRefresh={refreshMetadata}
+          onViewJson={onViewJson}
+          loading={false}
           columns={[
             {
               key: 'key',
@@ -197,6 +223,9 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
           <DataTableSection
             data={extras}
             title=""            
+            onRefresh={refreshMetadata}
+            onViewJson={onViewJson}
+            loading={false}
             columns={[
               { key: 'key', header: 'Property', cellClassName: 'font-medium text-gray-900' },
               { key: 'value', header: 'Value', cellClassName: 'whitespace-pre-wrap text-gray-700' }
