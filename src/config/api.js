@@ -13,12 +13,12 @@ export const endpoints = {
   ledger: {
     entities: `${LEDGER_API_BASE_URL}/api/v1/enriched-entities`,
     entityById: (id) => `${LEDGER_API_BASE_URL}/api/v1/enriched-entities/${id}`,
-    entityLedgers: (id) => `${LEDGER_API_BASE_URL}/api/v1/ledgers?entity_id=${id}`,
-    entityAccounts: (id) => `${LEDGER_API_BASE_URL}/api/v1/enriched-accounts?account_entity_id=${id}`,
+    entityLedgers: (id) => `${LEDGER_API_BASE_URL}/api/v1/enriched-ledgers/?entity_id=${id}`,
+    entityAccounts: (id) => `${LEDGER_API_BASE_URL}/api/v1/entities/${id}/enriched-accounts/`,
     
     ledgers: `${LEDGER_API_BASE_URL}/api/v1/ledgers`,
     ledgerById: (id) => `${LEDGER_API_BASE_URL}/api/v1/ledgers/${id}`,
-    ledgerAccounts: (id) => `${LEDGER_API_BASE_URL}/api/v1/enriched-accounts?ledger_id=${id}`,
+    ledgerAccounts: (id) => `${LEDGER_API_BASE_URL}/api/v1/ledgers/${id}/enriched-accounts/`,
     
     accounts: `${LEDGER_API_BASE_URL}/api/v1/enriched-accounts`,
     accountById: (id) => `${LEDGER_API_BASE_URL}/api/v1/enriched-accounts/${id}`,
