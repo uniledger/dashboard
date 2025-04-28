@@ -11,22 +11,22 @@ export const TRANSACTIONS_API_BASE_URL = 'https://transactions.dev.ledgerrocket.
 export const endpoints = {
   // Ledger API endpoints
   ledger: {
-    entities: `${LEDGER_API_BASE_URL}/api/v1/enriched-entities/`,
+    entities: `${LEDGER_API_BASE_URL}/api/v1/enriched-entities`,
     entityById: (id) => `${LEDGER_API_BASE_URL}/api/v1/enriched-entities/${id}`,
     entityLedgers: (id) => `${LEDGER_API_BASE_URL}/api/v1/enriched-ledgers/?entity_id=${id}`,
-    entityAccounts: (id) => `${LEDGER_API_BASE_URL}/api/v1/entities/${id}/enriched-accounts/`,
+    entityAccounts: (id) => `${LEDGER_API_BASE_URL}/api/v1/entities/${id}/enriched-accounts`,
     
-    ledgers: `${LEDGER_API_BASE_URL}/api/v1/enriched-ledgers/`,
-    ledgerById: (id) => `${LEDGER_API_BASE_URL}/api/v1/enriched-ledgers/${id}`,
-    ledgerAccounts: (id) => `${LEDGER_API_BASE_URL}/api/v1/ledgers/${id}/enriched-accounts/`,
+    ledgers: `${LEDGER_API_BASE_URL}/api/v1/ledgers`,
+    ledgerById: (id) => `${LEDGER_API_BASE_URL}/api/v1/ledgers/${id}`,
+    ledgerAccounts: (id) => `${LEDGER_API_BASE_URL}/api/v1/ledgers/${id}/enriched-accounts`,
     
-    accounts: `${LEDGER_API_BASE_URL}/api/v1/enriched-accounts/`,
+    accounts: `${LEDGER_API_BASE_URL}/api/v1/enriched-accounts`,
     accountById: (id) => `${LEDGER_API_BASE_URL}/api/v1/enriched-accounts/${id}`,
     accountTransfers: (id, limit = 100) => `${LEDGER_API_BASE_URL}/api/v1/accounts/${id}/transfers?limit=${limit}&transfer_type=all`,
     
-    currencies: `${LEDGER_API_BASE_URL}/api/v1/currencies/`,
-    countries: `${LEDGER_API_BASE_URL}/api/v1/countries/`,
-    accountCodes: `${LEDGER_API_BASE_URL}/api/v1/account-codes/`,
+    currencies: `${LEDGER_API_BASE_URL}/api/v1/currencies`,
+    countries: `${LEDGER_API_BASE_URL}/api/v1/countries`,
+    accountCodes: `${LEDGER_API_BASE_URL}/api/v1/account-codes`,
     
     transfers: `${LEDGER_API_BASE_URL}/api/v1/transfers`,
     transferById: (id) => `${LEDGER_API_BASE_URL}/api/v1/transfers/${id}`
@@ -34,11 +34,11 @@ export const endpoints = {
   
   // Transactions API endpoints
   transaction: {
-    templates: `${TRANSACTIONS_API_BASE_URL}/api/v1/templates/`,
+    templates: `${TRANSACTIONS_API_BASE_URL}/api/v1/templates`,
     // Processed events endpoint (corrected path)
-    processedEvents: `${TRANSACTIONS_API_BASE_URL}/api/v1/events/processed/`,
-    rules: `${TRANSACTIONS_API_BASE_URL}/api/v1/rules/`,
-    submitEvent: `${TRANSACTIONS_API_BASE_URL}/api/v1/events/`
+    processedEvents: `${TRANSACTIONS_API_BASE_URL}/api/v1/events/processed`,
+    rules: `${TRANSACTIONS_API_BASE_URL}/api/v1/rules`,
+    submitEvent: `${TRANSACTIONS_API_BASE_URL}/api/v1/events`
   }
 };
 
