@@ -13,6 +13,8 @@ import LedgerList from '../ledgers/LedgerList';
 import LedgerDetail from '../ledgers/LedgerDetail';
 import AccountList from '../accounts/AccountList';
 import AccountDetail from '../accounts/AccountDetail';
+import TestAccountUnifiedList from '../common/TestAccountUnifiedList';
+import TestProcessedEventsUnifiedList from '../common/TestProcessedEventsUnifiedList';
 import CurrenciesList from '../reference/CurrenciesList';
 import CountriesList from '../reference/CountriesList';
 import AccountCodesList from '../reference/AccountCodesList';
@@ -56,6 +58,9 @@ const DashboardRoutes = () => {
           <Route index element={<AccountList />} />
           <Route path=":accountId" element={<AccountDetail />} />
         </Route>
+        {/* Test: Unified Account List */}
+        <Route path="test/accounts" element={<TestAccountUnifiedList />} />
+        <Route path="test/events" element={<TestProcessedEventsUnifiedList />} />
         
         {/* Reference Data */}
         <Route path="currencies" element={<CurrenciesList />} />

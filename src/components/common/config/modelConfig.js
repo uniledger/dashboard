@@ -221,6 +221,64 @@ export const AccountConfig = {
 };
 
 /**
+ * Processed Events model configuration
+ */
+export const ProcessedEventConfig = {
+  title: 'Processed Event',
+  idField: 'event_id',
+  displayField: 'event_id',
+  
+  // Column definitions for list view
+  listColumns: [
+    {
+      key: 'event_id',
+      header: 'ID',
+      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cellClassName: (event) => {
+        const status = event.status ? event.status.toUpperCase() : 'UNKNOWN';
+        if (status === 'COMPLETE') return 'bg-green-100 text-green-800 px-2 py-1 text-xs rounded-full';
+        if (status === 'PENDING') return 'bg-yellow-100 text-yellow-800 px-2 py-1 text-xs rounded-full';
+        if (status === 'FAILED') return 'bg-red-100 text-red-800 px-2 py-1 text-xs rounded-full';
+        return 'bg-gray-100 text-gray-800 px-2 py-1 text-xs rounded-full';
+      }
+    },
+    {
+      key: 'template_id',
+      header: 'Template',
+      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
+      render: (event) => {
+        const id = event.template?.template_id || event.template_id;
+        const name = event.template?.name;
+        return id ? (name ? `${name} (${id})` : id) : 'N/A';
+      }
+    },
+    {
+      key: 'timestamp',
+      header: 'Created',
+      render: (event) => {
+        return event.timestamp ? new Date(event.timestamp * 1000).toLocaleString() : 'N/A';
+      }
+    },
+    {
+      key: 'amount',
+      header: 'Amount',
+      align: 'right',
+      render: (event) => {
+        if (typeof event.amount !== 'number') return 'N/A';
+        return event.amount.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+    }
+  ]
+};
+
+/**
  * Template model configuration
  */
 export const TemplateConfig = {
@@ -416,50 +474,6 @@ export const TemplateConfig = {
     // Return just the basic sections for backward compatibility
     return TemplateConfig.detailSections(template);
   }
-};
-
-/**
- * ProcessedEvent model configuration
- */
-export const ProcessedEventConfig = {
-  title: 'Processed Event',
-  idField: 'processed_event_id',
-  displayField: 'description',
-  
-  // Column definitions for list view
-  listColumns: [
-    {
-      key: 'processed_event_id',
-      header: 'ID',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      cellClassName: (item) => {
-        return item.status === 'COMPLETED' 
-          ? 'text-green-600 font-medium' 
-          : item.status === 'FAILED' 
-            ? 'text-red-600 font-medium' 
-            : 'text-yellow-600 font-medium';
-      }
-    },
-    {
-      key: 'template_id',
-      header: 'Template',
-      render: (item) => item.template ? item.template.name : item.template_id
-    },
-    {
-      key: 'created_date',
-      header: 'Created',
-      render: (item) => new Date(item.created_date * 1000).toLocaleString()
-    },
-    {
-      key: 'completed_date',
-      header: 'Completed',
-      render: (item) => item.completed_date ? new Date(item.completed_date * 1000).toLocaleString() : 'N/A'
-    }
-  ]
 };
 
 /**
