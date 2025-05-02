@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { StandardList, FilterBadge, ErrorAlert, LoadingSpinner } from './index';
+import { SectionHeader, FilterBadge, ErrorAlert, LoadingSpinner } from './index';
 import DetailModal from '../shared/DetailModal';
 import { AgGridReact } from 'ag-grid-react';
+import { handleExportCsv } from '../../utils/Exporters'
 
 import { ModuleRegistry } from 'ag-grid-community';
 import { 
@@ -77,6 +78,17 @@ const GenericListView = ({
   const handleInternalViewJson = (item) => setJsonModalData(item);
   const viewJsonHandler = onViewJson || handleInternalViewJson;
 
+    // AG Grid settings
+    const defaultColDef = {
+      sortable: true,
+      resizable: true,
+      suppressMovable: false,
+      filter: 'agSetColumnFilter',
+      filterParams: { suppressMiniFilter: true },
+      floatingFilter: false,  // Disable floating filter row; use filter icon in header
+      enableRowGroup: true, // grouping UI requires ag-grid-enterprise
+    };
+
   // Display error state
   if (error) {
     return (
@@ -85,6 +97,42 @@ const GenericListView = ({
       </div>
     );
   }
+
+  const triggerCsvExport = () => {
+    handleExportCsv(title);
+  }
+
+    // Render action buttons for the section header
+    const renderActions = () => (
+      <div className="flex items-center gap-2">
+        {loading && <LoadingSpinner size="sm" />}
+        {data.length > 0 && (
+          <button
+            className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
+            onClick={triggerCsvExport}
+            title="Export to CSV"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </button>
+        )}
+        <button
+          className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
+          onClick={onRefresh}
+          title="Refresh data"
+        >
+          <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </button>
+      </div>
+    );
+
+
 
   // Generate a filter badge if a filter is active
   const filterBadge = filter ? (
@@ -99,7 +147,28 @@ const GenericListView = ({
   ) : null;
 
   return (
-    <div>
+
+
+<div>
+      
+        <SectionHeader
+          title={
+            <>
+              <span>{title}</span>
+              <span className="ml-2 text-sm text-gray-500">({data.length})</span>
+            </>
+          }
+          description=""
+          actions={renderActions()}
+        />
+      
+      {error && (
+        <ErrorAlert 
+          error={error} 
+          onRetry={onRefresh} 
+          className="mb-4"
+        />
+      )}
       {customHeader || filterBadge}
       
       {/* Render standard list with JSON view support */}
@@ -121,6 +190,7 @@ const GenericListView = ({
           domLayout="autoHeight"
           rowData={data}
           columnDefs={columns}
+          defaultColDef={defaultColDef}
           context={context}
           idField={idField}
           animateRows={true}
