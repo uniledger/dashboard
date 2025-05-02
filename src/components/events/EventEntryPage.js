@@ -3,7 +3,8 @@ import useTransactions from '../../hooks/useTransactions';
 import useAccounts from '../../hooks/useAccounts';
 import apiService from '../../services/apiService';
 import EventForm from '../templates/EventForm';
-import { StandardList, LoadingSpinner } from '../common';
+import { LoadingSpinner } from '../common';
+import { GenericListView } from '../common'
 
 /**
  * Event Entry page component
@@ -82,23 +83,23 @@ const EventEntryPage = ({ onViewJson }) => {
   // Define columns for the template selection list
   const columns = [
     {
-      key: 'template_id',
-      header: 'ID',
+      field: 'template_id',
+      headerName: 'ID',
       cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
     },
     {
-      key: 'name',
-      header: 'Template Name',
+      field: 'name',
+      headerName: 'Template Name',
       cellClassName: 'font-medium text-gray-900',
     },
     {
-      key: 'product',
-      header: 'Type',
+      field: 'product',
+      headerName: 'Type',
       cellClassName: 'text-gray-500',
     },
     {
-      key: 'description',
-      header: 'Description',
+      field: 'description',
+      headerName: 'Description',
       cellClassName: 'text-gray-500',
       render: (item) => {
         return item.description.length > 100 
@@ -107,8 +108,8 @@ const EventEntryPage = ({ onViewJson }) => {
       }
     },
     {
-      key: 'created_date',
-      header: 'Created',
+      field: 'created_date',
+      headerName: 'Created',
       cellClassName: 'text-gray-500',
       render: (item) => {
         return new Date(item.created_date * 1000).toLocaleDateString();
@@ -128,7 +129,7 @@ const EventEntryPage = ({ onViewJson }) => {
             Select a template to create a new event
           </p>
           
-          <StandardList
+          <GenericListView
             data={templates}
             columns={columns}
             title="Templates"

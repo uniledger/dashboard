@@ -13,37 +13,37 @@ const CountriesList = ({ onViewJson, onRefresh }) => {
   // Define columns for the DataTable
   const columns = [
     {
-      key: 'country_code',
-      header: 'Country Code',
+      field: 'country_code',
+      headerName: 'Country Code',
       cellClassName: 'font-medium text-gray-900',
     },
     {
-      key: 'alpha_3_code',
-      header: 'Alpha-3 Code',
+      field: 'alpha_3_code',
+      headerName: 'Alpha-3 Code',
       cellClassName: 'text-gray-500',
       render: (country) => country.alpha_3_code || 'N/A'
     },
     {
-      key: 'numeric_code',
-      header: 'Numeric Code',
+      field: 'numeric_code',
+      headerName: 'Numeric Code',
       cellClassName: 'text-gray-500',
       render: (country) => country.numeric_code || 'N/A'
     },
     {
-      key: 'name',
-      header: 'Name',
+      field: 'name',
+      headerName: 'Name',
       cellClassName: 'text-gray-500',
       render: (country) => country.name || 'N/A'
     },
     {
-      key: 'region',
-      header: 'Region',
+      field: 'region',
+      headerName: 'Region',
       cellClassName: 'text-gray-500',
       render: (country) => country.region || 'N/A'
     },
     {
-      key: 'currency_code',
-      header: 'Currency Code',
+      field: 'currency_code',
+      headerName: 'Currency Code',
       cellClassName: 'text-gray-500',
       render: (country) => country.currency_code || 'N/A'
     }

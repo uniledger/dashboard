@@ -12,8 +12,8 @@ const TransfersList = ({ transfers, onSelectTransfer, onViewJson, onRefresh, loa
   const columns = [
     // Transfer ID with drill link
     {
-      key: 'transfer_id',
-      header: 'ID',
+      field: 'transfer_id',
+      headerName: 'ID',
       cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
       render: item => (
         <Link to={`/transfers/${item.transfer_id}`}>{item.transfer_id}</Link>
@@ -21,8 +21,8 @@ const TransfersList = ({ transfers, onSelectTransfer, onViewJson, onRefresh, loa
     },
     // From Account with drill link
     {
-      key: 'account_id',
-      header: 'From Account',
+      field: 'account_id',
+      headerName: 'From Account',
       cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
       render: item => item.account_id ? (
         <Link to={`/accounts/${item.account_id}`}>{item.account_id}</Link>
@@ -30,8 +30,8 @@ const TransfersList = ({ transfers, onSelectTransfer, onViewJson, onRefresh, loa
     },
     // To Account with drill link
     {
-      key: 'to_account_id',
-      header: 'To Account',
+      field: 'to_account_id',
+      headerName: 'To Account',
       cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
       render: item => item.to_account_id ? (
         <Link to={`/accounts/${item.to_account_id}`}>{item.to_account_id}</Link>
@@ -39,22 +39,22 @@ const TransfersList = ({ transfers, onSelectTransfer, onViewJson, onRefresh, loa
     },
     // Amount with formatting
     {
-      key: 'amount',
-      header: 'Amount',
+      field: 'amount',
+      headerName: 'Amount',
       cellClassName: item => getBalanceClass(item.amount),
       render: item => formatBalance(item.amount, { currency_code: item.currency_code })
     },
     // Timestamp with formatting (converted from Unix timestamp)
     {
-      key: 'timestamp',
-      header: 'Date',
+      field: 'timestamp',
+      headerName: 'Date',
       cellClassName: 'text-gray-500',
       render: item => formatDate(item.timestamp, true)
     },
     // Ledger with drill link
     {
-      key: 'ledger_id',
-      header: 'Ledger',
+      field: 'ledger_id',
+      headerName: 'Ledger',
       cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
       render: item => item.ledger_id ? (
         <Link to={`/ledgers/${item.ledger_id}`}>{item.ledger_id}</Link>

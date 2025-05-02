@@ -13,25 +13,25 @@ const CurrenciesList = ({ onViewJson, onRefresh }) => {
   // Define columns for the DataTable
   const columns = [
     {
-      key: 'currency_code',
-      header: 'Currency Code',
+      field: 'currency_code',
+      headerName: 'Currency Code',
       cellClassName: 'font-medium text-gray-900',
     },
     {
-      key: 'type',
-      header: 'Type',
+      field: 'type',
+      headerName: 'Type',
       cellClassName: 'text-gray-500',
       render: (currency) => currency.type || 'N/A'
     },
     {
-      key: 'scale',
-      header: 'Decimal Places',
+      field: 'scale',
+      headerName: 'Decimal Places',
       cellClassName: 'text-gray-500',
       render: (currency) => typeof currency.scale === 'number' ? currency.scale : 'N/A'
     },
     {
-      key: 'symbol',
-      header: 'Symbol',
+      field: 'symbol',
+      headerName: 'Symbol',
       cellClassName: 'text-gray-500',
       render: (currency) => currency.symbol || 'N/A'
     }

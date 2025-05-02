@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { GenericDetailView, DataTableSection, LedgerConfig } from '../common';
+import { GenericDetailView, LedgerConfig, GenericListView } from '../common';
 import { formatBalance, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
 import apiService from '../../services/apiService'; // Assuming apiService is defined elsewhere
 import useLedgers from '../../hooks/useLedgers';
 import { useDashboard } from '../../context/DashboardContext';
+import { accountCodeCellRenderer, accountIDDrillCellRenderer, accountTypeCellRenderer, enrichedEntityDrillCellRenderer } from '../common/CellRenderers';
 
 /**
  * Ledger Detail component using GenericDetailView
@@ -115,48 +116,37 @@ const LedgerDetail = () => {
   const accountsTableSection = {
     label: 'Accounts in this Ledger',
     content: (
-      <DataTableSection
+      <GenericListView
         data={ledgerAccounts || []}
         title="Accounts"
         columns={[
           {
-            key: 'account_id',
-            header: 'ID',
-            cellClassName: 'text-blue-600 cursor-pointer hover:underline',
-            render: (account) => {
-              const id = account.account_id || account.account_extra_id || 'N/A';
-              return <Link to={`/accounts/${id}`}>{id}</Link>;
-            }
+            field: 'account_id',
+            headerName: 'ID',
+            cellRenderer: accountIDDrillCellRenderer,
           },
           {
-            key: 'name',
-            header: 'Name',
-            cellClassName: 'font-medium text-gray-900',
-            render: (account) => account.name || 'N/A'
+            field: 'name',
+            headerName: 'Name',
           },
           {
-            key: 'account_code',
-            header: 'Account Code',
-            render: (account) => getAccountCodeDisplay(account)
+            field: 'account_code',
+            headerName: 'Account Code',
+            cellRenderer: accountCodeCellRenderer,
           },
           {
-            key: 'type',
-            header: 'Type',
-            render: (account) => account.account_type || (account.account_code && account.account_code.type) || 'N/A'
+            field: 'type',
+            headerName: 'Type',
+            cellRenderer: accountTypeCellRenderer,
           },
           {
-            key: 'enriched_entity',
-            header: 'Account Owner',
-            cellClassName: 'text-blue-600 cursor-pointer hover:underline',
-            render: (account) => (
-              <Link to={`/entities/${account.enriched_entity.entity_id}`}>
-                {account.enriched_entity.name}
-              </Link>
-            )
+            field: 'enriched_entity',
+            headerName: 'Account Owner',
+            cellRenderer: enrichedEntityDrillCellRenderer,
           },
           {
-            key: 'balance',
-            header: 'Balance',
+            field: 'balance',
+            headerName: 'Balance',
             align: 'right',
             cellClassName: (account) => getBalanceClass(account.balance),
             render: (account) => {

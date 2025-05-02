@@ -86,7 +86,7 @@ const DetailCard = ({ title, subtitle, sections, childrenSections = [], actions 
                   {section.label}
                 </p>
                 <div className={`text-sm text-gray-900 ${isNumericField(section.label) ? 'text-right' : ''}`}>
-                  {formatDetailContent(section.content, section.label)}
+                  {section.content}
                 </div>
               </div>
             ))}

@@ -1,6 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { StandardList, FilterBadge, ErrorAlert, LoadingSpinner } from './index';
 import DetailModal from '../shared/DetailModal';
+import { AgGridReact } from 'ag-grid-react';
+
+import { ModuleRegistry } from 'ag-grid-community';
+import { 
+  ClientSideRowModelModule,
+  ColumnApiModule,
+  CsvExportModule,
+  ColumnAutoSizeModule,
+  TextFilterModule,
+  NumberFilterModule,
+  DateFilterModule,
+  CellStyleModule,
+  RowStyleModule,
+} from 'ag-grid-community';
+
+// Register AG Grid modules globally
+ModuleRegistry.registerModules([
+  ClientSideRowModelModule,
+  ColumnApiModule,
+  CsvExportModule,
+  ColumnAutoSizeModule,
+  TextFilterModule,
+  NumberFilterModule,
+  DateFilterModule,
+  CellStyleModule,
+  RowStyleModule,
+]);
 
 /**
  * Generic List View component for displaying any model type in a list
@@ -9,6 +36,7 @@ import DetailModal from '../shared/DetailModal';
  * @param {Object} props - Component props
  * @param {Array} props.data - The data array to display
  * @param {Array} props.columns - Column definitions for the list
+ * @param {Object} context - Component context
  * @param {string} props.title - Title for the list (e.g., "Accounts")
  * @param {string} props.idField - The field to use as the ID (e.g., "account_id")
  * @param {function} props.onItemClick - Handler for clicking an item
@@ -28,6 +56,7 @@ import DetailModal from '../shared/DetailModal';
 const GenericListView = ({
   data = [],
   columns,
+  context,
   title,
   idField,
   onItemClick,
@@ -74,7 +103,7 @@ const GenericListView = ({
       {customHeader || filterBadge}
       
       {/* Render standard list with JSON view support */}
-      <StandardList
+      {/* <StandardList
         data={data}
         columns={columns}
         title={title}
@@ -87,7 +116,55 @@ const GenericListView = ({
         emptyMessage={emptyMessage || `No ${title.toLowerCase()} found`}
         smallHeader={false}
         loading={loading}
-      />
+      /> */}
+        <AgGridReact
+          domLayout="autoHeight"
+          rowData={data}
+          columnDefs={columns}
+          context={context}
+          idField={idField}
+          animateRows={true}
+          onItemClick={onItemClick}
+          onRefresh={onRefresh}
+          onSearch={onSearch}
+          onFirstDataRendered={(params) => {
+            params.api.autoSizeAllColumns();
+          }}
+          onGridReady={(params) => {
+            // Store gridApi 
+            window.gridApi = params;
+          }}
+          getRowClass={(params) => {
+            if (params.data && 'balance' in params.data && params.data.balance < 0) {
+              return 'negative-balance-row';
+            }
+            return '';
+          }}
+          onRowClicked={(event) => {
+            // Prevent drilling when clicking the JSON button
+            const domEvent = event.event;
+            if (domEvent?.target?.closest && domEvent.target.closest('button[title="View JSON"]')) {
+              return;
+            }
+            // Skip row click handling if there's no handler
+            if (!onItemClick) return;
+            
+            const firstColumn =columns[0];
+            // Check if column exists before accessing properties
+            if (event.column?.colId === firstColumn.key) {
+                onItemClick(event.data);
+            } else if (event.column?.colId === firstColumn.key && firstColumn.onClick) {
+                firstColumn.onClick(event.data);
+            } else if (firstColumn.onClick && event.data && event.data[firstColumn.key]) {
+                firstColumn.onClick(event.data);
+            } else {
+                // Default case: Just handle the item click
+                onItemClick(event.data);
+            }
+          }}
+          >
+        </AgGridReact>
+
       {/* JSON detail modal */}
       <DetailModal
         isOpen={!!jsonModalData}

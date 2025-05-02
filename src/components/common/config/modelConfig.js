@@ -3,9 +3,10 @@
  * Centralizes common definitions for different model types
  */
 import React from 'react';
-import { formatBalance, formatAccountCode, getCountryDisplay, getAccountType, getBalanceClass, getCurrencyInfo } from '../../../utils/formatters/index';
+import { formatBalance, formatAccountCode, getCountryDisplay, getAccountType, getCurrencyInfo } from '../../../utils/formatters/index';
 import { formatDate } from '../../../utils/formatters/dateFormatters';
-import DataTableSection from '../DataTableSection';
+import GenericListView from '../GenericDetailView.js';
+import { accountIDCellRenderer, accountCodeCellRenderer, accountTypeCellRenderer, balanceCellRenderer, entityTypeCellRenderer, countryCellRenderer, kycStatusCellRenderer, entityOwnerCellRenderer, ledgerCurrencyCellRenderer } from '../../common/CellRenderers.js';
 
 /**
  * Entity model configuration
@@ -18,36 +19,36 @@ export const EntityConfig = {
   // Column definitions for list view
   listColumns: [
     {
-      key: 'entity_id',
-      header: 'ID',
+      field: 'entity_id',
+      headerName: 'ID',
       cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
     },
     {
-      key: 'name',
-      header: 'Name',
+      field: 'name',
+      headerName: 'Name',
       cellClassName: 'font-medium text-gray-900',
     },
     {
-      key: 'type',
-      header: 'Type',
-      render: (entity) => entity.type || entity.entity_type || 'N/A'
+      field: 'type',
+      headerName: 'Type',
+      cellRenderer: entityTypeCellRenderer
     },
     {
-      key: 'country',
-      header: 'Country',
-      render: (entity) => getCountryDisplay(entity)
+      field: 'country',
+      headerName: 'Country',
+      cellRenderer: countryCellRenderer
     },
     {
-      key: 'kyc_status',
-      header: 'KYC Status',
-      render: (entity) => entity.kyc_status || 'N/A'
+      field: 'kyc_status',
+      headerName: 'KYC Status',
+      cellRenderer: kycStatusCellRenderer
     }
   ],
   
   // Basic section fields for detail view
   detailSections: (entity) => [
     {
-      label: 'Entity ID',
+      headerName: 'Entity ID',
       content: entity.entity_id
     },
     {
@@ -80,33 +81,28 @@ export const LedgerConfig = {
   // Column definitions for list view
   listColumns: [
     {
-      key: 'ledger_id',
-      header: 'ID',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
+      field: 'ledger_id',
+      headerName: 'ID',
     },
     {
-      key: 'name',
-      header: 'Name',
+      field: 'name',
+      headerName: 'Name',
       cellClassName: 'font-medium text-gray-900',
     },
     {
-      key: 'entity',
-      header: 'Owner',
-      // Use a more explicit render function that includes the entity ID in a data attribute
-      render: (ledger) => {
-        // Just return the name - clicking will be handled by the column's onClick handler
-        return ledger.r_entity ? ledger.r_entity.name : (ledger.entity ? ledger.entity.name : 'N/A');
-      }
+      field: 'entity',
+      headerName: 'Owner',
+      cellRenderer: entityOwnerCellRenderer,
     },
     {
-      key: 'currency',
-      header: 'Currency',
-      render: (ledger) => ledger.r_currency ? `${ledger.r_currency.currency_code}` : (ledger.currency_code || 'N/A')
+      field: 'currency',
+      headerName: 'Currency',
+      cellRenderer: ledgerCurrencyCellRenderer,
     },
     {
-      key: 'country',
-      header: 'Country',
-      render: (ledger) => getCountryDisplay(ledger)
+      field: 'country',
+      headerName: 'Country',
+      cellRenderer: countryCellRenderer,
     }
   ],
   
@@ -151,35 +147,29 @@ export const AccountConfig = {
   // Column definitions for list view
   listColumns: [
     {
-      key: 'account_id',
-      header: 'ID',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
-      render: (account) => account.account_id || account.account_extra_id || 'N/A'
+      field: 'account_id',
+      headerName: 'ID',
+      cellRenderer: accountIDCellRenderer,
     },
     {
-      key: 'name',
-      header: 'Account Name',
-      cellClassName: 'font-medium text-gray-900',
+      field: 'name',
+      headerName: 'Account Name',
     },
     {
-      key: 'account_code',
-      header: 'Account Code',
-      render: (account) => formatAccountCode(account.account_code || account.code)
+      field: 'account_code',
+      headerName: 'Account Code',
+      cellRenderer: accountCodeCellRenderer,
     },
     {
-      key: 'account_type',
-      header: 'Type',
-      render: (account) => getAccountType(account)
+      field: 'account_type',
+      headerName: 'Type',
+      cellRenderer: accountTypeCellRenderer,
     },
     {
-      key: 'balance',
-      header: 'Balance',
-      align: 'right',
-      cellClassName: (account) => getBalanceClass(account.balance),
-      render: (account) => {
-        const currency = getCurrencyInfo(account);
-        return formatBalance(account.balance, currency, true);
-      }
+      field: 'balance',
+      headerName: 'Balance',
+      type: 'rightAligned',
+      cellRenderer: balanceCellRenderer,
     }
   ],
   
@@ -209,13 +199,7 @@ export const AccountConfig = {
     },
     {
       label: 'Current Balance',
-      content: (
-        <div className="text-right">
-          <span className={getBalanceClass(account.balance)}>
-            {formatBalance(account.balance, getCurrencyInfo(account), true)}
-          </span>
-        </div>
-      )
+      content: formatBalance(account.balance, getCurrencyInfo(account), true)
     }
   ]
 };
@@ -231,23 +215,23 @@ export const TemplateConfig = {
   // Column definitions for list view
   listColumns: [
     {
-      key: 'template_id',
-      header: 'ID',
+      field: 'template_id',
+      headerName: 'ID',
       cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
     },
     {
-      key: 'name',
-      header: 'Template Name',
+      field: 'name',
+      headerName: 'Template Name',
       cellClassName: 'font-medium text-gray-900',
     },
     {
-      key: 'product',
-      header: 'Type',
+      field: 'product',
+      headerName: 'Type',
       cellClassName: 'text-gray-500',
     },
     {
-      key: 'description',
-      header: 'Description',
+      field: 'description',
+      headerName: 'Description',
       cellClassName: 'text-gray-500',
       render: (item) => {
         return item.description.length > 100 
@@ -256,8 +240,8 @@ export const TemplateConfig = {
       }
     },
     {
-      key: 'created_date',
-      header: 'Created',
+      field: 'created_date',
+      headerName: 'Created',
       cellClassName: 'text-gray-500',
       render: (item) => {
         return new Date(item.created_date * 1000).toLocaleDateString();
@@ -341,7 +325,7 @@ export const TemplateConfig = {
   // Helper to render variable section
   renderVariablesSection: (template) => {
     return (
-      <DataTableSection
+      <GenericListView
         data={template.variables || []}
         columns={TemplateConfig.variablesColumns}
         title="Variables"
@@ -356,7 +340,7 @@ export const TemplateConfig = {
   // Helper to render validations section
   renderValidationsSection: (template) => {
     return (
-      <DataTableSection
+      <GenericListView
         data={template.validations || []}
         columns={TemplateConfig.validationsColumns}
         title="Validations"
@@ -371,7 +355,7 @@ export const TemplateConfig = {
   // Helper to render legs section
   renderLegsSection: (template) => {
     return (
-      <DataTableSection
+      <GenericListView
         data={template.legs || []}
         columns={TemplateConfig.legsColumns}
         title="Template Legs"
@@ -519,24 +503,24 @@ export const isNumericField = (fieldName) => {
  * @param {string} fieldName - The field name for context
  * @returns {*} - Formatted content
  */
-export const formatDetailContent = (content, fieldName) => {
-  // If it's a number and the field name doesn't contain 'id', format with decimal places
-  if (typeof content === 'number' && !fieldName.toLowerCase().includes('id')) {
-    return (
-      <div className="text-right">
-        {content.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-      </div>
-    );
-  }
+// export const formatDetailContent = (content, fieldName) => {
+//   // If it's a number and the field name doesn't contain 'id', format with decimal places
+//   if (typeof content === 'number' && !fieldName.toLowerCase().includes('id')) {
+//     return (
+//       <div className="text-right">
+//         {content.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+//       </div>
+//     );
+//   }
   
-  // If it's a string but represents a numeric field, right-align it
-  if (typeof content === 'string' && isNumericField(fieldName)) {
-    return <div className="text-right">{content}</div>;
-  }
+//   // If it's a string but represents a numeric field, right-align it
+//   if (typeof content === 'string' && isNumericField(fieldName)) {
+//     return <div className="text-right">{content}</div>;
+//   }
   
-  // Otherwise return as-is
-  return content;
-};
+//   // Otherwise return as-is
+//   return content;
+// };
 
 /**
  * Transfer model configuration
@@ -551,24 +535,21 @@ export const TransferConfig = {
     {
       key: 'transfer_id',
       header: 'ID',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
     },
     {
       key: 'account_id',
       header: 'From Account',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
       render: (transfer) => transfer.account_id || 'N/A'
     },
     {
       key: 'to_account_id',
       header: 'To Account',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
       render: (transfer) => transfer.to_account_id || 'N/A'
     },
     {
       key: 'amount',
       header: 'Amount',
-      cellClassName: (transfer) => getBalanceClass(transfer.amount),
+      //cellClassName: (transfer) => getBalanceClass(transfer.amount),
       render: (transfer) => formatBalance(transfer.amount, { currency_code: transfer.currency_code })
     },
     {
@@ -603,7 +584,7 @@ export const TransferConfig = {
       label: 'Amount',
       content: (
         <div className="text-right">
-          <span className={getBalanceClass(transfer.amount)}>
+          <span /*className={getBalanceClass(transfer.amount)}*/>
             {formatBalance(transfer.amount, { currency_code: transfer.currency_code })}
           </span>
         </div>
@@ -636,5 +617,4 @@ const modelConfigs = {
   RuleConfig,
   TransferConfig,
   isNumericField,
-  formatDetailContent
 };export default modelConfigs;

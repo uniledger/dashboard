@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GenericListView, AccountConfig } from '../common';
-import { formatBalance, getCurrencyInfo } from '../../utils/formatters/index';
 import useAccounts from '../../hooks/useAccounts';
 import { useDashboard } from '../../context/DashboardContext';
+import { accountCurrencyCellRenderer, accountOwnerCellRenderer, ledgerNameCellRenderer } from '../common/CellRenderers';
 
 /** 
  * Account List component using GenericListView
@@ -38,12 +38,6 @@ const AccountList = () => {
       });
     }
   }, [accountTypeFilter, setAccountsFilter]);
-
-  const getCurrencyCode = (account) => {
-    return (account.enriched_ledger && account.enriched_ledger.r_currency && account.enriched_ledger.r_currency.currency_code) || 
-      account.currency_code || 
-      'N/A';
-  };
   
   // Navigate to entity detail view
   const handleViewEntity = (entityId) => {
@@ -80,11 +74,8 @@ const AccountList = () => {
   // Add entity (Account Owner) column
   columns.push({
     key: 'entity',
-    header: 'Account Owner',
-    render: (account) => {
-      const owner = account.r_entity || account.enriched_ledger?.r_entity;
-      return owner?.name || '';
-    },
+    headerName: 'Account Owner',
+    cellRenderer: accountOwnerCellRenderer,
     cellClassName: (account) => {
       const owner = account.r_entity || account.enriched_ledger?.r_entity;
       return owner?.entity_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
@@ -103,21 +94,11 @@ const AccountList = () => {
   // Add ledger column
   columns.push({
     key: 'ledger',
-    header: 'Ledger',
-    render: (account) => {
-      return account.enriched_ledger?.name || 
-             account.ledger?.name || 
-             account.ledger_name || 
-             'N/A';
-    },
-    cellClassName: (account) => {
-      const ledgerId = account.ledger_id || 
-                       (account.enriched_ledger && account.enriched_ledger.ledger_id);
-      return ledgerId ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
-    },
-    onClick: (account) => {
-      const ledgerId = account.ledger_id || 
-                       (account.enriched_ledger && account.enriched_ledger.ledger_id);
+    headerName: 'Ledger',
+    cellRenderer: ledgerNameCellRenderer,
+    onClick: (props) => {
+      const ledgerId = props.data.ledger_id || 
+                       (props.data.enriched_ledger && props.data.enriched_ledger.ledger_id);
       if (ledgerId) {
         handleViewLedger(ledgerId);
         return true; // Prevent other click handlers
@@ -130,29 +111,9 @@ const AccountList = () => {
   // Add currency column
   columns.push({
     key: 'currency',
-    header: 'Currency',
-    render: (account) => getCurrencyCode(account)
+    headerName: 'Currency',
+    cellRenderer: accountCurrencyCellRenderer,
   });
-
-  // Make sure balance column is using consistent formatting
-  const balanceColumnIndex = columns.findIndex(col => col.key === 'balance');
-  if (balanceColumnIndex !== -1) {
-    columns[balanceColumnIndex] = {
-      ...columns[balanceColumnIndex],
-      key: 'balance',
-      header: 'Balance',
-      align: 'right', // Explicitly set alignment
-      cellClassName: 'text-right', // Directly add text-right class
-      cellStyle: { 
-        textAlign: 'right !important',  // Direct style override with !important
-        display: 'block'                // Make sure it takes the full width
-      },
-      render: (account) => {
-        const currency = getCurrencyInfo(account);
-        return formatBalance(account.balance, currency, true);
-      }
-    };
-  }
 
   // Get filtered accounts based on URL query parameters
   let filteredAccounts = accounts;
