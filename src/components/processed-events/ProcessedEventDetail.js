@@ -1,5 +1,5 @@
 import React from 'react';
-import { GenericDetailView, DataTableSection } from '../common';
+import { GenericDetailView, GenericListView } from '../common';
 import { Link } from 'react-router-dom';
 
 /**
@@ -88,7 +88,7 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
     childrenSections.push({
       label: 'Transfers',
       content: (
-        <DataTableSection
+        <GenericListView
           data={event.transfers}
           title="Transfers"
           onRefresh={refreshTransfers}
@@ -96,20 +96,20 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
           loading={false}
           columns={[
             {
-              key: 'debit_account_id',
-              header: 'From Account',
+              field: 'debit_account_id',
+              headerName: 'From Account',
               cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
               render: t => <Link to={`/accounts/${t.debit_account_id}`}>{t.debit_account_id}</Link>
             },
             {
-              key: 'credit_account_id',
-              header: 'To Account',
+              field: 'credit_account_id',
+              headerName: 'To Account',
               cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
               render: t => <Link to={`/accounts/${t.credit_account_id}`}>{t.credit_account_id}</Link>
             },
             {
-              key: 'amount',
-              header: 'Amount',
+              field: 'amount',
+              headerName: 'Amount',
               cellClassName: 'text-right font-medium',
               render: t => t.amount
             }
@@ -131,7 +131,7 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
     childrenSections.push({
       label: 'Accounts',
       content: (
-        <DataTableSection
+        <GenericListView
           data={accountsArray}
           title="Accounts"
           onRefresh={refreshAccounts}
@@ -139,23 +139,23 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
           loading={false}
           columns={[
             {
-              key: 'role',
-              header: 'Role',
+              field: 'role',
+              headerName: 'Role',
               cellClassName: 'font-medium text-gray-900'
             },
             {
-              key: 'name',
-              header: 'Account',
+              field: 'name',
+              headerName: 'Account',
               render: (row) => `${row.name} (ID: ${row.account_extra_id})`
             },
             {
-              key: 'account_code',
-              header: 'Type',
+              field: 'account_code',
+              headerName: 'Type',
               render: (row) => `${row.account_code?.type || 'N/A'}: ${row.account_code?.account_code || 'N/A'}`
             },
             {
-              key: 'entity',
-              header: 'Entity',
+              field: 'entity',
+              headerName: 'Entity',
               render: (row) => row.entity?.name ? `${row.entity.name} ${row.entity?.entity_id ? `(ID: ${row.entity.entity_id})` : ''}` : 'N/A'
             }
           ]}
@@ -178,7 +178,7 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
     childrenSections.push({
       label: 'Metadata',
       content: (
-        <DataTableSection
+        <GenericListView
           data={metadataArray}
           title="Metadata"
           onRefresh={refreshMetadata}
@@ -186,13 +186,13 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
           loading={false}
           columns={[
             {
-              key: 'key',
-              header: 'Key',
+              field: 'key',
+              headerName: 'Key',
               cellClassName: 'font-medium text-gray-900'
             },
             {
-              key: 'value',
-              header: 'Value',
+              field: 'value',
+              headerName: 'Value',
               cellClassName: 'whitespace-normal text-gray-500'
             }
           ]}
@@ -220,15 +220,15 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
       childrenSections.push({
         label: 'Other Properties',
         content: (
-          <DataTableSection
+          <GenericListView
             data={extras}
             title=""            
             onRefresh={refreshMetadata}
             onViewJson={onViewJson}
             loading={false}
             columns={[
-              { key: 'key', header: 'Property', cellClassName: 'font-medium text-gray-900' },
-              { key: 'value', header: 'Value', cellClassName: 'whitespace-pre-wrap text-gray-700' }
+              { field: 'key', header: 'Property', cellClassName: 'font-medium text-gray-900' },
+              { field: 'value', header: 'Value', cellClassName: 'whitespace-pre-wrap text-gray-700' }
             ]}
             emptyMessage="No additional properties"
           />

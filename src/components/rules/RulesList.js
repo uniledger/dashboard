@@ -9,24 +9,24 @@ const RulesList = ({ rules, onSelectRule, onViewJson, onRefresh, loading }) => {
   const columns = [
     ...RuleConfig.listColumns,
     {
-      key: 'description',
-      header: 'Description',
+      field: 'description',
+      headerName: 'Description',
       cellClassName: 'text-gray-500',
       render: (rule) => rule.description && rule.description.length > 60
         ? `${rule.description.substring(0, 60)}...`
         : rule.description || 'No description'
     },
     {
-      key: 'expression',
-      header: 'Expression',
+      field: 'expression',
+      headerName: 'Expression',
       cellClassName: 'text-gray-500 font-mono',
       render: (rule) => rule.expression && rule.expression.length > 60
         ? `${rule.expression.substring(0, 60)}...`
         : rule.expression || 'N/A'
     },
     {
-      key: 'action',
-      header: 'Action',
+      field: 'action',
+      headerName: 'Action',
       cellClassName: 'text-gray-500',
       render: (rule) => rule.action || 'N/A'
     }

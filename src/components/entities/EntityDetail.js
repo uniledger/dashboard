@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { GenericDetailView, DataTableSection, EntityConfig } from '../common';
+import { GenericListView, GenericDetailView, EntityConfig } from '../common';
 import { getCountryDisplay, formatAccountCode, formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
 import useEntities from '../../hooks/useEntities';
 import { useDashboard } from '../../context/DashboardContext';
+import { accountCodeCellRenderer, accountIDDrillCellRenderer, accountTypeCellRenderer, balanceCellRenderer, ledgerIDDrillCellRenderer, countryCellRenderer, enrichedLedgerDrillCellRenderer, ledgerCurrencyCellRenderer } from '../common/CellRenderers';
 
 /**
  * Entity Detail component using GenericDetailView
@@ -55,13 +56,14 @@ const EntityDetail = () => {
   const ledgersTableSection = {
     label: 'Ledgers Owned',
     content: (
-      <DataTableSection
+      <GenericListView
         data={entityLedgers || []}
         title="Ledgers"
         columns={[
           {
-            key: 'ledger_id',
-            header: 'ID',
+            field: 'ledger_id',
+            headerName: 'ID',
+            cellRenderer: ledgerIDDrillCellRenderer,
             cellClassName: 'text-blue-600 cursor-pointer hover:underline',
             render: (ledger) => (
               <Link to={`/ledgers/${ledger.ledger_id}`}>
@@ -70,19 +72,18 @@ const EntityDetail = () => {
             )
           },
           {
-            key: 'name',
-            header: 'Name',
-            cellClassName: 'font-medium text-gray-900'
+            field: 'name',
+            headerName: 'Name',
           },
           {
-            key: 'currency',
-            header: 'Currency',
-            render: (ledger) => ledger.r_currency ? `${ledger.r_currency.currency_code} (${ledger.r_currency.type})` : 'N/A'
+            field: 'currency',
+            headerName: 'Currency',
+            cellRenderer: ledgerCurrencyCellRenderer,
           },
           {
-            key: 'country',
-            header: 'Country',
-            render: (ledger) => getCountryDisplay(ledger, entity)
+            field: 'country',
+            headerName: 'Country',
+            cellRenderer: countryCellRenderer,
           },
         ]}
         onRowClick={(ledger) => navigate(`/ledgers/${ledger.ledger_id}`)}
@@ -98,54 +99,39 @@ const EntityDetail = () => {
   const accountsTableSection = {
     label: 'Accounts',
     content: (
-      <DataTableSection
+      <GenericListView
         data={entityAccounts || []}
         title="Accounts"
         columns={[
           {
-            key: 'account_id',
-            header: 'ID',
-            cellClassName: 'text-blue-600 cursor-pointer hover:underline',
-            render: (account) => {
-              const id = account.account_id || account.account_extra_id || 'N/A';
-              return <Link to={`/accounts/${id}`}>{id}</Link>;
-            }
+            field: 'account_id',
+            headerName: 'ID',
+            cellRenderer: accountIDDrillCellRenderer,
           },
           {
-            key: 'name',
-            header: 'Name',
-            cellClassName: 'font-medium text-gray-900',
-            render: (account) => account.name || 'N/A'
+            field: 'name',
+            headerName: 'Name',
           },
           {
-            key: 'account_code',
-            header: 'Account Code',
-            render: (account) => getAccountCodeDisplay(account)
+            field: 'account_code',
+            headerName: 'Account Code',
+            cellRenderer: accountCodeCellRenderer,
           },
           {
-            key: 'type',
-            header: 'Type',
-            render: (account) => account.account_type || (account.account_code && account.account_code.type) || 'N/A'
+            field: 'type',
+            headerName: 'Type',
+            cellRenderer: accountTypeCellRenderer,
           },
           {
-            key: 'ledger',
-            header: 'Ledger',
-            cellClassName: (account) => account.enriched_ledger ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500',
-            render: (account) => account.enriched_ledger ? (
-              <Link to={`/ledgers/${account.enriched_ledger.ledger_id}`}>
-                {account.enriched_ledger.name}
-              </Link>
-            ) : 'N/A'
+            field: 'ledger',
+            headerName: 'Ledger',
+            cellRenderer: enrichedLedgerDrillCellRenderer,
           },
           {
-            key: 'balance',
-            header: 'Balance',
-            align: 'right',
-            cellClassName: (account) => getBalanceClass(account.balance),
-            render: (account) => {
-              const currency = getCurrencyInfo(account);
-              return formatBalance(account.balance, currency, true);
-            }
+            field: 'balance',
+            headerName: 'Balance',
+            type: 'rightAligned',
+            cellRenderer: balanceCellRenderer,
           },
         ]}
         sortFunction={(a, b) => {

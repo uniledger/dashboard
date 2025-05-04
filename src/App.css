@@ -30,15 +30,6 @@
   font-weight: 600;
 }
 
-/* Right-aligned headers and cells for numeric values */
-.ag-theme-alpine .ag-right-aligned-header .ag-header-cell-label {
-  justify-content: flex-end;
-}
-
-.ag-theme-alpine .ag-right-aligned-cell {
-  text-align: right;
-}
-
 .ag-theme-alpine .ag-row:hover {
   background-color: #f3f4f6;
   transition: background-color 0.2s ease;

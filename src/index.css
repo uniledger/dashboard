@@ -16,11 +16,11 @@ code {
     monospace;
 }
 
-/* AgGrid Customizations */
-.ag-theme-alpine .ag-cell[col-id="balance"] {
+/* AgGrid Customizations  
+.ag-theme-alpine .ag-cell[format="balance"] {
   text-align: right !important;
 }
-
+/*
 .ag-theme-alpine .ag-cell[col-id="balance"] .ag-cell-value,
 .ag-theme-alpine .ag-cell[col-id="balance"] .ag-cell-wrapper {
   text-align: right !important;
@@ -52,9 +52,9 @@ code {
 
 .negative-balance-row {
   color: #dc2626;
-}
+} */
 
-/* Additional balance header classes */
+/* Additional balance header classes 
 .ag-theme-alpine .balance-header .ag-header-cell-label {
   justify-content: flex-end !important;
   display: flex !important;
@@ -64,3 +64,9 @@ code {
   justify-content: flex-end !important;
   display: flex !important;
 }
+
+*/
+
+/* .cell-balance {
+  text-align: right;
+} */

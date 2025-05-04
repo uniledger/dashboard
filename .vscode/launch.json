@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "//": "This is the configuration for launching and debugging the frontend React app in Chrome.",
+      "type": "chrome", // Or "msedge" if you prefer Edge
+      "request": "launch",
+      "name": "Launch React App in Chrome",
+      "url": "http://localhost:3000", // The URL your app runs on
+      "webRoot": "${workspaceFolder}/src", // Helps map compiled code back to your source
+      "sourceMaps": true, // Ensure Create React App source maps are used
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**"]
+      
+    },
+    {
+      "//": "This is your original Node configuration, keep it if you ever need to debug build scripts or other Node processes directly.",
+      "type": "node",
+      "request": "launch",
+      "name": "Launch via NPM (Node Process)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "start" 
+      ],
+      "cwd": "${workspaceFolder}",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    }
+  ]
+}
