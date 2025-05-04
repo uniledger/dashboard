@@ -169,6 +169,7 @@ export const AccountConfig = {
       field: 'balance',
       headerName: 'Balance',
       type: 'rightAligned',
+      filter: 'agNumberColumnFilter',
       cellRenderer: balanceCellRenderer,
     }
   ],
@@ -217,35 +218,30 @@ export const TemplateConfig = {
     {
       field: 'template_id',
       headerName: 'ID',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
     },
     {
       field: 'name',
       headerName: 'Template Name',
-      cellClassName: 'font-medium text-gray-900',
     },
     {
       field: 'product',
       headerName: 'Type',
-      cellClassName: 'text-gray-500',
     },
     {
       field: 'description',
       headerName: 'Description',
-      cellClassName: 'text-gray-500',
-      render: (item) => {
-        return item.description.length > 100 
-          ? `${item.description.substring(0, 100)}...` 
-          : item.description;
-      }
+      // render: (item) => {
+      //   return item.description.length > 100 
+      //     ? `${item.description.substring(0, 100)}...` 
+      //     : item.description;
+      // }
     },
     {
       field: 'created_date',
       headerName: 'Created',
-      cellClassName: 'text-gray-500',
-      render: (item) => {
-        return new Date(item.created_date * 1000).toLocaleDateString();
-      }
+      // render: (item) => {
+      //   return new Date(item.created_date * 1000).toLocaleDateString();
+      // }
     }
   ],
   
@@ -260,74 +256,78 @@ export const TemplateConfig = {
   // Variables columns definition
   variablesColumns: [
     {
-      key: 'name',
-      header: 'Name',
-      render: (variable) => TemplateConfig.formatFieldName(variable.name),
-      cellClassName: 'font-medium text-gray-900'
+      field: 'name',
+      headerName: 'Name',
+      cellRenderer: (params) => TemplateConfig.formatFieldName(params.data.name),
+      //cellClassName: 'font-medium text-gray-900'
     },
     {
-      key: 'value',
-      header: 'Value',
-      cellClassName: 'text-gray-500'
+      field: 'value',
+      headerName: 'Value',
+      //cellClassName: 'text-gray-500'
     }
   ],
   
   // Validations columns definition
   validationsColumns: [
     {
-      key: 'name',
-      header: 'Name',
-      render: (validation) => TemplateConfig.formatFieldName(validation.name),
-      cellClassName: 'font-medium text-gray-900'
+      field: 'name',
+      headerName: 'Name',
+      cellRenderer: (params) => TemplateConfig.formatFieldName(params.data.name),
+      //cellClassName: 'font-medium text-gray-900'
     },
     {
-      key: 'expression',
-      header: 'Expression',
-      cellClassName: 'text-gray-500'
+      field: 'expression',
+      headerName: 'Expression',
+      //cellClassName: 'text-gray-500'
     },
     {
-      key: 'description',
-      header: 'Description',
-      cellClassName: 'text-gray-500'
+      field: 'description',
+      headerName: 'Description',
+      //cellClassName: 'text-gray-500'
     }
   ],
   
   // Legs columns definition
   legsColumns: [
     {
-      key: 'leg_number',
-      header: 'Leg Number',
-      cellClassName: 'font-medium text-gray-900'
+      field: 'leg_number',
+      headerName: 'Leg Number',
+      //cellClassName: 'font-medium text-gray-900'
     },
     {
-      key: 'debit_account',
-      header: 'Debit Account',
-      cellClassName: 'text-gray-500'
+      field: 'debit_account',
+      headerName: 'Debit Account',
+      //cellClassName: 'text-gray-500'
     },
     {
-      key: 'credit_account',
-      header: 'Credit Account',
-      cellClassName: 'text-gray-500'
+      field: 'credit_account',
+      headerName: 'Credit Account',
+      //cellClassName: 'text-gray-500'
     },
     {
-      key: 'code',
-      header: 'Code',
-      cellClassName: 'text-gray-500'
+      field: 'code',
+      headerName: 'Code',
+      //cellClassName: 'text-gray-500'
     },
     {
-      key: 'amount',
-      header: 'Amount',
+      field: 'amount',
+      headerName: 'Amount',
       align: 'right',
-      cellClassName: 'text-gray-500'
+      //cellClassName: 'text-gray-500'
     }
   ],
   
   // Helper to render variable section
   renderVariablesSection: (template) => {
+    console.log('Template variables:', template?.variables);
+    console.log('Variables columns:', TemplateConfig.variablesColumns);
+    
     return (
       <GenericListView
         data={template.variables || []}
         columns={TemplateConfig.variablesColumns}
+        idField="name"
         title="Variables"
         emptyMessage="No variables defined"
         onViewJson={null} // Will be injected by parent component
@@ -533,35 +533,33 @@ export const TransferConfig = {
   // Column definitions for list view
   listColumns: [
     {
-      key: 'transfer_id',
-      header: 'ID',
+      field: 'transfer_id',
+      headerName: 'ID',
     },
     {
-      key: 'account_id',
-      header: 'From Account',
+      field: 'account_id',
+      headerName: 'From Account',
       render: (transfer) => transfer.account_id || 'N/A'
     },
     {
-      key: 'to_account_id',
-      header: 'To Account',
+      field: 'to_account_id',
+      headerName: 'To Account',
       render: (transfer) => transfer.to_account_id || 'N/A'
     },
     {
-      key: 'amount',
-      header: 'Amount',
-      //cellClassName: (transfer) => getBalanceClass(transfer.amount),
+      field: 'amount',
+      headerName: 'Amount',
       render: (transfer) => formatBalance(transfer.amount, { currency_code: transfer.currency_code })
     },
     {
-      key: 'timestamp',
-      header: 'Date',
-      cellClassName: 'text-gray-500',
+      field: 'timestamp',
+      headerName: 'Date',
+
       render: (transfer) => formatDate(transfer.timestamp, true)
     },
     {
-      key: 'ledger_id',
-      header: 'Ledger',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
+      field: 'ledger_id',
+      headerName: 'Ledger',
       render: (transfer) => transfer.ledger_id || 'N/A'
     }
   ],

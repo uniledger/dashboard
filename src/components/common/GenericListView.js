@@ -15,7 +15,9 @@ import {
   DateFilterModule,
   CellStyleModule,
   RowStyleModule,
+  ValidationModule,
 } from 'ag-grid-community';
+
 
 // Register AG Grid modules globally
 ModuleRegistry.registerModules([
@@ -28,6 +30,7 @@ ModuleRegistry.registerModules([
   DateFilterModule,
   CellStyleModule,
   RowStyleModule,
+  ValidationModule,
 ]);
 
 /**
@@ -42,13 +45,8 @@ ModuleRegistry.registerModules([
  * @param {string} props.idField - The field to use as the ID (e.g., "account_id")
  * @param {function} props.onItemClick - Handler for clicking an item
  * @param {function} props.onViewJson - Handler for viewing JSON data
- * @param {Object} props.filter - Active filter (e.g., { field: 'type', value: 'ASSET' })
- * @param {function} props.onClearFilter - Handler for clearing the active filter
  * @param {function} props.onSearch - Custom search handler
- * @param {string} props.searchPlaceholder - Placeholder for the search input
- * @param {string} props.emptyMessage - Message to display when no data is found
  * @param {React.ReactNode} props.customHeader - Custom header content
- * @param {React.ReactNode} props.customActions - Custom actions for the list
  * @param {function} props.onRefresh - Handler for refreshing the list
  * @param {boolean} props.loading - Whether data is loading (external)
  * @param {Object|string} props.error - Error state if present
@@ -62,13 +60,8 @@ const GenericListView = ({
   idField,
   onItemClick,
   onViewJson,
-  filter = null,
-  onClearFilter,
   onSearch,
-  searchPlaceholder,
-  emptyMessage,
   customHeader,
-  customActions,
   onRefresh,
   loading = false,
   error = null,
@@ -78,23 +71,35 @@ const GenericListView = ({
   const handleInternalViewJson = (item) => setJsonModalData(item);
   const viewJsonHandler = onViewJson || handleInternalViewJson;
 
-    // AG Grid settings
-    const defaultColDef = {
+  // Default column definition
+  const defaultColDef = {
       sortable: true,
       resizable: true,
       suppressMovable: false,
-      filter: 'agSetColumnFilter',
-      filterParams: { suppressMiniFilter: true },
+      filter: 'agTextColumnFilter',
+      filterParams: { suppressMiniFilter: false },
       floatingFilter: false,  // Disable floating filter row; use filter icon in header
-      enableRowGroup: true, // grouping UI requires ag-grid-enterprise
+      enableRowGroup: false, // grouping UI requires ag-grid-enterprise
     };
 
   // Display error state
   if (error) {
+    console.log('GenericListView props:', {
+      data: data,
+      columns: columns,
+      title: title,
+      dataLength: data?.length,
+      firstRow: data?.[0]
+    });
+
+    console.log('First column definition:', columns[0]);
+
     return (
+    <div className="w-full overflow-x-auto">
       <div className="mb-6">
         <ErrorAlert error={error} onRetry={onRefresh} />
       </div>
+    </div>
     );
   }
 
@@ -132,26 +137,12 @@ const GenericListView = ({
       </div>
     );
 
-
-
-  // Generate a filter badge if a filter is active
-  const filterBadge = filter ? (
-    <div className="mb-4">
-      <FilterBadge
-        label={`${filter.label || filter.field}: ${filter.value}`}
-        onClear={onClearFilter}
-        count={data.length}
-        entityName={title.toLowerCase()}
-      />
-    </div>
-  ) : null;
-
   return (
 
 
-<div>
+        <div>
       
-        <SectionHeader
+          <SectionHeader
           title={
             <>
               <span>{title}</span>
@@ -169,33 +160,16 @@ const GenericListView = ({
           className="mb-4"
         />
       )}
-      {customHeader || filterBadge}
-      
-      {/* Render standard list with JSON view support */}
-      {/* <StandardList
-        data={data}
-        columns={columns}
-        title={title}
-        idField={idField}
-        onItemClick={onItemClick}
-        onViewJson={viewJsonHandler}
-        onRefresh={onRefresh}
-        onSearch={onSearch}
-        searchPlaceholder={searchPlaceholder || `Search ${title.toLowerCase()}...`}
-        emptyMessage={emptyMessage || `No ${title.toLowerCase()} found`}
-        smallHeader={false}
-        loading={loading}
-      /> */}
-        <AgGridReact
+      {customHeader} 
+
+        <div className="ag-theme-alpine w-full h-auto">
+          <AgGridReact
           domLayout="autoHeight"
           rowData={data}
           columnDefs={columns}
           defaultColDef={defaultColDef}
           context={context}
-          idField={idField}
           animateRows={true}
-          onItemClick={onItemClick}
-          onRefresh={onRefresh}
           onSearch={onSearch}
           onFirstDataRendered={(params) => {
             params.api.autoSizeAllColumns();
@@ -219,13 +193,13 @@ const GenericListView = ({
             // Skip row click handling if there's no handler
             if (!onItemClick) return;
             
-            const firstColumn =columns[0];
+            const firstColumn = columns[0];
             // Check if column exists before accessing properties
-            if (event.column?.colId === firstColumn.key) {
+            if (event.column?.colId === firstColumn.field) {
                 onItemClick(event.data);
-            } else if (event.column?.colId === firstColumn.key && firstColumn.onClick) {
+            } else if (event.column?.colId === firstColumn.field && firstColumn.onClick) {
                 firstColumn.onClick(event.data);
-            } else if (firstColumn.onClick && event.data && event.data[firstColumn.key]) {
+            } else if (firstColumn.onClick && event.data && event.data[firstColumn.field]) {
                 firstColumn.onClick(event.data);
             } else {
                 // Default case: Just handle the item click
@@ -234,6 +208,7 @@ const GenericListView = ({
           }}
           >
         </AgGridReact>
+        </div>
 
       {/* JSON detail modal */}
       <DetailModal

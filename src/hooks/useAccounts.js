@@ -97,7 +97,7 @@ const useAccounts = () => {
       active: true,
       type: type.toUpperCase()
     };
-    setFilter(newFilter);
+    //setFilter(newFilter);
     applyFilter(accounts, newFilter);
   }, [accounts, applyFilter]);
 
@@ -106,7 +106,7 @@ const useAccounts = () => {
       active: false,
       type: ''
     };
-    setFilter(newFilter);
+    //setFilter(newFilter);
     applyFilter(accounts, newFilter);
   }, [accounts, applyFilter]);
   const selectAccount = useCallback((accountId) => {
