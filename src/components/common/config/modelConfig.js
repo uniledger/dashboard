@@ -259,12 +259,10 @@ export const TemplateConfig = {
       field: 'name',
       headerName: 'Name',
       cellRenderer: (params) => TemplateConfig.formatFieldName(params.data.name),
-      //cellClassName: 'font-medium text-gray-900'
     },
     {
       field: 'value',
       headerName: 'Value',
-      //cellClassName: 'text-gray-500'
     }
   ],
   
@@ -274,17 +272,14 @@ export const TemplateConfig = {
       field: 'name',
       headerName: 'Name',
       cellRenderer: (params) => TemplateConfig.formatFieldName(params.data.name),
-      //cellClassName: 'font-medium text-gray-900'
     },
     {
       field: 'expression',
       headerName: 'Expression',
-      //cellClassName: 'text-gray-500'
     },
     {
       field: 'description',
       headerName: 'Description',
-      //cellClassName: 'text-gray-500'
     }
   ],
   
@@ -293,28 +288,23 @@ export const TemplateConfig = {
     {
       field: 'leg_number',
       headerName: 'Leg Number',
-      //cellClassName: 'font-medium text-gray-900'
     },
     {
       field: 'debit_account',
       headerName: 'Debit Account',
-      //cellClassName: 'text-gray-500'
     },
     {
       field: 'credit_account',
       headerName: 'Credit Account',
-      //cellClassName: 'text-gray-500'
     },
     {
       field: 'code',
       headerName: 'Code',
-      //cellClassName: 'text-gray-500'
     },
     {
       field: 'amount',
       headerName: 'Amount',
       align: 'right',
-      //cellClassName: 'text-gray-500'
     }
   ],
   

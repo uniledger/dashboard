@@ -4,6 +4,8 @@ import DetailModal from '../shared/DetailModal';
 import { AgGridReact } from 'ag-grid-react';
 import { handleExportCsv } from '../../utils/Exporters'
 
+import { jsonCellRenderer } from './CellRenderers';
+
 import { ModuleRegistry } from 'ag-grid-community';
 import { 
   ClientSideRowModelModule,
@@ -72,6 +74,22 @@ const GenericListView = ({
   const [jsonModalData, setJsonModalData] = useState(null);
   const handleInternalViewJson = (item) => setJsonModalData(item);
   const viewJsonHandler = onViewJson || handleInternalViewJson;
+
+  // Ensure we have a context object with jsonRowHandler
+  const contextWithHandler = context || {};
+  contextWithHandler.jsonRowHandler = viewJsonHandler;
+  context = contextWithHandler;
+
+  // Only add JSON column if it doesn't already exist
+  if (!columns.some(col => col.field === 'json')) {
+    columns.unshift({
+      field: 'json',
+      headerName: '',
+      filter: false,
+      cellRenderer: jsonCellRenderer,
+      cellStyle: { textAlign: 'center' },
+    });
+  }
 
   // Default column definition
   const defaultColDef = {
@@ -227,14 +245,15 @@ const GenericListView = ({
             // Skip row click handling if there's no handler
             if (!onItemClick) return;
             
-            const firstColumn = columns[0];
-            // Check if column exists before accessing properties
-            if (event.column?.colId === firstColumn.field) {
+            // Find the ID column (it should be the second column now)
+            const idColumn = columns.find(col => col.field === idField);
+            if (!idColumn) return;
+            
+            // Check if click was on the ID column
+            if (event.column?.colId === idColumn.field) {
                 onItemClick(event.data);
-            } else if (event.column?.colId === firstColumn.field && firstColumn.onClick) {
-                firstColumn.onClick(event.data);
-            } else if (firstColumn.onClick && event.data && event.data[firstColumn.field]) {
-                firstColumn.onClick(event.data);
+            } else if (idColumn.onClick) {
+                idColumn.onClick(event.data);
             } else {
                 // Default case: Just handle the item click
                 onItemClick(event.data);
