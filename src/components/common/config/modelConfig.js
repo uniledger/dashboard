@@ -5,7 +5,7 @@
 import React from 'react';
 import { formatBalance, formatAccountCode, getCountryDisplay, getAccountType, getCurrencyInfo } from '../../../utils/formatters/index';
 import { formatDate } from '../../../utils/formatters/dateFormatters';
-import GenericListView from '../GenericDetailView.js';
+import GenericListView from '../GenericListView.js';
 import { accountIDCellRenderer, accountCodeCellRenderer, accountTypeCellRenderer, balanceCellRenderer, entityTypeCellRenderer, countryCellRenderer, kycStatusCellRenderer, entityOwnerCellRenderer, ledgerCurrencyCellRenderer } from '../../common/CellRenderers.js';
 
 /**

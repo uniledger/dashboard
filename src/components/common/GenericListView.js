@@ -42,6 +42,7 @@ ModuleRegistry.registerModules([
  * @param {Array} props.columns - Column definitions for the list
  * @param {Object} context - Component context
  * @param {string} props.title - Title for the list (e.g., "Accounts")
+ * @param {string} props.emptyMessage - Message to display when the list is empty
  * @param {string} props.idField - The field to use as the ID (e.g., "account_id")
  * @param {function} props.onItemClick - Handler for clicking an item
  * @param {function} props.onViewJson - Handler for viewing JSON data
@@ -57,6 +58,7 @@ const GenericListView = ({
   columns,
   context,
   title,
+  emptyMessage,
   idField,
   onItemClick,
   onViewJson,
@@ -137,22 +139,53 @@ const GenericListView = ({
       </div>
     );
 
-  return (
-
-
-        <div>
-      
-          <SectionHeader
+  // Check if data is empty
+  if (!data || data.length === 0) {
+    return (
+      <div className="w-full overflow-x-auto">
+        <SectionHeader
           title={
             <>
               <span>{title}</span>
-              <span className="ml-2 text-sm text-gray-500">({data.length})</span>
+              <span className="ml-2 text-sm text-gray-500">(0)</span>
             </>
           }
           description=""
           actions={renderActions()}
         />
-      
+
+        {error && (
+          <ErrorAlert 
+            error={error} 
+            onRetry={onRefresh} 
+            className="mb-4"
+          />
+        )}
+
+        {customHeader}
+
+        <div className="ag-theme-alpine w-full h-auto">
+          <div className="text-center py-4 text-gray-500">
+            {emptyMessage || `No ${title.toLowerCase()} found`}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full overflow-x-auto">
+      <SectionHeader
+        title={
+          <>
+            <span>{title}</span>
+            <span className="ml-2 text-sm text-gray-500">({data.length})</span>
+          </>
+        }
+        description=""
+        actions={renderActions()}
+      />
+
       {error && (
         <ErrorAlert 
           error={error} 
@@ -160,12 +193,13 @@ const GenericListView = ({
           className="mb-4"
         />
       )}
-      {customHeader} 
 
-        <div className="ag-theme-alpine w-full h-auto">
-          <AgGridReact
+      {customHeader}
+
+      <div className="ag-theme-alpine w-full h-auto">
+        <AgGridReact
           domLayout="autoHeight"
-          rowData={data}
+          rowData={data}  
           columnDefs={columns}
           defaultColDef={defaultColDef}
           context={context}
@@ -178,12 +212,12 @@ const GenericListView = ({
             // Store gridApi 
             window.gridApi = params;
           }}
-          getRowClass={(params) => {
-            if (params.data && 'balance' in params.data && params.data.balance < 0) {
-              return 'negative-balance-row';
-            }
-            return '';
-          }}
+          // getRowClass={(params) => {
+          //   if (params.data && 'balance' in params.data && params.data.balance < 0) {
+          //     return 'negative-balance-row';
+          //   }
+          //   return '';
+          // }}
           onRowClicked={(event) => {
             // Prevent drilling when clicking the JSON button
             const domEvent = event.event;
@@ -206,9 +240,8 @@ const GenericListView = ({
                 onItemClick(event.data);
             }
           }}
-          >
-        </AgGridReact>
-        </div>
+        />
+      </div>
 
       {/* JSON detail modal */}
       <DetailModal
