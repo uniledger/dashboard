@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GenericListView, LedgerConfig } from '../common';
+import { GenericListView } from '../common';
+import { LedgerConfig } from './LedgerConfig.js';
 import useLedgers from '../../hooks/useLedgers';
 
 /**

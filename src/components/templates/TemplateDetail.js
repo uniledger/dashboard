@@ -1,5 +1,6 @@
 import React from 'react';
-import { GenericDetailView, TemplateConfig } from '../common';
+import { GenericDetailView } from '../common';
+import { TemplateConfig } from './TemplateConfig.js';
 
 /**
  * Template Detail component using GenericDetailView

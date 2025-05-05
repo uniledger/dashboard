@@ -1,6 +1,8 @@
 import React from 'react';
 import { GenericListView } from '../common';
-import { genericIDCellRenderer, ledgerDrillCellRenderer, relatedAccountDrillCellRenderer, timestampDateCellRenderer, transferBalanceCellRenderer } from '../common/CellRenderers.js';
+import { genericIDCellRenderer, timestampDateCellRenderer } from '../common/CellRenderers.js';
+import { relatedAccountDrillCellRenderer, transferBalanceCellRenderer } from './AccountRenderers.js';
+import { ledgerDrillCellRenderer } from '../ledgers/LedgerRenderers.js';
 
 /**
  * Component to display transfers for an account

@@ -1,5 +1,6 @@
 import React from 'react';
-import { GenericListView, RuleConfig } from '../common';
+import { GenericListView } from '../common';
+import { RuleConfig } from './RuleConfig.js';
 
 /**
  * Component to display a list of rules using GenericListView

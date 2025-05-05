@@ -1,6 +1,8 @@
 import React from 'react';
 import { GenericDetailView, GenericListView } from '../common';
 import { Link } from 'react-router-dom';
+import { accountTypeCellRenderer } from '../accounts/AccountRenderers.js';
+import { enrichedEntityDrillCellRenderer } from '../entities/EntityRenderers.js';
 
 /**
  * Component to display detailed information about a processed event
@@ -151,12 +153,12 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
             {
               field: 'account_code',
               headerName: 'Type',
-              render: (row) => `${row.account_code?.type || 'N/A'}: ${row.account_code?.account_code || 'N/A'}`
+              cellRenderer: accountTypeCellRenderer
             },
             {
               field: 'entity',
               headerName: 'Entity',
-              render: (row) => row.entity?.name ? `${row.entity.name} ${row.entity?.entity_id ? `(ID: ${row.entity.entity_id})` : ''}` : 'N/A'
+              cellRenderer: enrichedEntityDrillCellRenderer
             }
           ]}
           emptyMessage="No accounts found"

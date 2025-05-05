@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { GenericListView, ProcessedEventConfig } from '../common';
-import { eventTemplateDrillCellRenderer, processedEventDrillCellRenderer, eventTimestampDateCellRenderer, fromAccountDrillCellRenderer, eventsFromLedgerDrillCellRenderer, amountCellRenderer } from '../common/CellRenderers';
+import { GenericListView } from '../common';
+import { ProcessedEventConfig } from './ProcessedEventConfig.js';
+import { eventTemplateDrillCellRenderer, processedEventDrillCellRenderer } from './ProcessedEventRenderers.js';
+import { eventTimestampDateCellRenderer, amountCellRenderer, fromAccountDrillCellRenderer, eventsFromLedgerDrillCellRenderer } from '../common/CellRenderers.js';
 
 /**
  * Component to display a list of processed events using GenericListView

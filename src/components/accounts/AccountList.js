@@ -1,9 +1,14 @@
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { GenericListView, AccountConfig } from '../common';
+import { GenericListView } from '../common';
+import { AccountConfig } from './AccountConfig.js';
 import useAccounts from '../../hooks/useAccounts';
 import { useDashboard } from '../../context/DashboardContext';
-import { accountCurrencyCellRenderer, accountOwnerCellRenderer, ledgerNameCellRenderer } from '../common/CellRenderers';
+import { accountOwnerCellRenderer } from './AccountRenderers.js';
+import { ledgerNameCellRenderer } from '../ledgers/LedgerRenderers.js';
+import { accountCurrencyCellRenderer } from './AccountRenderers.js';
+import { getCurrencyInfo } from '../../utils/formatters/balanceFormatters';
 
 /** 
  * Account List component using GenericListView

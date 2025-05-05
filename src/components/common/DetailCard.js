@@ -35,10 +35,10 @@ const DetailCard = ({ title, subtitle, sections, childrenSections = [], actions 
     
     // Skip 'Name' fields only if we're showing a subtitle
     const isNameField = 
-      subtitle && (
+      subtitle && section.label && (
         section.label === 'Name' || 
-        section.label?.toLowerCase() === 'name' || 
-        section.label?.includes('Name')
+        section.label.toLowerCase() === 'name' || 
+        section.label.includes('Name')
       );
     
     if (hasTableContent) {

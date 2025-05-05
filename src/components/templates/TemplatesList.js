@@ -1,5 +1,6 @@
 import React from 'react';
-import { GenericListView, TemplateConfig } from '../common';
+import { GenericListView } from '../common';
+import { TemplateConfig } from './TemplateConfig.js';
 
 /**
  * Templates list component using GenericListView

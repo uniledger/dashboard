@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { GenericDetailView, AccountConfig } from '../common';
+import GenericDetailView from '../common/GenericDetailView.js';
+import { AccountConfig } from './AccountConfig.js';
 import useAccounts from '../../hooks/useAccounts';
 import useAccountTransfers from '../../hooks/useAccountTransfers';
 import { useDashboard } from '../../context/DashboardContext';

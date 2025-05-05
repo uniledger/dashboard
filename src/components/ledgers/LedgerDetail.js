@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { GenericDetailView, LedgerConfig, GenericListView } from '../common';
+import { GenericDetailView, GenericListView } from '../common';
 import { formatBalance, formatAccountCode, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
 import apiService from '../../services/apiService'; // Assuming apiService is defined elsewhere
 import useLedgers from '../../hooks/useLedgers';
 import { useDashboard } from '../../context/DashboardContext';
-import { accountCodeCellRenderer, accountIDDrillCellRenderer, accountTypeCellRenderer, enrichedEntityDrillCellRenderer } from '../common/CellRenderers';
+import { enrichedEntityDrillCellRenderer } from './LedgerRenderers.js';
+import { LedgerConfig } from './LedgerConfig.js';
+import { accountCodeCellRenderer, accountIDDrillCellRenderer, accountTypeCellRenderer } from '../accounts/AccountRenderers.js';
 
 /**
  * Ledger Detail component using GenericDetailView

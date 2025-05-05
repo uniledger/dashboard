@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { GenericListView, GenericDetailView, EntityConfig } from '../common';
-import { getCountryDisplay, formatAccountCode, formatBalance, getBalanceClass, getCurrencyInfo } from '../../utils/formatters/index';
+import { GenericListView, GenericDetailView } from '../common';
 import useEntities from '../../hooks/useEntities';
 import { useDashboard } from '../../context/DashboardContext';
-import { accountCodeCellRenderer, accountIDDrillCellRenderer, accountTypeCellRenderer, balanceCellRenderer, ledgerIDDrillCellRenderer, countryCellRenderer, enrichedLedgerDrillCellRenderer, ledgerCurrencyCellRenderer } from '../common/CellRenderers';
+import { countryCellRenderer } from './EntityRenderers.js';
+import { accountCodeCellRenderer, accountIDDrillCellRenderer, accountTypeCellRenderer, balanceCellRenderer } from '../accounts/AccountRenderers.js';
+import { ledgerIDDrillCellRenderer, enrichedLedgerDrillCellRenderer, ledgerCurrencyCellRenderer } from '../ledgers/LedgerRenderers.js';
+import { EntityConfig } from './EntityConfig.js';
 
 /**
  * Entity Detail component using GenericDetailView
@@ -41,12 +43,6 @@ const EntityDetail = () => {
   // Handle refresh
   const handleRefresh = () => {
     refreshEntityAccounts(entityId);
-  };
-  
-  // Helper function to format account code
-  const getAccountCodeDisplay = (account) => {
-    if (!account) return 'N/A';
-    return formatAccountCode(account.account_code || account.code);
   };
   
   // Define basic information sections

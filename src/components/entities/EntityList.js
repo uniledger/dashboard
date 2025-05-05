@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GenericListView, EntityConfig } from '../common';
+import { GenericListView } from '../common';
+import { EntityConfig } from './EntityConfig.js';
 import useEntities from '../../hooks/useEntities';
 
 /**
