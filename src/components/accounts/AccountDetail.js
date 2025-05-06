@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import GenericDetailView from '../common/GenericDetailView.js';
 import { AccountConfig } from './AccountConfig.js';
 import useAccounts from '../../hooks/useAccounts';
@@ -47,53 +47,8 @@ const AccountDetail = () => {
     
   const ledger = account?.ledger || account?.enriched_ledger;
   
-  // Create entity and ledger link sections if available
-  const entitySection = entity ? {
-    label: 'Entity',
-    content: (
-      <Link 
-        to={`/entities/${entity.entity_id}`} 
-        className="text-blue-600 hover:text-blue-800 hover:underline"
-      >
-        {entity.name || entity.entity_id}
-      </Link>
-    )
-  } : null;
-  
-  const ledgerSection = ledger ? {
-    label: 'Ledger',
-    content: (
-      <Link 
-        to={`/ledgers/${ledger.ledger_id}`} 
-        className="text-blue-600 hover:text-blue-800 hover:underline"
-      >
-        {ledger.name || ledger.ledger_id}
-      </Link>
-    )
-  } : null;
-
   // Get standard sections from model config
   let sections = account ? [...AccountConfig.detailSections(account, entity, ledger)] : [];
-  
-  // Add creation info if available
-  if (account?.date_created) {
-    sections.push({
-      label: 'Created',
-      content: new Date(account.date_created).toLocaleString()
-    });
-  }
-  
-  // Add entity and ledger link sections if available
-  if (entitySection) {
-    // Insert entity section after account type (index 3)
-    sections.splice(3, 0, entitySection);
-  }
-  
-  if (ledgerSection) {
-    // Insert ledger section after entity section or after account type
-    const insertIndex = entitySection ? 4 : 3;
-    sections.splice(insertIndex, 0, ledgerSection);
-  }
   
   // Use GenericDetailView for consistent presentation with transfers below
   return (

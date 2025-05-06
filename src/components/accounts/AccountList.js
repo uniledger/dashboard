@@ -5,10 +5,6 @@ import { GenericListView } from '../common';
 import { AccountConfig } from './AccountConfig.js';
 import useAccounts from '../../hooks/useAccounts';
 import { useDashboard } from '../../context/DashboardContext';
-import { accountOwnerCellRenderer } from './AccountRenderers.js';
-import { ledgerNameCellRenderer } from '../ledgers/LedgerRenderers.js';
-import { accountCurrencyCellRenderer } from './AccountRenderers.js';
-import { getCurrencyInfo } from '../../utils/formatters/balanceFormatters';
 
 /** 
  * Account List component using GenericListView
@@ -76,49 +72,49 @@ const AccountList = () => {
   // Define columns for the DataTable - start with the base AccountConfig columns
   const columns = [...AccountConfig.listColumns];
   
-  // Add entity (Account Owner) column
-  columns.push({
-    key: 'entity',
-    headerName: 'Account Owner',
-    cellRenderer: accountOwnerCellRenderer,
-    cellClassName: (account) => {
-      const owner = account.r_entity || account.enriched_ledger?.r_entity;
-      return owner?.entity_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
-    },
-    onClick: (account) => {
-      const owner = account.r_entity || account.enriched_ledger?.r_entity;
-      if (owner?.entity_id) {
-        handleViewEntity(owner.entity_id);
-        return true;
-      }
-      return false;
-    },
-    preventRowClick: true
-  });
+  // // Add entity (Account Owner) column
+  // columns.push({
+  //   key: 'entity',
+  //   headerName: 'Account Owner',
+  //   cellRenderer: accountOwnerCellRenderer,
+  //   cellClassName: (account) => {
+  //     const owner = account.r_entity || account.enriched_ledger?.r_entity;
+  //     return owner?.entity_id ? 'text-blue-600 cursor-pointer hover:underline' : 'text-gray-500';
+  //   },
+  //   onClick: (account) => {
+  //     const owner = account.r_entity || account.enriched_ledger?.r_entity;
+  //     if (owner?.entity_id) {
+  //       handleViewEntity(owner.entity_id);
+  //       return true;
+  //     }
+  //     return false;
+  //   },
+  //   preventRowClick: true
+  // });
 
-  // Add ledger column
-  columns.push({
-    key: 'ledger',
-    headerName: 'Ledger',
-    cellRenderer: ledgerNameCellRenderer,
-    onClick: (props) => {
-      const ledgerId = props.data.ledger_id || 
-                       (props.data.enriched_ledger && props.data.enriched_ledger.ledger_id);
-      if (ledgerId) {
-        handleViewLedger(ledgerId);
-        return true; // Prevent other click handlers
-      }
-      return false;
-    },
-    preventRowClick: true
-  });
+  // // Add ledger column
+  // columns.push({
+  //   key: 'ledger',
+  //   headerName: 'Ledger',
+  //   cellRenderer: ledgerNameCellRenderer,
+  //   onClick: (props) => {
+  //     const ledgerId = props.data.ledger_id || 
+  //                      (props.data.enriched_ledger && props.data.enriched_ledger.ledger_id);
+  //     if (ledgerId) {
+  //       handleViewLedger(ledgerId);
+  //       return true; // Prevent other click handlers
+  //     }
+  //     return false;
+  //   },
+  //   preventRowClick: true
+  // });
 
   // Add currency column
-  columns.push({
-    key: 'currency',
-    headerName: 'Currency',
-    cellRenderer: accountCurrencyCellRenderer,
-  });
+  // columns.push({
+  //   key: 'currency',
+  //   headerName: 'Currency',
+  //   cellRenderer: accountCurrencyCellRenderer,
+  // });
 
   // Get filtered accounts based on URL query parameters
   let filteredAccounts = accounts;

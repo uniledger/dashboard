@@ -1,9 +1,7 @@
 import React from 'react';
 import { GenericDetailView, GenericListView } from '../common';
-import { Link } from 'react-router-dom';
-import { accountTypeCellRenderer } from '../accounts/AccountRenderers.js';
-import { enrichedEntityDrillCellRenderer } from '../entities/EntityRenderers.js';
-
+import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
+import { getAccountType } from '../../utils/formatters/accountFormatters.js';
 /**
  * Component to display detailed information about a processed event
  * using the GenericDetailView component for consistency
@@ -100,14 +98,12 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
             {
               field: 'debit_account_id',
               headerName: 'From Account',
-              cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
-              render: t => <Link to={`/accounts/${t.debit_account_id}`}>{t.debit_account_id}</Link>
+              render: t => drillFormatter('accounts', t.debit_account_id, t.debit_account_id)
             },
             {
               field: 'credit_account_id',
               headerName: 'To Account',
-              cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
-              render: t => <Link to={`/accounts/${t.credit_account_id}`}>{t.credit_account_id}</Link>
+              render: t => drillFormatter('accounts', t.credit_account_id, t.credit_account_id)
             },
             {
               field: 'amount',
@@ -153,12 +149,15 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
             {
               field: 'account_code',
               headerName: 'Type',
-              cellRenderer: accountTypeCellRenderer
+              cellRenderer: props => getAccountType(props.data),
             },
             {
               field: 'entity',
               headerName: 'Entity',
-              cellRenderer: enrichedEntityDrillCellRenderer
+              cellRenderer: props => {
+                const entity = props.data.entity ? props.data.entity : props.data.r_entity;
+                return entity ? drillFormatter('entities', entity.entity_id, entity.entity_id) : 'N/A';
+              },
             }
           ]}
           emptyMessage="No accounts found"

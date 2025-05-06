@@ -129,6 +129,9 @@ const GenericDetailView = ({
     </div>
   );
 
+  // Filter out sections that should be skipped
+  const filteredSections = sections.filter(section => !section.skipSection);
+  
   // Automatically inject JSON view and fetchData handlers into child tables
   const injectedChildren = childrenSections.map(section => {
     if (!React.isValidElement(section.content)) {
@@ -151,7 +154,7 @@ const GenericDetailView = ({
       <DetailCard
         title={title}
         subtitle={subtitle}
-        sections={sections}
+        sections={filteredSections}
         childrenSections={injectedChildren}
         actions={customActions || defaultActions}
       />

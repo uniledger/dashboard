@@ -4,9 +4,13 @@ import { GenericListView, GenericDetailView } from '../common';
 import useEntities from '../../hooks/useEntities';
 import { useDashboard } from '../../context/DashboardContext';
 import { countryCellRenderer } from './EntityRenderers.js';
-import { accountCodeCellRenderer, accountIDDrillCellRenderer, accountTypeCellRenderer, balanceCellRenderer } from '../accounts/AccountRenderers.js';
 import { ledgerIDDrillCellRenderer, enrichedLedgerDrillCellRenderer, ledgerCurrencyCellRenderer } from '../ledgers/LedgerRenderers.js';
 import { EntityConfig } from './EntityConfig.js';
+import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
+import { formatAccountCode } from '../../utils/formatters/index';
+import { getAccountType } from '../../utils/formatters/accountFormatters.js';
+import { getCurrencyInfo } from '../../utils/formatters/index'; 
+import { formatBalance } from '../../utils/formatters/index';
 
 /**
  * Entity Detail component using GenericDetailView
@@ -102,7 +106,7 @@ const EntityDetail = () => {
           {
             field: 'account_id',
             headerName: 'ID',
-            cellRenderer: accountIDDrillCellRenderer,
+            cellRenderer: props => drillFormatter('accounts', props.data.account_id, props.data.account_id),
           },
           {
             field: 'name',
@@ -111,23 +115,23 @@ const EntityDetail = () => {
           {
             field: 'account_code',
             headerName: 'Account Code',
-            cellRenderer: accountCodeCellRenderer,
+            cellRenderer: props => formatAccountCode(props.data.account_code || props.data.code),
           },
           {
             field: 'type',
             headerName: 'Type',
-            cellRenderer: accountTypeCellRenderer,
+            cellRenderer: props => getAccountType(props.data),
           },
           {
             field: 'ledger',
             headerName: 'Ledger',
-            cellRenderer: enrichedLedgerDrillCellRenderer,
+            cellRenderer: props => drillFormatter('ledgers', props.data.ledger_id, props.data.ledger_id),
           },
           {
             field: 'balance',
             headerName: 'Balance',
             type: 'rightAligned',
-            cellRenderer: balanceCellRenderer,
+            cellRenderer: props => formatBalance(props.data.balance, getCurrencyInfo(props.data), true),
           },
         ]}
         sortFunction={(a, b) => {

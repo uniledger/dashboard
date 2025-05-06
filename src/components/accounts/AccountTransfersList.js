@@ -1,8 +1,9 @@
 import React from 'react';
 import { GenericListView } from '../common';
-import { genericIDCellRenderer, timestampDateCellRenderer } from '../common/CellRenderers.js';
-import { relatedAccountDrillCellRenderer, transferBalanceCellRenderer } from './AccountRenderers.js';
+import { timestampDateCellRenderer } from '../common/CellRenderers.js';
 import { ledgerDrillCellRenderer } from '../ledgers/LedgerRenderers.js';
+import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
+import { formatBalance } from '../../utils/formatters/index';
 
 /**
  * Component to display transfers for an account
@@ -18,20 +19,35 @@ const AccountTransfersList = ({ transfers, accountId, onViewJson, onRefresh, loa
     {
       field: 'id',
       headerName: 'ID',
-      cellRenderer: genericIDCellRenderer,
     },
     // From/To Account with drill link (using correct field names)
     {
       field: 'related_account',
       headerName: 'Related Account',
-      cellRenderer: relatedAccountDrillCellRenderer,
+      cellRenderer: props => {
+        const currentAccountId = parseInt(props.context.accountId, 10);
+            // Determine which account ID is the related one
+        let relatedAccountId;
+        
+        // If this account is the debit account, show the credit account as related
+        if (currentAccountId === props.data.debit_account_id) {
+            relatedAccountId = props.data.credit_account_id;
+        } 
+        // If this account is the credit account, show the debit account as related
+        else if (currentAccountId === props.data.credit_account_id) {
+            relatedAccountId = props.data.debit_account_id;
+        }
+    
+    // Return the related account ID
+    return drillFormatter('accounts', relatedAccountId, relatedAccountId);
+      }
     },
     // Amount with formatting, showing negative for debits and positive for credits
     {
       field: 'amount',
       headerName: 'Amount',
       type: 'rightAligned',
-      cellRenderer: transferBalanceCellRenderer,
+      cellRenderer: props => formatBalance(props.data.amount, {}),
     },
     // Timestamp with formatting (converted from Unix timestamp in nanoseconds)
     {

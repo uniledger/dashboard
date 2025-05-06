@@ -230,34 +230,18 @@ const GenericListView = ({
             // Store gridApi 
             window.gridApi = params;
           }}
-          // getRowClass={(params) => {
-          //   if (params.data && 'balance' in params.data && params.data.balance < 0) {
-          //     return 'negative-balance-row';
-          //   }
-          //   return '';
-          // }}
-          onRowClicked={(event) => {
-            // Prevent drilling when clicking the JSON button
-            const domEvent = event.event;
-            if (domEvent?.target?.closest && domEvent.target.closest('button[title="View JSON"]')) {
+          getRowClass={(params) => {
+            if (params.data && 'balance' in params.data && params.data.balance < 0) {
+              return 'negative-balance-row';
+            }
+            return '';
+          }}
+          onCellClicked={(event) => {
+
+            if(event.colDef?.suppressRowClickSelection){
               return;
             }
-            // Skip row click handling if there's no handler
-            if (!onItemClick) return;
-            
-            // Find the ID column (it should be the second column now)
-            const idColumn = columns.find(col => col.field === idField);
-            if (!idColumn) return;
-            
-            // Check if click was on the ID column
-            if (event.column?.colId === idColumn.field) {
-                onItemClick(event.data);
-            } else if (idColumn.onClick) {
-                idColumn.onClick(event.data);
-            } else {
-                // Default case: Just handle the item click
-                onItemClick(event.data);
-            }
+            onItemClick && onItemClick(event.data);
           }}
         />
       </div>

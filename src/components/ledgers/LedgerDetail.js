@@ -7,7 +7,8 @@ import useLedgers from '../../hooks/useLedgers';
 import { useDashboard } from '../../context/DashboardContext';
 import { enrichedEntityDrillCellRenderer } from './LedgerRenderers.js';
 import { LedgerConfig } from './LedgerConfig.js';
-import { accountCodeCellRenderer, accountIDDrillCellRenderer, accountTypeCellRenderer } from '../accounts/AccountRenderers.js';
+import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
+import { getAccountType } from '../../utils/formatters/accountFormatters.js';
 
 /**
  * Ledger Detail component using GenericDetailView
@@ -125,7 +126,7 @@ const LedgerDetail = () => {
           {
             field: 'account_id',
             headerName: 'ID',
-            cellRenderer: accountIDDrillCellRenderer,
+            cellRenderer: props => drillFormatter('accounts', props.data.account_id, props.data.account_id),
           },
           {
             field: 'name',
@@ -134,12 +135,12 @@ const LedgerDetail = () => {
           {
             field: 'account_code',
             headerName: 'Account Code',
-            cellRenderer: accountCodeCellRenderer,
+            cellRenderer: props => formatAccountCode(props.data.account_code || props.data.code),
           },
           {
             field: 'type',
             headerName: 'Type',
-            cellRenderer: accountTypeCellRenderer,
+            cellRenderer: props => getAccountType(props.data),
           },
           {
             field: 'enriched_entity',
