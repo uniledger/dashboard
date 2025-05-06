@@ -32,7 +32,7 @@ const EntityList = () => {
       columns={columns}
       title="Entities"
       idField={EntityConfig.idField}
-      onItemClick={handleViewDetails}
+      onRowClick={handleViewDetails}
       onRefresh={fetchEntities}
       searchPlaceholder="Search entities..."
       emptyMessage="No entities found"

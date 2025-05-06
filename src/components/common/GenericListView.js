@@ -46,7 +46,7 @@ ModuleRegistry.registerModules([
  * @param {string} props.title - Title for the list (e.g., "Accounts")
  * @param {string} props.emptyMessage - Message to display when the list is empty
  * @param {string} props.idField - The field to use as the ID (e.g., "account_id")
- * @param {function} props.onItemClick - Handler for clicking an item
+ * @param {function} props.onRowClick - Handler for clicking a row
  * @param {function} props.onViewJson - Handler for viewing JSON data
  * @param {function} props.onSearch - Custom search handler
  * @param {React.ReactNode} props.customHeader - Custom header content
@@ -62,7 +62,7 @@ const GenericListView = ({
   title,
   emptyMessage,
   idField,
-  onItemClick,
+  onRowClick,
   onViewJson,
   onSearch,
   customHeader,
@@ -86,6 +86,7 @@ const GenericListView = ({
       field: 'json',
       headerName: '',
       filter: false,
+      suppressRowClickSelection: true,
       cellRenderer: jsonCellRenderer,
       cellStyle: { textAlign: 'center' },
     });
@@ -237,11 +238,12 @@ const GenericListView = ({
             return '';
           }}
           onCellClicked={(event) => {
-
+            // If the cell click is on a column that suppresses row click selection, do nothing
             if(event.colDef?.suppressRowClickSelection){
               return;
             }
-            onItemClick && onItemClick(event.data);
+            // Otherwise, call the onRowClick handler if it exists
+            onRowClick && onRowClick(event.data);
           }}
         />
       </div>

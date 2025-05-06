@@ -134,7 +134,7 @@ const EventEntryPage = ({ onViewJson }) => {
             columns={columns}
             title="Templates"
             idField="template_id"
-            onItemClick={handleSelectTemplate}
+            onRowClick={handleSelectTemplate}
             onViewJson={onViewJson}
             onRefresh={fetchTemplates}
             searchPlaceholder="Search templates..."

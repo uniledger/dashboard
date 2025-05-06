@@ -1,22 +1,29 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { GenericListView } from '../common';
 import { ProcessedEventConfig } from './ProcessedEventConfig.js';
 import { eventTemplateDrillCellRenderer, processedEventDrillCellRenderer } from './ProcessedEventRenderers.js';
 import { eventTimestampDateCellRenderer, amountCellRenderer, fromAccountDrillCellRenderer, eventsFromLedgerDrillCellRenderer } from '../common/CellRenderers.js';
+import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
 
 /**
  * Component to display a list of processed events using GenericListView
  */
 const ProcessedEventsList = ({ events, onSelectEvent, onViewJson, onRefresh, loading }) => {
+  const navigate = useNavigate();
   // Define columns explicitly: ID, Status, Template, Timestamp, Amount, Ledger, Metadata
   const statusCol = ProcessedEventConfig.listColumns.find(c => c.key === 'status');
+
+   // Navigate to account detail view
+   const handleViewEvent = (props) => {
+    navigate(`/processed-events/${props.event_id}`);
+  };
   const columns = [
     // Event ID with drill link
     {
-      field: 'processed_event_id',
+      field: 'event_id',
       headerName: 'ID',
-      cellRenderer: processedEventDrillCellRenderer,
     },
     {
       field: 'status',
@@ -66,7 +73,8 @@ const ProcessedEventsList = ({ events, onSelectEvent, onViewJson, onRefresh, loa
       data={events}
       columns={columns}
       title="Processed Events"
-      idField="processed_event_id"
+      idField="event_id"
+      onRowClick={handleViewEvent}
       loading={loading}
       onViewJson={onViewJson}
       onRefresh={onRefresh}

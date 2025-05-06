@@ -73,7 +73,7 @@ const LedgerList = () => {
       columns={columns}
       title="Ledgers"
       idField={LedgerConfig.idField}
-      onItemClick={handleViewLedger}
+      onRowClick={handleViewLedger}
       onRefresh={fetchLedgers}
       searchPlaceholder="Search ledgers..."
       emptyMessage="No ledgers found"
