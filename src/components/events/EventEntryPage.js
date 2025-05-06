@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import useTransactions from '../../hooks/useTransactions';
 import useAccounts from '../../hooks/useAccounts';
+import useLedgers from '../../hooks/useLedgers';
 import apiService from '../../services/apiService';
 import EventForm from '../templates/EventForm';
 import { LoadingSpinner } from '../common';
 import { GenericListView } from '../common'
+import { EventEntryPageConfig } from './EventEntryPageConfig';
 
 /**
  * Event Entry page component
@@ -27,8 +29,12 @@ const EventEntryPage = ({ onViewJson }) => {
     fetchAccounts
   } = useAccounts();
 
-  const [ledgers, setLedgers] = useState([]);
-  const [loadingLedgers, setLoadingLedgers] = useState(false);
+  const { 
+    ledgers,
+    fetchLedgers,
+    loading: loadingLedgers
+  } = useLedgers();
+
   const [templateSelectionActive, setTemplateSelectionActive] = useState(true);
 
   // Fetch data when component mounts
@@ -36,30 +42,7 @@ const EventEntryPage = ({ onViewJson }) => {
     fetchTemplates();
     fetchLedgers();
     fetchAccounts();
-  }, [fetchTemplates, fetchAccounts]);
-
-  const fetchLedgers = async () => {
-    setLoadingLedgers(true);
-    try {
-      const response = await apiService.ledger.getLedgers();
-      console.log('EventEntryPage ledgers response:', response);
-      
-      // Extract data from the response object
-      if (response.ok && response.data) {
-        const ledgersData = response.data;
-        console.log('Setting ledgers:', ledgersData.length, 'items');
-        setLedgers(ledgersData);
-      } else {
-        console.error('Failed to fetch ledgers:', response.error);
-        setLedgers([]);
-      }
-    } catch (error) {
-      console.error('Error fetching ledgers:', error);
-      setLedgers([]);
-    } finally {
-      setLoadingLedgers(false);
-    }
-  };
+  }, [fetchTemplates, fetchAccounts, fetchLedgers]);
 
   const handleSelectTemplate = (template) => {
     selectTemplate(template);
@@ -81,41 +64,7 @@ const EventEntryPage = ({ onViewJson }) => {
   }
 
   // Define columns for the template selection list
-  const columns = [
-    {
-      field: 'template_id',
-      headerName: 'ID',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
-    },
-    {
-      field: 'name',
-      headerName: 'Template Name',
-      cellClassName: 'font-medium text-gray-900',
-    },
-    {
-      field: 'product',
-      headerName: 'Type',
-      cellClassName: 'text-gray-500',
-    },
-    {
-      field: 'description',
-      headerName: 'Description',
-      cellClassName: 'text-gray-500',
-      render: (item) => {
-        return item.description.length > 100 
-          ? `${item.description.substring(0, 100)}...` 
-          : item.description;
-      }
-    },
-    {
-      field: 'created_date',
-      headerName: 'Created',
-      cellClassName: 'text-gray-500',
-      render: (item) => {
-        return new Date(item.created_date * 1000).toLocaleDateString();
-      }
-    }
-  ];
+  const columns = EventEntryPageConfig.templateSelectionColumns;
 
   // Show template selection if no template is selected yet
   if (templateSelectionActive) {

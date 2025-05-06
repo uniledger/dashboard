@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { GenericListView } from '../common';
 import { ProcessedEventConfig } from './ProcessedEventConfig.js';
 import { eventTemplateDrillCellRenderer, processedEventDrillCellRenderer } from './ProcessedEventRenderers.js';
-import { eventTimestampDateCellRenderer, amountCellRenderer, fromAccountDrillCellRenderer, eventsFromLedgerDrillCellRenderer } from '../common/CellRenderers.js';
 import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
 
 /**
@@ -44,27 +43,23 @@ const ProcessedEventsList = ({ events, onSelectEvent, onViewJson, onRefresh, loa
     // Created timestamp (use event.timestamp)
     {
       field: 'timestamp',
-      headerName: 'Created',
-      cellRenderer: eventTimestampDateCellRenderer,
+      headerName: 'Timestamp',
     },
     // Amount
     {
       field: 'amount',
       headerName: 'Amount',
       type: 'rightAligned',
-      cellRenderer: amountCellRenderer,
     },
     // From Account (first transfer)
     {
-      field: 'from_account',
+      field: 'from_account_id',
       headerName: 'From Account',
-      cellRenderer: fromAccountDrillCellRenderer,
     },
     // Ledger link
     {
       field: 'ledger',
       headerName: 'Ledger',
-      cellRenderer: eventsFromLedgerDrillCellRenderer,
     }
   ];
 

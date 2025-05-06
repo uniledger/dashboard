@@ -1,6 +1,5 @@
 import React from 'react';
 import { GenericListView } from '../common';
-import { timestampDateCellRenderer } from '../common/CellRenderers.js';
 import { ledgerDrillCellRenderer } from '../ledgers/LedgerRenderers.js';
 import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
 import { formatBalance } from '../../utils/formatters/index';
@@ -49,11 +48,11 @@ const AccountTransfersList = ({ transfers, accountId, onViewJson, onRefresh, loa
       type: 'rightAligned',
       cellRenderer: props => formatBalance(props.data.amount, {}),
     },
-    // Timestamp with formatting (converted from Unix timestamp in nanoseconds)
+    // Timestamp 
     {
       field: 'timestamp',
-      headerName: 'Date',
-      cellRenderer: timestampDateCellRenderer,
+      headerName: 'Timestamp',
+      width: 180
     },
     // Ledger with drill link (using correct 'ledger' field)
     {

@@ -1,16 +1,15 @@
 import React, { useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { GenericListView, GenericDetailView } from '../common';
 import useEntities from '../../hooks/useEntities';
 import { useDashboard } from '../../context/DashboardContext';
-import { countryCellRenderer } from './EntityRenderers.js';
-import { ledgerIDDrillCellRenderer, enrichedLedgerDrillCellRenderer, ledgerCurrencyCellRenderer } from '../ledgers/LedgerRenderers.js';
 import { EntityConfig } from './EntityConfig.js';
 import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
 import { formatAccountCode } from '../../utils/formatters/index';
 import { getAccountType } from '../../utils/formatters/accountFormatters.js';
 import { getCurrencyInfo } from '../../utils/formatters/index'; 
 import { formatBalance } from '../../utils/formatters/index';
+import { getCountryDisplay } from '../../utils/formatters/index';
 
 /**
  * Entity Detail component using GenericDetailView
@@ -63,13 +62,6 @@ const EntityDetail = () => {
           {
             field: 'ledger_id',
             headerName: 'ID',
-            cellRenderer: ledgerIDDrillCellRenderer,
-            cellClassName: 'text-blue-600 cursor-pointer hover:underline',
-            render: (ledger) => (
-              <Link to={`/ledgers/${ledger.ledger_id}`}>
-                {ledger.ledger_id}
-              </Link>
-            )
           },
           {
             field: 'name',
@@ -78,12 +70,12 @@ const EntityDetail = () => {
           {
             field: 'currency',
             headerName: 'Currency',
-            cellRenderer: ledgerCurrencyCellRenderer,
+            cellRenderer: props => props.data.r_currency ? `${props.data.r_currency.currency_code} (${props.data.r_currency.type})` : 'N/A',
           },
           {
             field: 'country',
             headerName: 'Country',
-            cellRenderer: countryCellRenderer,
+            cellRenderer: props => getCountryDisplay(props.data),
           },
         ]}
         onRowClick={(ledger) => navigate(`/ledgers/${ledger.ledger_id}`)}
@@ -106,7 +98,6 @@ const EntityDetail = () => {
           {
             field: 'account_id',
             headerName: 'ID',
-            cellRenderer: props => drillFormatter('accounts', props.data.account_id, props.data.account_id),
           },
           {
             field: 'name',
@@ -125,7 +116,8 @@ const EntityDetail = () => {
           {
             field: 'ledger',
             headerName: 'Ledger',
-            cellRenderer: props => drillFormatter('ledgers', props.data.ledger_id, props.data.ledger_id),
+            suppressRowClickSelection: true,
+            cellRenderer: props => drillFormatter('ledgers', props.data.enriched_ledger?.name, props.data.enriched_ledger?.ledger_id),
           },
           {
             field: 'balance',
@@ -134,22 +126,6 @@ const EntityDetail = () => {
             cellRenderer: props => formatBalance(props.data.balance, getCurrencyInfo(props.data), true),
           },
         ]}
-        sortFunction={(a, b) => {
-          // Extract account code from account_code or name
-          const getCode = (account) => {
-            if (account.account_code && typeof account.account_code === 'object') {
-              return String(account.account_code.account_code || '');
-            } else if (typeof account.account_code === 'string') {
-              return account.account_code;
-            } else if (account.name && account.name.includes('-')) {
-              return account.name.split('-')[0].trim();
-            }
-            return '';
-          };
-          const codeA = getCode(a);
-          const codeB = getCode(b);
-          return (codeA || '').toString().localeCompare((codeB || '').toString());
-        }}
         onRowClick={(account) => {
           const id = account.account_id || account.account_extra_id;
           navigate(`/accounts/${id}`);

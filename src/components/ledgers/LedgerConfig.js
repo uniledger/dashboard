@@ -2,9 +2,8 @@
  * Ledger model configuration
  */
 import React from 'react';
-import { ledgerCurrencyCellRenderer } from './LedgerRenderers.js';
-import { entityOwnerCellRenderer, countryCellRenderer } from '../common/CellRenderers.js';
-import { getCountryDisplay } from '../../utils/formatters';
+import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
+import { getCountryDisplay } from '../../utils/formatters/index.js';
 
 export const LedgerConfig = {
   title: 'Ledger',
@@ -25,17 +24,18 @@ export const LedgerConfig = {
     {
       field: 'entity',
       headerName: 'Owner',
-      cellRenderer: entityOwnerCellRenderer,
+      suppressRowClickSelection: true,
+      cellRenderer: props => props.data.r_entity ? drillFormatter('entities', props.data.r_entity.name, props.data.r_entity.entity_id) : (props.data.entity ? drillFormatter('entities', props.data.entity.name, props.data.entity.entity_id) : 'N/A'),
     },
     {
       field: 'currency',
       headerName: 'Currency',
-      cellRenderer: ledgerCurrencyCellRenderer,
+      cellRenderer: props => props.data.r_currency ? `${props.data.r_currency.currency_code} (${props.data.r_currency.type})` : 'N/A',
     },
     {
       field: 'country',
       headerName: 'Country',
-      cellRenderer: countryCellRenderer,
+      cellRenderer: props => getCountryDisplay(props.data),
     }
   ],
   
@@ -51,7 +51,7 @@ export const LedgerConfig = {
     },
     {
       label: 'Owner',
-      content: entity ? entity.name : (ledger.r_entity ? ledger.r_entity.name : 'N/A')
+      content: entity ? drillFormatter('entities', entity.name, entity.entity_id) : (ledger.r_entity ? drillFormatter('entities', ledger.r_entity.name, ledger.r_entity.entity_id) : 'N/A')
     },
     {
       label: 'Currency',

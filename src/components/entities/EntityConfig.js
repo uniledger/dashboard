@@ -2,7 +2,6 @@
  * Entity model configuration
  */
 import { getCountryDisplay } from '../../utils/formatters';
-import { entityTypeCellRenderer, countryCellRenderer, kycStatusCellRenderer } from './EntityRenderers.js';
 
 export const EntityConfig = {
   title: 'Entity',
@@ -14,27 +13,23 @@ export const EntityConfig = {
     {
       field: 'entity_id',
       headerName: 'ID',
-      cellClassName: 'text-blue-600 hover:underline cursor-pointer font-medium',
     },
     {
       field: 'name',
       headerName: 'Name',
-      cellClassName: 'font-medium text-gray-900',
     },
     {
-      field: 'type',
+      field: 'entity_type',
       headerName: 'Type',
-      cellRenderer: entityTypeCellRenderer
     },
     {
       field: 'country',
       headerName: 'Country',
-      cellRenderer: countryCellRenderer
+      cellRenderer: props => getCountryDisplay(props.data),
     },
     {
       field: 'kyc_status',
       headerName: 'KYC Status',
-      cellRenderer: kycStatusCellRenderer
     }
   ],
   
