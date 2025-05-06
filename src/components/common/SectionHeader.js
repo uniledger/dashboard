@@ -11,7 +11,7 @@ import React from 'react';
  */
 const SectionHeader = ({ title, description, actions, className = '' }) => {
   return (
-    <div className={`flex justify-between items-center ${className}`}>
+    <div className={`bg-white px-6 py-4 border-t border-x border-gray-300 rounded-t-lg flex justify-between items-center ${className}`}>
       <div>
         <h3 className="text-lg leading-6 font-medium text-gray-900">
           {title}

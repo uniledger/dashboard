@@ -89,6 +89,9 @@ const GenericListView = ({
       suppressRowClickSelection: true,
       cellRenderer: jsonCellRenderer,
       cellStyle: { textAlign: 'center' },
+      resizable: false,
+      sortable: false,
+      width: 40,
     });
   }
 
@@ -112,7 +115,7 @@ const GenericListView = ({
     <div className="flex items-center gap-2">
       {data.length > 0 && (
         <button
-          className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
+          className="p-2 rounded-full text-gray-500 bg-gray-50 hover:bg-gray-100"
           onClick={triggerCsvExport}
           title="Export to CSV"
         >
@@ -124,7 +127,7 @@ const GenericListView = ({
         </button>
       )}
       <button
-        className="p-2 rounded-full text-gray-500 hover:bg-gray-100"
+        className="p-2 rounded-full text-gray-500 bg-gray-50 hover:bg-gray-100"
         onClick={onRefresh}
         title="Refresh data"
       >
@@ -138,7 +141,7 @@ const GenericListView = ({
 
   const renderGridContent = () => {
     return (
-      <div className="ag-theme-alpine w-full h-auto">
+      <div className="ag-theme-alpine w-full h-auto border-b border-x border-gray-300 rounded-b-lg">
         <AgGridReact
           domLayout="autoHeight"
           rowData={data}
@@ -175,12 +178,12 @@ const GenericListView = ({
   }
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="ag-theme-alpine">
       <SectionHeader
         title={
           <>
             <span>{title}</span>
-            <span className="ml-2 text-sm text-gray-500">({data.length})</span>
+            <span className="text-gray-500">  ({data.length})</span>
           </>
         }
         description=""
@@ -192,7 +195,6 @@ const GenericListView = ({
         <ErrorAlert
           error={error}
           onRetry={onRefresh}
-          className="mb-4"
         />
       )}
 
@@ -201,7 +203,7 @@ const GenericListView = ({
 
       {/* Render the loading spinner */}
       {loading && (
-        <div className="ag-theme-alpine w-full h-96 flex items-center justify-center">
+        <div className="ag-theme-alpine w-full h-96 flex items-center justify-center border-b border-x border-gray-300 rounded-b-lg">
           <LoadingSpinner size="lg" message="Loading data..." />
         </div>
       )}
