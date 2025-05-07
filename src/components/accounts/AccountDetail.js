@@ -1,7 +1,9 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import GenericDetailView from '../common/GenericDetailView.js';
+import GenericListView from '../common/GenericListView.js';
 import { AccountConfig } from './AccountConfig.js';
+import { AccountDetailConfig } from './AccountDetailConfig.js';
 import useAccounts from '../../hooks/useAccounts';
 import useAccountTransfers from '../../hooks/useAccountTransfers';
 import { useDashboard } from '../../context/DashboardContext';
@@ -19,6 +21,9 @@ const AccountDetail = () => {
     accountTransfers,
     fetchAccountTransfers 
   } = useAccountTransfers();
+  
+  const accountContext  = { accountId };
+  accountContext.accountId = accountId;
   
   // Fetch account data when component mounts or accountId changes
   useEffect(() => {
@@ -65,14 +70,26 @@ const AccountDetail = () => {
         loadingMessage="Loading account details..."
       />
       
-      {/* Directly render transfers table with auto-growing height */}
+      <GenericListView
+        title="Account Transfers"
+        data={accountTransfers || []}
+        columns={AccountDetailConfig.transferColumns}
+        context={accountContext}
+        idField="id"
+        emptyMessage="No transfers found for this account"
+        onViewJson={handleViewJson}
+        onRefresh={() => fetchAccountTransfers(accountId)}
+        loading={loading}
+      />
+
+      {/* Directly render transfers table with auto-growing height
       <AccountTransfersList 
         transfers={accountTransfers || []} 
         accountId={accountId}
         onViewJson={handleViewJson}
         onRefresh={() => fetchAccountTransfers(accountId)}
         loading={loading}
-      />
+      /> */}
     </div>
   );
 };

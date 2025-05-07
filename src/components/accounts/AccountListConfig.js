@@ -1,11 +1,12 @@
 /**
- * Account model configuration
+ * Account list model configuration
  */
+import React from 'react';
 
 import { formatBalance, formatAccountCode, getAccountType, getCurrencyInfo } from '../../utils/formatters/index';
 import { drillFormatter } from '../../utils/formatters/drillFormatters';
 
-export const AccountConfig = {
+export const AccountListConfig = {
   title: 'Account',
   idField: 'account_id',
   altIdField: 'account_extra_id', // Alternative ID field for accounts
@@ -65,51 +66,6 @@ export const AccountConfig = {
           props.data.currency_code || 
           'N/A';
       }
-    }
-  ],
-  
-  // Basic section fields for detail view
-  detailSections: (account, entity, ledger) => [
-    {
-      label: 'Account ID',
-      content: account.account_id || 'N/A'
-    },
-    {
-      label: 'Name',
-      content: account.name
-    },
-    {
-      label: 'Created',
-      skipSection: !account.date_created,
-      content: account.date_created ? new Date(account.date_created).toLocaleString() : 'N/A'
-    },
-    {
-      label: 'Account Type',
-      content: getAccountType(account)
-    },
-    {
-      label: 'Entity',
-      skipSection: !entity,
-      content: entity ? drillFormatter('entities', entity.name, entity.entity_id) : 'N/A'
-    },
-    {
-      label: 'Ledger',
-      skipSection: !ledger,
-      content: ledger ? drillFormatter('ledgers', ledger.name, ledger.ledger_id) : 'N/A'
-    },
-    {
-      label: 'Account Code',
-      content: formatAccountCode(account.account_code || account.code)
-    },
-    {
-      label: 'Currency',
-      content: (ledger && ledger.r_currency && ledger.r_currency.currency_code) || 
-               account.currency_code || 
-               'N/A'
-    },
-    {
-      label: 'Current Balance',
-      content: formatBalance(account.balance, getCurrencyInfo(account), true)
     }
   ]
 };

@@ -3,7 +3,7 @@
  */
 import { getCountryDisplay } from '../../utils/formatters';
 
-export const EntityConfig = {
+export const EntityListConfig = {
   title: 'Entity',
   idField: 'entity_id',
   displayField: 'name',
@@ -33,27 +33,4 @@ export const EntityConfig = {
     }
   ],
   
-  // Basic section fields for detail view
-  detailSections: (entity) => [
-    {
-      label: 'Entity ID',
-      content: entity.entity_id
-    },
-    {
-      label: 'Name',
-      content: entity.name
-    },
-    {
-      label: 'Type',
-      content: entity.type || entity.entity_type || 'N/A'
-    },
-    {
-      label: 'Country',
-      content: getCountryDisplay(entity)
-    },
-    {
-      label: 'KYC Status',
-      content: entity.kyc_status || 'N/A'
-    }
-  ]
 };

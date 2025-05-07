@@ -110,6 +110,21 @@ const GenericListView = ({
     handleExportCsv(title);
   }
 
+  const renderSectionHeader = () => {
+    return (
+      <SectionHeader
+        title={
+          <>
+            <span>{title}</span>
+            <span className="text-gray-500">  ({data.length})</span>
+          </>
+        }
+        description=""
+        actions={renderActions()}
+      />
+    );
+  }
+
   // Render action buttons for the section header
   const renderActions = () => (
     <div className="flex items-center gap-2">
@@ -159,10 +174,19 @@ const GenericListView = ({
             window.gridApi = params;
           }}
           getRowClass={(params) => {
+            let classes = [];
+            
+            // Add negative balance class if applicable
             if (params.data && 'balance' in params.data && params.data.balance < 0) {
-              return 'negative-balance-row';
+              classes.push('negative-balance-row');
             }
-            return '';
+            
+            // Add cursor pointer class if row click handler exists
+            if (onRowClick) {
+              classes.push('cursor-pointer');
+            }
+            
+            return classes.join(' ');
           }}
           onCellClicked={(event) => {
             // If the cell click is on a column that suppresses row click selection, do nothing
@@ -179,16 +203,8 @@ const GenericListView = ({
 
   return (
     <div className="ag-theme-alpine">
-      <SectionHeader
-        title={
-          <>
-            <span>{title}</span>
-            <span className="text-gray-500">  ({data.length})</span>
-          </>
-        }
-        description=""
-        actions={renderActions()}
-      />
+      {/* Render section header */}
+      {renderSectionHeader()}
 
       {/* Render error alert */}
       {error && (
@@ -211,7 +227,7 @@ const GenericListView = ({
       {/* Render the main grid content */}
       {!loading && renderGridContent()}
 
-      {/* JSON detail modal */}
+      {/* render JSON detail modal */}
       <DetailModal
         isOpen={!!jsonModalData}
         data={jsonModalData}
