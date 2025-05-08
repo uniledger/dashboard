@@ -2,12 +2,10 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import GenericDetailView from '../common/GenericDetailView.js';
 import GenericListView from '../common/GenericListView.js';
-import { AccountConfig } from './AccountConfig.js';
 import { AccountDetailConfig } from './AccountDetailConfig.js';
 import useAccounts from '../../hooks/useAccounts';
 import useAccountTransfers from '../../hooks/useAccountTransfers';
 import { useDashboard } from '../../context/DashboardContext';
-import AccountTransfersList from './AccountTransfersList';
 
 /**
  * Account Detail component using GenericDetailView
@@ -53,14 +51,14 @@ const AccountDetail = () => {
   const ledger = account?.ledger || account?.enriched_ledger;
   
   // Get standard sections from model config
-  let sections = account ? [...AccountConfig.detailSections(account, entity, ledger)] : [];
+  let sections = account ? [...AccountDetailConfig.detailSections(account, entity, ledger)] : [];
   
   // Use GenericDetailView for consistent presentation with transfers below
   return (
     <div className="space-y-6">
       <GenericDetailView
         data={account}
-        title={AccountConfig.title + " Detail"}
+        title={AccountDetailConfig.title + " Detail"}
         subtitle={account?.name}
         sections={sections}
         onBack={handleBack}

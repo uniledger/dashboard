@@ -24,7 +24,7 @@ export const endpoints = {
     
     accounts: `${LEDGER_API_BASE_URL}/api/v1/enriched-accounts`,
     accountById: (id) => `${LEDGER_API_BASE_URL}/api/v1/enriched-accounts/${id}`,
-    accountTransfers: (id, limit = 100) => `${LEDGER_API_BASE_URL}/api/v1/accounts/${id}/transfers?limit=${limit}&transfer_type=all`,
+    accountTransfers: (id, limit = 100) => `${LEDGER_API_BASE_URL}/api/v1/accounts/${id}/transfers?limit=${limit}&transfer_type=ALL`,
     
     currencies: `${LEDGER_API_BASE_URL}/api/v1/currencies`,
     countries: `${LEDGER_API_BASE_URL}/api/v1/countries`,

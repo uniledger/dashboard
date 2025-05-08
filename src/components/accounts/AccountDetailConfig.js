@@ -2,10 +2,11 @@
  * Account detail model configuration
  */
 
-import { formatBalance, formatAccountCode, getAccountType, getCurrencyInfo } from '../../utils/formatters/index';
+import { formatBalance, formatAccountCode, getAccountType, getCurrencyInfo, formatDate } from '../../utils/formatters/index';
 import { drillFormatter } from '../../utils/formatters/drillFormatters';
 
 export const AccountDetailConfig = {
+  title: 'Account',
   // Basic section fields for detail view
   detailSections: (account, entity, ledger) => [
     {
@@ -88,12 +89,16 @@ export const AccountDetailConfig = {
         field: 'amount',
         headerName: 'Amount',
         type: 'rightAligned',
-        cellRenderer: props => formatBalance(props.data.amount, {}),
+        cellRenderer: props => formatBalance(props.value, false),
+        context: {
+          suppressRowClickSelection: true
+        }
       },
       // Timestamp 
       {
         field: 'timestamp',
         headerName: 'Timestamp',
+        cellRenderer: props => formatDate(props.value, true),  
         width: 180
       },
       // Ledger with drill link (using correct 'ledger' field)
@@ -101,6 +106,9 @@ export const AccountDetailConfig = {
         field: 'ledger',
         headerName: 'Ledger',
         cellRenderer: props => drillFormatter('ledgers', props.data.ledger, props.data.ledger),
+        context: {
+          suppressRowClickSelection: true
+        }
       }
     ]
 };

@@ -19,12 +19,13 @@ export const LedgerConfig = {
     {
       field: 'name',
       headerName: 'Name',
-      cellClassName: 'font-medium text-gray-900',
     },
     {
       field: 'entity',
       headerName: 'Owner',
-      suppressRowClickSelection: true,
+      context: {
+        suppressRowClickSelection: true
+      },
       cellRenderer: props => props.data.r_entity ? drillFormatter('entities', props.data.r_entity.name, props.data.r_entity.entity_id) : (props.data.entity ? drillFormatter('entities', props.data.entity.name, props.data.entity.entity_id) : 'N/A'),
     },
     {

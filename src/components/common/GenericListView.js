@@ -81,12 +81,14 @@ const GenericListView = ({
   context = contextWithHandler;
 
   // Only add JSON column if it doesn't already exist
-  if (!columns.some(col => col.field === 'json')) {
+  if (columns &&!columns.some(col => col.field === 'json')) {
     columns.unshift({
       field: 'json',
       headerName: '',
       filter: false,
-      suppressRowClickSelection: true,
+      context: {
+        suppressRowClickSelection: true
+      },
       cellRenderer: jsonCellRenderer,
       cellStyle: { textAlign: 'center' },
       resizable: false,
@@ -164,7 +166,6 @@ const GenericListView = ({
           defaultColDef={defaultColDef}
           context={context}
           animateRows={true}
-          idField={idField}
           onSearch={onSearch}
           onFirstDataRendered={(params) => {
             params.api.autoSizeAllColumns();
@@ -190,7 +191,7 @@ const GenericListView = ({
           }}
           onCellClicked={(event) => {
             // If the cell click is on a column that suppresses row click selection, do nothing
-            if (event.colDef?.suppressRowClickSelection) {
+            if (event.colDef?.context?.suppressRowClickSelection) {
               return;
             }
             // Otherwise, call the onRowClick handler if it exists

@@ -22,6 +22,7 @@ export const AccountListConfig = {
     {
       field: 'name',
       headerName: 'Account Name',
+      cellRenderer: props => props.data.name || 'N/A',
     },
     {
       field: 'account_code',
@@ -47,7 +48,9 @@ export const AccountListConfig = {
         const owner = props.data.r_entity || props.data.enriched_ledger?.r_entity;
         return owner?.entity_id ? drillFormatter('entities', owner.name, owner.entity_id) : 'N/A';
       },
-      suppressRowClickSelection: true
+      context: {
+        suppressRowClickSelection: true
+      }
     },
     {
       field: 'ledger',
@@ -56,7 +59,9 @@ export const AccountListConfig = {
         const ledger = props.data.r_ledger || props.data.enriched_ledger;
         return ledger?.ledger_id ? drillFormatter('ledgers', ledger.name, ledger.ledger_id) : 'N/A';
       },
-      suppressRowClickSelection: true
+      context: {
+        suppressRowClickSelection: true
+      }
     },
     {
       field: 'currency',
