@@ -58,7 +58,10 @@ describe('AccountList', () => {
       fetchAccounts: jest.fn(),
     });
     render(<AccountList />, { wrapper: MemoryRouter });
-    fireEvent.click(screen.getByText('Test Account 1'));
+    // Wait for the grid to render
+    const row = document.querySelector('.ag-row');
+    expect(row).toBeTruthy();
+    fireEvent.click(row);
     expect(mockNavigate).toHaveBeenCalledWith('/accounts/1');
   });
 
