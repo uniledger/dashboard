@@ -226,8 +226,15 @@ const GenericListView = ({
         </div>
       )}
 
+      {/* Render the empty message if there is no data and not loading */}
+      {!loading && data.length === 0 && (
+        <div className="py-12 text-center text-gray-500" data-testid="empty-message">
+          {emptyMessage || "No items found"}
+        </div>
+      )}
+
       {/* Render the main grid content */}
-      {!loading && render_grid_content()}
+      {!loading && data.length > 0 && render_grid_content()}
 
       {/* render JSON detail modal */}
       <DetailModal
