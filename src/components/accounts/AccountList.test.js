@@ -29,7 +29,7 @@ describe('AccountList', () => {
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
-  it('renders account rows', () => {
+  it('renders account rows', async () => {
     jest.spyOn(useAccountsModule, 'default').mockReturnValue({
       accounts: [
         { account_id: '1', name: 'Test Account 1' },
@@ -39,8 +39,9 @@ describe('AccountList', () => {
       fetchAccounts: jest.fn(),
     });
     render(<AccountList />, { wrapper: MemoryRouter });
-    expect(screen.getByText('Test Account 1')).toBeInTheDocument();
-    expect(screen.getByText('Test Account 2')).toBeInTheDocument();
+    // Use async findByText to wait for AG Grid rows to render
+    expect(await screen.findByText('Test Account 1')).toBeInTheDocument();
+    expect(await screen.findByText('Test Account 2')).toBeInTheDocument();
   });
 
   it('shows empty message', () => {
