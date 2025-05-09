@@ -1,14 +1,18 @@
 import React from 'react';
 
 /**
- * Dashboard footer component with API links
+ * Footer component for the main dashboard layout.
+ * Displays copyright information and links to API documentation (Ledger and Transactions APIs).
+ * It does not take any direct props.
+ * 
+ * @returns {JSX.Element} The rendered DashboardFooter component.
  */
 const DashboardFooter = () => {
   return (
     <footer className="bg-white border-t border-gray-200">
       <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
-          <p className="text-gray-500 text-sm">© 2025 LedgerRocket. All rights reserved.</p>
+          <p className="text-gray-500 text-sm"> @2025 LedgerRocket. All rights reserved.</p>
           <div className="flex space-x-2 text-sm">
             <a 
               href="https://ledger.dev.ledgerrocket.com/openapi.json" 

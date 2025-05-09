@@ -6,8 +6,12 @@ import TemplateDetail from './TemplateDetail';
 // Removed unused EventForm import
 
 /**
- * Main Templates page component
- * Manages whether to show the list or detail view
+ * Manages the display of transaction templates, allowing users to view a list of templates
+ * or the details of a specific template. It utilizes the `useTransactions` hook to manage template data.
+ *
+ * @param {Object} props - Component props.
+ * @param {function} [props.onViewJson] - Callback function to display raw JSON data for an item.
+ * @returns {JSX.Element} The rendered TemplatesPage component, showing either `TemplatesList` or `TemplateDetail`.
  */
 const TemplatesPage = ({ onViewJson }) => {
   const { 
@@ -36,6 +40,12 @@ const TemplatesPage = ({ onViewJson }) => {
 
   // Removed unused event-form fetch logic
 
+  /**
+   * Invokes the `onViewJson` prop, if provided, to display raw JSON data.
+   *
+   * @param {Object} data - The data object to be displayed as JSON.
+   * @param {string} title - The title for the JSON view modal.
+   */
   const handleViewJson = (data, title) => {
     if (onViewJson) {
       onViewJson(data, title);
@@ -44,6 +54,9 @@ const TemplatesPage = ({ onViewJson }) => {
 
   // Removed handleUseTemplate functionality
 
+  /**
+   * Clears the selected template and switches the view back to the templates list.
+   */
   const handleBackToList = () => {
     clearSelectedTemplate();
     setView('list');
@@ -51,6 +64,11 @@ const TemplatesPage = ({ onViewJson }) => {
 
   // Removed unused handleBackToDetail
 
+  /**
+   * Selects a template and switches the view to show the template details.
+   *
+   * @param {Object} template - The template object to be selected.
+   */
   const handleSelectTemplate = (template) => {
     selectTemplate(template);
     setView('detail');

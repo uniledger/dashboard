@@ -21,7 +21,13 @@ const icons = {
 };
 
 /**
- * Sidebar navigation component
+ * Sidebar navigation component for the dashboard.
+ * Displays categorized navigation links and allows for a collapsed/expanded state.
+ * 
+ * @param {Object} props - Component props.
+ * @param {boolean} props.collapsed - Boolean indicating if the sidebar is collapsed.
+ * @param {function} props.setCollapsed - Callback function to toggle the collapsed state of the sidebar.
+ * @returns {JSX.Element} The rendered Sidebar component.
  */
 const Sidebar = ({ collapsed, setCollapsed }) => {
   // Define navigation items with icons and categories

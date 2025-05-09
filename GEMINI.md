@@ -112,13 +112,13 @@ The application primarily deals with the following data models (often fetched as
 * **Adding a New View (List/Detail):**
     1. Define API calls in `apiService.js`.
     2. Create a new custom hook in `src/hooks/` using `useDataFetching` and the new API calls.
-    3. Add model configuration to `src/components/common/config/modelConfig.js` (list columns, detail sections).
-    4. Create List and Detail components in `src/components/your_feature/` using `GenericListView` and `GenericDetailView`, passing the hook's data and the model config.
-    5. Add routes in `src/components/dashboard/DashboardRouter.js`.
-    6. Add navigation link in `src/components/shared/sidebar/Sidebar.js`.
+    3. Create List and Detail components in `src/components/your_feature/` using `GenericListView` and `GenericDetailView`, passing the hook's data and the model config.
+    3. Add model configuration to `src/components/your_feature/your_featureListConfig.js` and `src/components/your_feature/your_featureDetailConfig.js` (list columns, detail sections).
+    4. Add routes in `src/components/dashboard/DashboardRouter.js`.
+    5. Add navigation link in `src/components/shared/sidebar/Sidebar.js`.
 * **Modifying Data Display:**
-  * For lists: Update the `listColumns` definition in `modelConfig.js`.
-  * For details: Update the `detailSections` definition in `modelConfig.js`.
+  * For lists: Update the `listColumns` definition in `your_featureListConfig.js`.
+  * For details: Update the `detailSections` definition in `your_featureDetailConfig.js`.
   * Add/modify formatters in `src/utils/formatters/` if needed.
 * **Changing API Endpoints:** Modify `src/config/api.js`.
 * **Adding a Filter:**
@@ -126,9 +126,42 @@ The application primarily deals with the following data models (often fetched as
   * Modify the API call in the hook or `apiService` if backend filtering is needed, OR
   * Apply client-side filtering using functions from `src/utils/filterUtils/` within the hook or component *before* passing data to `GenericListView`.
   * Update UI components to allow setting the filter (e.g., dropdowns, buttons).
-* **Styling Changes:** Modify Tailwind classes directly in components or update base styles in `index.css`.
+* **Styling Changes:** Modify Tailwind classes directly in components or update base styles in `index.css`. 
 
-## 9. Potential Areas for Attention
+
+### Architectural conventions. 
+When creating new features or modifying existing ones, you must strictly follow the existing architecture. 
+1. Use the existing hooks and services where possible.
+2. Use the existing components where possible.
+3. Use the existing models where possible.
+4. Use the existing formatters where possible.
+5. Models contain column configuration and should be used to combine data from multiple columns from a single row.
+6. Formatters should be used to format data for display, not for business logic.
+
+#### Component Documentation Standard
+All React components should be documented using JSDoc comments placed directly above the component definition (after imports). This documentation should include:
+- A brief overall description of the component's purpose.
+- `@param` tags for all props, specifying their type (e.g., `{Object}`, `{string}`, `{Array}`, `{function}`, `{React.ReactNode}`), name (e.g., `props.data`), and a description.
+- `@returns {JSX.Element}` to indicate the component renders JSX.
+
+Example:
+```javascript
+/**
+ * Brief description of the component.
+ * 
+ * @param {Object} props - Component props.
+ * @param {string} props.title - The title for the component.
+ * @param {Array} props.items - An array of items to display.
+ * @param {function} props.onItemClick - Handler for when an item is clicked.
+ * @returns {JSX.Element}
+ */
+const MyComponent = ({ title, items, onItemClick }) => {
+  // ... component logic ...
+  return (<div>...</div>);
+};
+```
+
+### Potential Areas for Attention
 
 * **Error Handling:** While `fetchWithErrorHandling` exists, ensure errors are gracefully handled and displayed to the user in all scenarios. The global `ErrorAlert` is a good pattern.
 * **Loading States:** Ensure appropriate loading indicators are shown for all data fetching operations, especially within detail views when child data loads.
@@ -146,6 +179,5 @@ The application primarily deals with the following data models (often fetched as
 * `src/services/apiService.js` (API Interaction Layer)
 * `src/config/api.js` (API Endpoints)
 * `src/context/DashboardContext.js` (Shared UI State)
-* `src/components/common/config/modelConfig.js` (Model Display Configuration)
 * `src/components/common/GenericListView.js` & `GenericDetailView.js` (Reusable View Patterns)
 CL

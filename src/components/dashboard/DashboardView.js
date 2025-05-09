@@ -5,7 +5,13 @@ import PageHeader from '../shared/PageHeader';
 import useDashboardData from '../../hooks/useDashboardData';
 
 /**
- * Dashboard View component to display a system overview with financial statements
+ * Displays a comprehensive overview of the financial system, including summaries of
+ * assets, liabilities, equity, revenue, and expenses, presented in a financial statement format.
+ * It allows users to filter data by ledger and includes key financial ratios.
+ * This component utilizes the `useDashboardData` hook to fetch and manage its data.
+ * It does not take any direct props.
+ *
+ * @returns {JSX.Element} The rendered DashboardView component.
  */
 const DashboardView = () => {
   const navigate = useNavigate();
@@ -35,7 +41,13 @@ const DashboardView = () => {
   const [revenueExpanded, setRevenueExpanded] = useState(false);
   const [expenseExpanded, setExpenseExpanded] = useState(false);
   
-  // Helper to determine account type
+  /**
+   * Helper function to determine the account type from an account object.
+   * It checks various properties on the account object to find the type.
+   *
+   * @param {Object} account - The account object.
+   * @returns {string} The uppercase account type (e.g., 'ASSET', 'LIABILITY') or 'OTHER' if not determinable.
+   */
   const getAccountType = (account) => {
     if (account.account_type) return account.account_type.toUpperCase();
     if (account.account_code && account.account_code.type) return account.account_code.type.toUpperCase();
@@ -43,7 +55,13 @@ const DashboardView = () => {
     return 'OTHER';
   };
   
-  // Helper to compute decimal balance
+  /**
+   * Helper function to compute the decimal balance of an account based on its raw balance and currency scale.
+   *
+   * @param {Object} account - The account object, expected to have a `balance` and potentially currency scale information
+   *                         (e.g., `r_currency.scale`, `currency.scale`, `ledger.r_currency.scale`, `enriched_ledger.r_currency.scale`).
+   * @returns {number} The balance as a decimal value. Defaults to 0 if balance is not a number.
+   */
   const getDecimalBalance = (account) => {
     const rawBalance = typeof account.balance === 'number' ? account.balance : 0;
     const DEFAULT_SCALE = 2;
@@ -322,7 +340,13 @@ const DashboardView = () => {
     setRatios(calculatedRatios);
   }, [filteredAccounts]);
 
-  // Format currency for display
+  /**
+   * Formats a numerical amount into a currency string representation (in thousands, with 'k' suffix).
+   * Negative numbers are wrapped in parentheses.
+   *
+   * @param {number} amount - The numerical amount (assumed to be in thousands already for this specific use case in the UI).
+   * @returns {string} The formatted currency string (e.g., "1,234.56k", "(500.00k)") or "0.00k" for invalid input.
+   */
   const formatCurrency = (amount) => {
     // Format with commas and no currency code
     const roundedAmount = Math.round(amount);

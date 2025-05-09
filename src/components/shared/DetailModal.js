@@ -2,7 +2,14 @@ import React from 'react';
 
 /**
  * Modal component to display detailed JSON data for any record
- * with improved readability and copy functionality
+ * with improved readability and copy functionality.
+ * 
+ * @param {Object} props - Component props.
+ * @param {boolean} props.isOpen - Controls the visibility of the modal.
+ * @param {Object} props.data - The data object to be displayed as JSON.
+ * @param {string} props.title - The title for the modal header.
+ * @param {function} props.onClose - Callback function to close the modal.
+ * @returns {JSX.Element | null} The rendered DetailModal component or null if not open.
  */
 const DetailModal = ({ isOpen, data, title, onClose }) => {
   if (!isOpen) return null;

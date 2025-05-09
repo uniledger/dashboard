@@ -7,7 +7,11 @@ import { EntityListConfig } from './EntityListConfig.js';
 import { EntityDetailConfig } from './EntityDetailConfig.js';
 
 /**
- * Entity Detail component using GenericDetailView
+ * Displays detailed information for a specific entity, including its ledgers and accounts.
+ * Fetches data using the `useEntities` hook and `useParams` for the entity ID.
+ * Renders content using `GenericDetailView` for entity details and `GenericListView` for related ledgers and accounts.
+ * 
+ * @returns {JSX.Element} The rendered EntityDetail component, or null if no entity data.
  */
 const EntityDetail = () => {
   const { entityId } = useParams();

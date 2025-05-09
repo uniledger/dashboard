@@ -4,8 +4,13 @@ import React, { createContext, useContext, useState } from 'react';
 const DashboardContext = createContext(null);
 
 /**
- * Dashboard Context Provider
- * Manages shared state across dashboard components
+ * Provides shared state and actions across dashboard components.
+ * This includes managing filter states, auto-refresh settings, detail modal visibility and content,
+ * and global error messages.
+ * 
+ * @param {Object} props - Component props.
+ * @param {React.ReactNode} props.children - The child components that will have access to this context.
+ * @returns {JSX.Element} The DashboardContext.Provider wrapping the children.
  */
 export const DashboardProvider = ({ children }) => {
   // Filter state
@@ -86,7 +91,13 @@ export const DashboardProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the dashboard context
+/**
+ * Custom hook to access the DashboardContext.
+ * Provides a convenient way for components to consume shared dashboard state and actions.
+ * Throws an error if used outside of a `DashboardProvider`.
+ * 
+ * @returns {Object} The dashboard context value, including state and action dispatchers.
+ */
 export const useDashboard = () => {
   const context = useContext(DashboardContext);
   if (!context) {

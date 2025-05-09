@@ -27,7 +27,13 @@ import RulesView from '../rules/RulesView';
 import TransfersView from '../transfers/TransfersView';
 
 /**
- * Dashboard Routes component that contains the actual routes
+ * Defines the routing configuration for the dashboard.
+ * It sets up all the navigable paths and maps them to their respective components.
+ * Utilizes `DashboardLayout` to provide a consistent page structure.
+ * The `handleViewJson` function from `useDashboard` context is passed to some routes
+ * to enable a consistent way of viewing raw JSON data for specific items.
+ * 
+ * @returns {JSX.Element} The configured React Router <Routes> component.
  */
 const DashboardRoutes = () => {
   const { handleViewJson } = useDashboard();
@@ -83,8 +89,11 @@ const DashboardRoutes = () => {
 };
 
 /**
- * Dashboard Router component that handles navigation between dashboard views
- * Uses React Router for client-side routing
+ * Main router component for the dashboard section of the application.
+ * It wraps the `DashboardRoutes` with the `DashboardProvider` to ensure that all
+ * dashboard-related routes and components have access to the shared dashboard context.
+ * 
+ * @returns {JSX.Element} The DashboardRouter component with context provider and routes.
  */
 const DashboardRouter = () => {
   return (

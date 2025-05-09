@@ -3,8 +3,12 @@ import { DashboardProvider } from '../context/DashboardContext';
 import DashboardRouter from './dashboard/DashboardRouter';
 
 /**
- * Main dashboard component that manages navigation and data flow
- * The actual layout is now handled by DashboardRouter and DashboardLayout
+ * Core component that sets up the dashboard environment.
+ * It wraps the `DashboardRouter` with the `DashboardProvider` to make shared
+ * dashboard context (like modal state and filters) available throughout the application.
+ * It does not take any direct props.
+ * 
+ * @returns {JSX.Element} The rendered LedgerDashboard component.
  */
 const LedgerDashboard = () => {
   return (
