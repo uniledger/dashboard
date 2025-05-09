@@ -51,15 +51,15 @@ describe('AccountList', () => {
     expect(screen.getByText('No accounts found')).toBeInTheDocument();
   });
 
-  it('navigates to account detail on row click', () => {
+  it('navigates to account detail on row click', async () => {
     jest.spyOn(useAccountsModule, 'default').mockReturnValue({
       accounts: [{ account_id: '1', name: 'Test Account 1' }],
       loading: false,
       fetchAccounts: jest.fn(),
     });
     render(<AccountList />, { wrapper: MemoryRouter });
-    // Wait for the grid to render
-    const row = document.querySelector('.ag-row');
+    // Wait for the AG Grid row to appear
+    const row = await waitFor(() => document.querySelector('.ag-row'));
     expect(row).toBeTruthy();
     fireEvent.click(row);
     expect(mockNavigate).toHaveBeenCalledWith('/accounts/1');
