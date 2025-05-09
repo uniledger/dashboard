@@ -9,8 +9,13 @@ import { GenericListView } from '../common'
 import { EventEntryPageConfig } from './EventEntryPageConfig';
 
 /**
- * Event Entry page component
- * Allows users to create new events directly from the navbar
+ * Renders the event entry page.
+ *
+ * Allows users to create new events directly from the navbar. Integrates templates, accounts, and ledgers selection, and handles event submission.
+ *
+ * @param {Object} props - Component props.
+ * @param {function} props.onViewJson - Callback for viewing raw JSON data for templates or events.
+ * @returns {JSX.Element} The rendered EventEntryPage component.
  */
 const EventEntryPage = ({ onViewJson }) => {
   console.log('EventEntryPage received onViewJson:', onViewJson);
@@ -94,7 +99,7 @@ const EventEntryPage = ({ onViewJson }) => {
     );
   }
 
-  // Show the event form if a template is selected
+// Show the event form if a template is selected
   return (
     <EventForm 
       template={selectedTemplate}

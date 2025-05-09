@@ -1,7 +1,18 @@
 import React from 'react';
 
 /**
- * Reusable PageHeader component that optionally includes back and refresh buttons
+ * Renders a reusable page header.
+ *
+ * Displays a title and optionally a back button, a refresh button, and custom child elements. Used to provide consistent page headers across the dashboard.
+ *
+ * @param {Object} props - Component props.
+ * @param {string} props.title - The main title to display in the header.
+ * @param {boolean} [props.backButton] - If true, a back button is displayed.
+ * @param {boolean} [props.refreshButton] - If true, a refresh button is displayed.
+ * @param {function} [props.onBack] - Callback function for the back button.
+ * @param {function} [props.onRefresh] - Callback function for the refresh button.
+ * @param {React.ReactNode} [props.children] - Additional elements to render in the header.
+ * @returns {JSX.Element} The rendered PageHeader component.
  */
 const PageHeader = ({ title, backButton, refreshButton, onBack, onRefresh, children }) => {
   return (

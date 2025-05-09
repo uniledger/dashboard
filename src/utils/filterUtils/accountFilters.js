@@ -5,10 +5,13 @@ import { filterData } from './index';
 import { getAccountType } from '../accountUtils';
 
 /**
- * Filter account data by account type (handles different structures)
- * @param {Array} accounts - Array of account objects
- * @param {string} accountType - Account type to filter by
- * @returns {Array} - Filtered accounts
+ * Filters accounts by account type.
+ *
+ * Returns only accounts that match the given type, handling different account object structures and normalizing type for comparison.
+ *
+ * @param {Array} accounts - Array of account objects.
+ * @param {string} accountType - Account type to filter by.
+ * @returns {Array} Filtered accounts.
  */
 export const filterAccountsByType = (accounts, accountType) => {
   if (!accountType) {
@@ -24,10 +27,13 @@ export const filterAccountsByType = (accounts, accountType) => {
 };
 
 /**
- * Filter accounts by balance range
- * @param {Array} accounts - Array of account objects
- * @param {Object} balanceFilter - Balance filter { min, max }
- * @returns {Array} - Filtered accounts
+ * Filters accounts by balance range.
+ *
+ * Returns only accounts with balances within the specified min and/or max range. Skips accounts with non-numeric balances.
+ *
+ * @param {Array} accounts - Array of account objects.
+ * @param {Object} balanceFilter - Balance filter with { min, max }.
+ * @returns {Array} Filtered accounts.
  */
 export const filterAccountsByBalance = (accounts, balanceFilter) => {
   if (!balanceFilter || (balanceFilter.min === undefined && balanceFilter.max === undefined)) {
@@ -51,10 +57,13 @@ export const filterAccountsByBalance = (accounts, balanceFilter) => {
 };
 
 /**
- * Apply all account filters
- * @param {Array} accounts - Array of account objects
- * @param {Object} filters - All filters to apply
- * @returns {Array} - Filtered accounts
+ * Applies all account filters.
+ *
+ * Sequentially applies type, ledger, entity, balance, and generic filters to the accounts array. Uses helper filter functions as needed.
+ *
+ * @param {Array} accounts - Array of account objects.
+ * @param {Object} filters - All filters to apply.
+ * @returns {Array} Filtered accounts.
  */
 export const applyAccountFilters = (accounts, filters) => {
   let filteredAccounts = [...accounts];

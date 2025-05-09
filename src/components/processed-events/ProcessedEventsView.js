@@ -4,7 +4,13 @@ import ProcessedEventsList from './ProcessedEventsList';
 import apiService from '../../services/apiService';
 
 /**
- * Main component for the Processed Events tab
+ * Main component for the Processed Events view/tab.
+ * Fetches and displays a list of processed events using `ProcessedEventsList`.
+ * Handles loading and error states for the data fetching operation.
+ * 
+ * @param {Object} props - Component props.
+ * @param {function} props.onViewJson - Callback function passed to child components for viewing JSON data.
+ * @returns {JSX.Element} The rendered ProcessedEventsView component.
  */
 const ProcessedEventsView = ({ onViewJson }) => {
   const [events, setEvents] = useState([]);

@@ -36,24 +36,25 @@ ModuleRegistry.registerModules([
 ]);
 
 /**
- * Generic List View component for displaying any model type in a list
- * This centralizes the pattern of showing lists of entities, accounts, ledgers, etc.
- * 
- * @param {Object} props - Component props
- * @param {Array} props.data - The data array to display
- * @param {Array} props.columns - Column definitions for the list
- * @param {Object} context - Component context
- * @param {string} props.title - Title for the list (e.g., "Accounts")
- * @param {string} props.emptyMessage - Message to display when the list is empty
- * @param {string} props.idField - The field to use as the ID (e.g., "account_id")
- * @param {function} props.onRowClick - Handler for clicking a row
- * @param {function} props.onViewJson - Handler for viewing JSON data
- * @param {function} props.onSearch - Custom search handler
- * @param {React.ReactNode} props.customHeader - Custom header content
- * @param {function} props.onRefresh - Handler for refreshing the list
- * @param {boolean} props.loading - Whether data is loading (external)
- * @param {Object|string} props.error - Error state if present
- * @returns {JSX.Element}
+ * A reusable and configurable component for displaying data in a filterable, sortable, and exportable grid (AG Grid).
+ * It handles common list view features such as row click navigation, JSON data viewing, refresh actions, search (if `onSearch` provided),
+ * loading states, and error display. It automatically adds a column for viewing row data as JSON.
+ *
+ * @param {Object} props - Component props.
+ * @param {Array<Object>} [props.data=[]] - The array of data objects to display in the grid.
+ * @param {Array<import('ag-grid-community').ColDef>} props.columns - AG Grid column definitions.
+ * @param {Object} [props.context] - AG Grid context object, passed to cell renderers. `jsonRowHandler` is automatically added.
+ * @param {string} props.title - The title to display in the section header for the list.
+ * @param {string} [props.emptyMessage="No items found"] - Message to display when the data array is empty.
+ * @param {string} props.idField - The name of the field in the data objects that serves as a unique identifier (e.g., 'id', 'account_id').
+ * @param {function} [props.onRowClick] - Callback function when a row is clicked. Receives the row data object.
+ * @param {function} [props.onViewJson] - Optional custom callback to view JSON for a row. Receives row data. If not provided, a default modal is used.
+ * @param {function} [props.onSearch] - Callback function for handling search. (Note: Search input UI not part of this component, expected to be external).
+ * @param {React.ReactNode} [props.customHeader] - Optional custom elements to render below the main section header.
+ * @param {function} [props.onRefresh] - Callback function to refresh the data.
+ * @param {boolean} [props.loading=false] - Indicates if data is currently being loaded.
+ * @param {Object|string} [props.error=null] - Error object or message to display if data fetching failed.
+ * @returns {JSX.Element} The rendered GenericListView component.
  */
 const GenericListView = ({
   data = [],

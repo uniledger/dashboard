@@ -9,7 +9,11 @@ import GenericListView from '../common/GenericListView.js';
 import { AccountDetailConfig } from './AccountDetailConfig.js';
 
 /**
- * Account Detail component using GenericDetailView
+ * Displays detailed information for a specific account, including its transactions.
+ * Fetches data using `useAccounts` and `useAccountTransfers` hooks and `useParams` for the account ID.
+ * Renders content using `GenericDetailView` for account details and `GenericListView` for transfers.
+ * 
+ * @returns {JSX.Element} The rendered AccountDetail component, or null if no account data.
  */
 const AccountDetail = () => {
   const { accountId } = useParams();

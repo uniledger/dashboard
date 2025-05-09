@@ -2,8 +2,15 @@ import React from 'react';
 import { GenericDetailView, GenericListView } from '../common';
 import { ProcessedEventDetailConfig } from './ProcessedEventDetailConfig.js';
 /**
- * Component to display detailed information about a processed event
- * using the GenericDetailView component for consistency
+ * Component to display detailed information about a processed event.
+ * It uses `GenericDetailView` for the main event details and `GenericListView`
+ * for displaying related data like transfers, accounts, and metadata.
+ * 
+ * @param {Object} props - Component props.
+ * @param {Object} props.event - The processed event object to display.
+ * @param {function} props.onBack - Callback function to handle navigation back.
+ * @param {function} props.onViewJson - Callback function to handle viewing the event JSON.
+ * @returns {JSX.Element | null} The rendered ProcessedEventDetail component or null if no event is provided.
  */
 const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
   

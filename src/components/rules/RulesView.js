@@ -5,7 +5,12 @@ import RuleDetail from './RuleDetail';
 import apiService from '../../services/apiService';
 
 /**
- * Main component for the Rules tab
+ * Manages the display of transaction rules, allowing users to view a list of rules
+ * or the details of a specific rule. It fetches rule data using `apiService`.
+ *
+ * @param {Object} props - Component props.
+ * @param {function} [props.onViewJson] - Callback function to display raw JSON data for an item.
+ * @returns {JSX.Element} The rendered RulesView component, showing either `RulesList` or `RuleDetail`.
  */
 const RulesView = ({ onViewJson }) => {
   const [rules, setRules] = useState([]);
@@ -19,7 +24,10 @@ const RulesView = ({ onViewJson }) => {
     fetchRules();
   }, []);
 
-  // Fetch rules from the API
+  /**
+   * Fetches the list of transaction rules from the API and updates the component's state.
+   * Handles loading and error states during the fetch operation.
+   */
   const fetchRules = async () => {
     setIsLoading(true);
     setError(null);
@@ -46,13 +54,19 @@ const RulesView = ({ onViewJson }) => {
     }
   };
 
-  // Handle rule selection
+  /**
+   * Sets the selected rule and switches the view to the rule detail display.
+   *
+   * @param {Object} rule - The rule object to be selected.
+   */
   const handleSelectRule = (rule) => {
     setSelectedRule(rule);
     setView('detail');
   };
 
-  // Handle back button
+  /**
+   * Clears the selected rule and switches the view back to the rules list display.
+   */
   const handleBack = () => {
     setSelectedRule(null);
     setView('list');

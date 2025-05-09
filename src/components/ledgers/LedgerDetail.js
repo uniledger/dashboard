@@ -11,7 +11,11 @@ import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
 import { getAccountType } from '../../utils/formatters/accountFormatters.js';
 
 /**
- * Ledger Detail component using GenericDetailView
+ * Renders the ledger detail view.
+ *
+ * Displays detailed information for a specific ledger, including its accounts and transactions. Fetches data using the useLedgers hook and useParams for the ledger ID. Renders content using GenericDetailView for ledger details and GenericListView for related accounts and transactions.
+ *
+ * @returns {JSX.Element} The rendered LedgerDetail component, or null if no ledger data.
  */
 const LedgerDetail = () => {
   // Destructure the object returned by useParams
@@ -55,6 +59,11 @@ const LedgerDetail = () => {
       return;
     }
     
+    /**
+     * Fetches entity details for the current ledger if `ledger.entity_id` is present
+     * and `ledger.r_entity` (enriched entity data) is not.
+     * Stores the fetched entity data in the `entity` state variable.
+     */
     const fetchEntity = async () => {
       try {
         const data = await apiService.entity.getEntityById(ledger.entity_id);
@@ -72,17 +81,27 @@ const LedgerDetail = () => {
   // Early return if no ledger, but after hooks are declared
   if (!ledger) return null;
   
-  // Handle navigation back to ledger list
+  /**
+   * Navigates back to the ledger list view (`/ledgers`).
+   */
   const handleBack = () => {
     navigate('/ledgers');
   };
   
-  // Handle refresh
+  /**
+   * Refreshes the list of accounts associated with the current ledger.
+   */
+
   const handleRefresh = () => {
     refreshLedgerAccounts(ledgerId);
   };
   
-  // Helper function for account codes
+  /**
+   * Formats the account code for display.
+   *
+   * @param {Object} account - The account object.
+   * @returns {string} The formatted account code, or 'N/A' if not available.
+   */
   const getAccountCodeDisplay = (account) => {
     if (!account) return 'N/A';
     return formatAccountCode(account.account_code || account.code);
@@ -151,7 +170,17 @@ const LedgerDetail = () => {
             field: 'balance',
             headerName: 'Balance',
             align: 'right',
+            /**
+             * Determines the CSS class for the balance cell based on the balance amount.
+             * @param {Object} account - The account object.
+             * @returns {string} CSS class string.
+             */
             cellClassName: (account) => getBalanceClass(account.balance),
+            /**
+             * Renders the formatted balance for an account.
+             * @param {Object} account - The account object.
+             * @returns {string} Formatted balance string.
+             */
             render: (account) => {
               // Use the ledger's currency as the reference for all accounts in this view
               const currency = ledger.r_currency || getCurrencyInfo(account);
@@ -161,6 +190,14 @@ const LedgerDetail = () => {
         ]}
         sortFunction={(a, b) => {
           // Extract account code from account_code or name
+          /**
+           * Extracts a sortable account code string from an account object.
+           * It checks `account.account_code` (both object and string forms)
+           * and can also parse codes from the `account.name` if it follows a 'CODE - Name' pattern.
+           *
+           * @param {Object} account - The account object.
+           * @returns {string} The extracted account code string, or an empty string if not found.
+           */
           const getCode = (account) => {
             if (account.account_code && typeof account.account_code === 'object') {
               return String(account.account_code.account_code || '');

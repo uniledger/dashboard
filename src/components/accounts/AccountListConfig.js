@@ -1,5 +1,8 @@
 /**
- * Account list model configuration
+ * Configuration object for displaying account lists, primarily within the `GenericListView` component.
+ * It defines properties such as the title, ID fields, display field, and notably, the `listColumns`
+ * array which specifies the AG Grid column definitions for accounts, including custom cell renderers
+ * and formatters from `../../utils/formatters/`.
  */
 import React from 'react';
 

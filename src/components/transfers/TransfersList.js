@@ -5,7 +5,9 @@ import { formatDate } from '../../utils/formatters/dateFormatters';
 import { getBalanceClass, formatBalance } from '../../utils/formatters/balanceFormatters';
 
 /**
- * Component to display a list of transfers using GenericListView
+ * Renders a list of transfers.
+ *
+ * Uses GenericListView to display a list of transfers with drill-through links to transfer, account, and ledger details. Supports selection, JSON view, refresh, and loading state.
  */
 const TransfersList = ({ transfers, onSelectTransfer, onViewJson, onRefresh, loading }) => {
   // Define columns with drill-through links

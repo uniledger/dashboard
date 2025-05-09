@@ -5,8 +5,14 @@ import { GenericListView } from '../common';
 import { AccountListConfig } from './AccountListConfig.js';
 import useAccounts from '../../hooks/useAccounts';
 
-/** 
- * Account List component using GenericListView
+/**
+ * Renders a list of accounts using the `GenericListView` component.
+ * It utilizes the `useAccounts` hook to fetch and manage account data.
+ * Handles navigation to the detailed view of an account when a row is clicked.
+ * The list configuration (columns, etc.) is sourced from `AccountListConfig`.
+ * This component does not take any direct props.
+ * 
+ * @returns {JSX.Element} The rendered AccountList component.
  */
 const AccountList = () => {
   const navigate = useNavigate();

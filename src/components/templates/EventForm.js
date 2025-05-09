@@ -2,7 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid'; // You may need to add this dependency
 
 /**
- * Component for creating and submitting events based on templates
+ * Renders a form for creating and submitting events based on templates.
+ *
+ * Provides UI and logic for filling out event details, selecting ledgers and accounts, and managing metadata fields. Handles submission and navigation callbacks.
+ *
+ * @param {Object} props - Component props.
+ * @param {Object} props.template - The selected template object.
+ * @param {Array} props.ledgers - Array of ledger objects.
+ * @param {Array} props.accounts - Array of account objects.
+ * @param {boolean} [props.loading] - Loading state for the form.
+ * @param {Function} props.onBack - Handler for navigating back.
+ * @param {Function} props.onSubmitEvent - Handler for submitting the event.
+ * @param {Function} props.onViewJson - Handler for viewing JSON data.
+ * @returns {JSX.Element} The rendered EventForm component.
  */
 const EventForm = ({ template, ledgers, accounts, loading = false, onBack, onSubmitEvent, onViewJson }) => {
   // Helper function to get the ledger ID for a transfer
@@ -135,17 +147,36 @@ const EventForm = ({ template, ledgers, accounts, loading = false, onBack, onSub
     updateMetadataState(updatedFields);
   };
   
-  const addMetadataField = () => {
+  /**
+ * Adds a new empty metadata field to the form.
+ *
+ * Updates the metadata fields state to include an additional empty key-value pair.
+ */
+const addMetadataField = () => {
     setMetadataFields([...metadataFields, { key: '', value: '' }]);
   };
   
-  const removeMetadataField = (index) => {
+  /**
+ * Removes a metadata field from the form by index.
+ *
+ * Updates the metadata fields state and event metadata after removal.
+ *
+ * @param {number} index - The index of the field to remove.
+ */
+const removeMetadataField = (index) => {
     const updatedFields = metadataFields.filter((_, i) => i !== index);
     setMetadataFields(updatedFields);
     updateMetadataState(updatedFields);
   };
   
-  const updateMetadataState = (fields) => {
+  /**
+ * Updates the event metadata state from form fields.
+ *
+ * Iterates over the given fields array and constructs a metadata object, then updates the event data state with the new metadata.
+ *
+ * @param {Array} fields - Array of metadata field objects with keys and values.
+ */
+const updateMetadataState = (fields) => {
     const metadata = {};
     fields.forEach(field => {
       if (field.key.trim() !== '' && field.value.trim() !== '') {

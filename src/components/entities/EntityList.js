@@ -5,18 +5,25 @@ import { EntityListConfig } from './EntityListConfig.js';
 import useEntities from '../../hooks/useEntities';
 
 /**
- * Entity List component using GenericListView
+ * Renders a list of entities.
+ *
+ * Uses the `GenericListView` component to display entity data. Utilizes the `useEntities` hook to fetch and manage entity data and handles navigation to the detailed view of an entity when a row is clicked. The list configuration (columns, etc.) is sourced from `EntityListConfig`. This component does not take any direct props.
+ *
+ * @returns {JSX.Element} The rendered EntityList component.
  */
 const EntityList = () => {
   const navigate = useNavigate();
   const { entities, loading, fetchEntities } = useEntities();
   
-  // Fetch entities when component mounts
   useEffect(() => {
     fetchEntities();
   }, [fetchEntities]);
   
-  // Navigate to entity detail view when entity is clicked
+  /**
+   * Handles the navigation to an entity's detail view.
+   *
+   * @param {Object|string} entity - The entity object or entity ID.
+   */
   const handleViewDetails = (entity) => {
     // Extract the ID from the entity object
     const id = typeof entity === 'object' ? entity.entity_id : entity;
