@@ -5,11 +5,9 @@ import PageHeader from '../shared/PageHeader';
 import useDashboardData from '../../hooks/useDashboardData';
 
 /**
- * Displays a comprehensive overview of the financial system, including summaries of
- * assets, liabilities, equity, revenue, and expenses, presented in a financial statement format.
- * It allows users to filter data by ledger and includes key financial ratios.
- * This component utilizes the `useDashboardData` hook to fetch and manage its data.
- * It does not take any direct props.
+ * Renders the dashboard overview.
+ *
+ * Displays a comprehensive overview of the financial system, including summaries of assets, liabilities, equity, revenue, and expenses, presented in a financial statement format. Allows users to filter data by ledger and includes key financial ratios. Utilizes the useDashboardData hook to fetch and manage its data. Does not take any direct props.
  *
  * @returns {JSX.Element} The rendered DashboardView component.
  */

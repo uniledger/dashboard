@@ -6,8 +6,9 @@ import TransferDetail from './TransferDetail';
 import { ErrorAlert } from '../common';
 
 /**
- * Main component for viewing transfers
- * Handles both list and detail views
+ * Renders the transfers view.
+ *
+ * Handles both list and detail views for transfers. Fetches transfer data, manages selection and refresh, and integrates with detailed transfer display components.
  */
 const TransfersView = ({ onViewJson }) => {
   const navigate = useNavigate();
