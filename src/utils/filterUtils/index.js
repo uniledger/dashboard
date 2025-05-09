@@ -7,10 +7,13 @@ import { entityFilters } from './entityFilters';
 import { ledgerFilters } from './ledgerFilters';
 
 /**
- * Generic filter function that can filter data by any field and value
- * @param {Array} data - The data array to filter
- * @param {Object} filter - Filter configuration { field, value, exact }
- * @returns {Array} - Filtered data array
+ * Filters data by any field and value.
+ *
+ * Generic filter function that supports filtering by nested fields (dot notation), exact or partial matches, and type coercion for string/number comparisons.
+ *
+ * @param {Array} data - The data array to filter.
+ * @param {Object} filter - Filter configuration { field, value, exact }.
+ * @returns {Array} Filtered data array.
  */
 export const filterData = (data, filter) => {
   if (!filter || !filter.field || filter.value === undefined || filter.value === null) {
@@ -50,11 +53,14 @@ export const filterData = (data, filter) => {
 };
 
 /**
- * Search through an array of objects for matching text
- * @param {Array} data - The data array to search
- * @param {string} searchQuery - The search query
- * @param {Array} searchFields - Optional array of specific fields to search (defaults to all fields)
- * @returns {Array} - Filtered data array
+ * Searches through an array of objects for matching text.
+ *
+ * Performs a case-insensitive search for the query string in all string and number fields, or a specified subset of fields.
+ *
+ * @param {Array} data - The data array to search.
+ * @param {string} searchQuery - The search query.
+ * @param {Array} searchFields - Optional array of specific fields to search (defaults to all fields).
+ * @returns {Array} Filtered data array.
  */
 export const searchData = (data, searchQuery, searchFields = null) => {
   if (!searchQuery) {
@@ -98,9 +104,12 @@ export const searchData = (data, searchQuery, searchFields = null) => {
 };
 
 /**
- * Get common search fields for a model type
- * @param {string} modelType - Type of model ('entity', 'ledger', 'account', etc.)
- * @returns {Array} - Array of field names to search
+ * Gets common search fields for a model type.
+ *
+ * Returns an array of field names that are commonly used for searching the specified model type.
+ *
+ * @param {string} modelType - Type of model ('entity', 'ledger', 'account', etc.).
+ * @returns {Array} Array of field names to search.
  */
 export const getSearchFields = (modelType) => {
   const searchFieldsMap = {
@@ -116,11 +125,14 @@ export const getSearchFields = (modelType) => {
 };
 
 /**
- * Filter data using the appropriate model-specific filter
- * @param {Array} data - The data array to filter
- * @param {Object} filter - Filter configuration object
- * @param {string} modelType - Type of model ('entity', 'ledger', 'account', etc.)
- * @returns {Array} - Filtered data array
+ * Filters data using the appropriate model-specific filter.
+ *
+ * Delegates filtering to the correct filter function based on model type ('entity', 'ledger', 'account', etc.). Falls back to generic filtering if type is unknown.
+ *
+ * @param {Array} data - The data array to filter.
+ * @param {Object} filter - Filter configuration object.
+ * @param {string} modelType - Type of model ('entity', 'ledger', 'account', etc.).
+ * @returns {Array} Filtered data array.
  */
 export const filterByModelType = (data, filter, modelType) => {
   if (!filter || !modelType) {

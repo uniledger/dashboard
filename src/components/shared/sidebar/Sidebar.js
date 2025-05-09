@@ -53,8 +53,15 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     { id: 'rules', path: '/rules', name: 'Compliance Rules', icon: 'Shield' },
   ];
 
-  // Render navigation item
-  const renderNavItem = (tab) => {
+  /**
+   * Renders a navigation item for the sidebar.
+   *
+   * Returns a sidebar navigation tab item with appropriate icon and click handler.
+   *
+   * @param {Object} tab - The tab object containing navigation details.
+   * @returns {JSX.Element} The rendered navigation item.
+   */
+  function renderNavItem(tab) {
     const IconComponent = icons[tab.icon];
     
     return (
@@ -72,7 +79,15 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
     ); 
   };
 
-  // Render section with header
+  /**
+   * Renders a sidebar section with a header.
+   *
+   * Displays a section header and its associated navigation tabs, respecting the collapsed state.
+
+   * @param {string} title - The section title.
+   * @param {Array} tabs - The navigation tab objects.
+   * @returns {JSX.Element} The rendered section.
+   */
   const renderSection = (title, tabs) => (
     <div className="mb-4 px-2">
       {!collapsed && (

@@ -45,7 +45,11 @@ export const DashboardProvider = ({ children }) => {
     });
   };
 
-  // Handle closing the detail modal
+  /**
+   * Closes the detail modal.
+   *
+   * Resets the detail modal state to closed and clears its data and title.
+   */
   const handleCloseModal = () => {
     setDetailModal({
       isOpen: false,
@@ -54,7 +58,11 @@ export const DashboardProvider = ({ children }) => {
     });
   };
   
-  // Clear account filter
+  /**
+   * Clears the account filter.
+   *
+   * Resets the accounts filter state to its default (inactive, no type).
+   */
   const clearFilter = () => {
     setAccountsFilter({
       active: false,

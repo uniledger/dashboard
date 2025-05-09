@@ -1,13 +1,27 @@
-  
   import { formatBalance } from "./formatters";
   
 
-  // Handle CSV export - requires CsvExportModule
-  export const handleExportCsv = (title) => {
+  /**
+ * Exports grid data as CSV.
+ *
+ * 
+ * Uses the global gridApi to export data as CSV with custom file naming and cell processing. Requires CsvExportModule to be loaded.
+ *
+ * @param {string} title - The title used for the exported file name.
+ */
+export const handleExportCsv = (title) => {
     if (window.gridApi && window.gridApi.api) {
       window.gridApi.api.exportDataAsCsv({
         fileName: `${title.toLowerCase().replace(/\s+/g, '-')}-export-${new Date().toISOString().slice(0, 10)}.csv`,
-        processCellCallback: (params) => {
+        /**
+ * Processes individual cell values for CSV export.
+ *
+ * Handles nulls, alternate ID fields, and avoids [object Object] in the export. Used as a callback in exportDataAsCsv.
+ *
+ * @param {Object} params - Cell parameters from ag-Grid.
+ * @returns {string} The processed cell value for export.
+ */
+processCellCallback: (params) => {
           try {
             // Get access to the full row data for context
             const rowData = params.node.data;

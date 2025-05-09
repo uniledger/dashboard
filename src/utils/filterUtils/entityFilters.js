@@ -4,10 +4,13 @@
 import { filterData } from './index';
 
 /**
- * Filter entities by country
- * @param {Array} entities - Array of entity objects
- * @param {string} countryCode - Country code to filter by
- * @returns {Array} - Filtered entities
+ * Filters entities by country.
+ *
+ * Returns only entities that match the given country code. Checks both direct country_code and nested r_country.country_code fields for compatibility with different entity object shapes.
+ *
+ * @param {Array} entities - Array of entity objects.
+ * @param {string} countryCode - Country code to filter by.
+ * @returns {Array} Filtered entities.
  */
 export const filterEntitiesByCountry = (entities, countryCode) => {
   if (!countryCode) {
@@ -33,10 +36,13 @@ export const filterEntitiesByCountry = (entities, countryCode) => {
 };
 
 /**
- * Filter entities by type
- * @param {Array} entities - Array of entity objects
- * @param {string} entityType - Entity type to filter by
- * @returns {Array} - Filtered entities
+ * Filters entities by type.
+ *
+ * Returns only entities that match the given type. Handles multiple possible type fields for compatibility with different entity object shapes.
+ *
+ * @param {Array} entities - Array of entity objects.
+ * @param {string} entityType - Entity type to filter by.
+ * @returns {Array} Filtered entities.
  */
 export const filterEntitiesByType = (entities, entityType) => {
   if (!entityType) {
@@ -52,10 +58,13 @@ export const filterEntitiesByType = (entities, entityType) => {
 };
 
 /**
- * Apply all entity filters
- * @param {Array} entities - Array of entity objects
- * @param {Object} filters - All filters to apply
- * @returns {Array} - Filtered entities
+ * Applies all entity filters.
+ *
+ * Sequentially applies country, type, and generic filters to the entities array. Uses helper filter functions as needed.
+ *
+ * @param {Array} entities - Array of entity objects.
+ * @param {Object} filters - All filters to apply.
+ * @returns {Array} Filtered entities.
  */
 export const applyEntityFilters = (entities, filters) => {
   let filteredEntities = [...entities];

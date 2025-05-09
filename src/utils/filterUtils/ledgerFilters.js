@@ -4,10 +4,13 @@
 import { filterData } from './index';
 
 /**
- * Filter ledgers by entity
- * @param {Array} ledgers - Array of ledger objects
- * @param {string|number} entityId - Entity ID to filter by
- * @returns {Array} - Filtered ledgers
+ * Filters ledgers by entity.
+ *
+ * Returns only ledgers that match the given entity ID. Checks r_entity.entity_id, entity.entity_id, and entity_id fields for compatibility with different ledger object shapes.
+ *
+ * @param {Array} ledgers - Array of ledger objects.
+ * @param {string|number} entityId - Entity ID to filter by.
+ * @returns {Array} Filtered ledgers.
  */
 export const filterLedgersByEntity = (ledgers, entityId) => {
   if (!entityId) {
@@ -37,10 +40,13 @@ export const filterLedgersByEntity = (ledgers, entityId) => {
 };
 
 /**
- * Filter ledgers by currency
- * @param {Array} ledgers - Array of ledger objects
- * @param {string} currencyCode - Currency code to filter by
- * @returns {Array} - Filtered ledgers
+ * Filters ledgers by currency.
+ *
+ * Returns only ledgers that match the given currency code. Checks both r_currency.currency_code and currency_code fields for compatibility with different ledger object shapes.
+ *
+ * @param {Array} ledgers - Array of ledger objects.
+ * @param {string} currencyCode - Currency code to filter by.
+ * @returns {Array} Filtered ledgers.
  */
 export const filterLedgersByCurrency = (ledgers, currencyCode) => {
   if (!currencyCode) {
@@ -65,10 +71,13 @@ export const filterLedgersByCurrency = (ledgers, currencyCode) => {
 };
 
 /**
- * Apply all ledger filters
- * @param {Array} ledgers - Array of ledger objects
- * @param {Object} filters - All filters to apply
- * @returns {Array} - Filtered ledgers
+ * Applies all ledger filters.
+ *
+ * Sequentially applies entity, currency, country, and generic filters to the ledgers array. Uses helper filter functions as needed.
+ *
+ * @param {Array} ledgers - Array of ledger objects.
+ * @param {Object} filters - All filters to apply.
+ * @returns {Array} Filtered ledgers.
  */
 export const applyLedgerFilters = (ledgers, filters) => {
   let filteredLedgers = [...ledgers];
