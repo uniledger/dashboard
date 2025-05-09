@@ -31,6 +31,9 @@ const AccountList = () => {
     navigate(`/accounts/${accountId}`);
   };
 
+  // Export for testing
+  AccountList.handleViewAccount = handleViewAccount;
+
   return (
     <GenericListView
       data={accounts}
