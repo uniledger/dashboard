@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import AccountList from './AccountList';
 import * as useAccountsModule from '../../hooks/useAccounts';
 import { MemoryRouter } from 'react-router-dom';
