@@ -1,8 +1,6 @@
 /**
  * Entity Detail configuration for ledgers and accounts
  */
-import React from 'react';
-import { GenericListView } from '../common';
 import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
 import { formatAccountCode } from '../../utils/formatters/index';
 import { getAccountType } from '../../utils/formatters/accountFormatters.js';

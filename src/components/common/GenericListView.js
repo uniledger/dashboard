@@ -112,7 +112,7 @@ const GenericListView = ({
     handleExportCsv(title);
   }
 
-  const renderSectionHeader = () => {
+  const render_section_header = () => {
     return (
       <SectionHeader
         title={
@@ -122,13 +122,13 @@ const GenericListView = ({
           </>
         }
         description=""
-        actions={renderActions()}
+        actions={render_actions()}
       />
     );
   }
 
   // Render action buttons for the section header
-  const renderActions = () => (
+  const render_actions = () => (
     <div className="flex items-center gap-2">
       {data.length > 0 && (
         <button
@@ -156,7 +156,7 @@ const GenericListView = ({
     </div>
   );
 
-  const renderGridContent = () => {
+  const render_grid_content = () => {
     return (
       <div className="ag-theme-alpine w-full h-auto border-b border-x border-gray-300 rounded-b-lg">
         <AgGridReact
@@ -205,7 +205,7 @@ const GenericListView = ({
   return (
     <div className="ag-theme-alpine">
       {/* Render section header */}
-      {renderSectionHeader()}
+      {render_section_header()}
 
       {/* Render error alert */}
       {error && (
@@ -226,7 +226,7 @@ const GenericListView = ({
       )}
 
       {/* Render the main grid content */}
-      {!loading && renderGridContent()}
+      {!loading && render_grid_content()}
 
       {/* render JSON detail modal */}
       <DetailModal

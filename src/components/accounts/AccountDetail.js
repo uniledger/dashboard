@@ -1,28 +1,29 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import GenericDetailView from '../common/GenericDetailView.js';
-import GenericListView from '../common/GenericListView.js';
-import { AccountDetailConfig } from './AccountDetailConfig.js';
 import useAccounts from '../../hooks/useAccounts';
 import useAccountTransfers from '../../hooks/useAccountTransfers';
 import { useDashboard } from '../../context/DashboardContext';
 
+import GenericDetailView from '../common/GenericDetailView.js';
+import GenericListView from '../common/GenericListView.js';
+import { AccountDetailConfig } from './AccountDetailConfig.js';
+
 /**
  * Account Detail component using GenericDetailView
  */
-const AccountDetail = () => { 
+const AccountDetail = () => {
   const { accountId } = useParams();
   const navigate = useNavigate();
   const { handleViewJson } = useDashboard();
   const { selectedAccount: account, loading, selectAccount } = useAccounts();
-  const { 
+  const {
     accountTransfers,
-    fetchAccountTransfers 
+    fetchAccountTransfers
   } = useAccountTransfers();
-  
-  const accountContext  = { accountId };
+
+  const accountContext = { accountId };
   accountContext.accountId = accountId;
-  
+
   // Fetch account data when component mounts or accountId changes
   useEffect(() => {
     if (accountId) {
@@ -30,29 +31,29 @@ const AccountDetail = () => {
       fetchAccountTransfers(accountId);
     }
   }, [accountId, selectAccount, fetchAccountTransfers]);
-  
+
   if (!account) return null;
-  
+
   // Handle navigation back to accounts list
   const handleBack = () => {
     navigate('/accounts');
   };
-  
+
   // Handle refresh
   const handleRefresh = () => {
     selectAccount(accountId);
     fetchAccountTransfers(accountId);
   };
-  
+
   // Extract entity and ledger information
-  const entity = account?.entity || account?.enriched_entity || 
+  const entity = account?.entity || account?.enriched_entity ||
     (account?.enriched_ledger && account?.enriched_ledger.entity);
-    
+
   const ledger = account?.ledger || account?.enriched_ledger;
-  
+
   // Get standard sections from model config
   let sections = account ? [...AccountDetailConfig.detailSections(account, entity, ledger)] : [];
-  
+
   // Use GenericDetailView for consistent presentation with transfers below
   return (
     <div className="space-y-6">
@@ -67,7 +68,7 @@ const AccountDetail = () => {
         loading={loading}
         loadingMessage="Loading account details..."
       />
-      
+
       <GenericListView
         title="Account Transfers"
         data={accountTransfers || []}
@@ -79,15 +80,6 @@ const AccountDetail = () => {
         onRefresh={() => fetchAccountTransfers(accountId)}
         loading={loading}
       />
-
-      {/* Directly render transfers table with auto-growing height
-      <AccountTransfersList 
-        transfers={accountTransfers || []} 
-        accountId={accountId}
-        onViewJson={handleViewJson}
-        onRefresh={() => fetchAccountTransfers(accountId)}
-        loading={loading}
-      /> */}
     </div>
   );
 };
