@@ -2,7 +2,7 @@ import React from 'react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GenericListView } from '../common';
-import { AccountConfig } from './AccountConfig.js';
+import { AccountListConfig } from './AccountListConfig.js';
 import useAccounts from '../../hooks/useAccounts';
 
 /** 
@@ -28,7 +28,7 @@ const AccountList = () => {
   return (
     <GenericListView
       data={accounts}
-      columns={AccountConfig.listColumns}
+      columns={AccountListConfig.listColumns}
       title="Accounts"
       idField="account_id"
       loading={accountsLoading}

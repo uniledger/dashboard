@@ -81,12 +81,14 @@ const GenericListView = ({
   context = contextWithHandler;
 
   // Only add JSON column if it doesn't already exist
-  if (!columns.some(col => col.field === 'json')) {
+  if (columns &&!columns.some(col => col.field === 'json')) {
     columns.unshift({
       field: 'json',
       headerName: '',
       filter: false,
-      suppressRowClickSelection: true,
+      context: {
+        suppressRowClickSelection: true
+      },
       cellRenderer: jsonCellRenderer,
       cellStyle: { textAlign: 'center' },
       resizable: false,
@@ -110,8 +112,23 @@ const GenericListView = ({
     handleExportCsv(title);
   }
 
+  const render_section_header = () => {
+    return (
+      <SectionHeader
+        title={
+          <>
+            <span>{title}</span>
+            <span className="text-gray-500">  ({data.length})</span>
+          </>
+        }
+        description=""
+        actions={render_actions()}
+      />
+    );
+  }
+
   // Render action buttons for the section header
-  const renderActions = () => (
+  const render_actions = () => (
     <div className="flex items-center gap-2">
       {data.length > 0 && (
         <button
@@ -139,7 +156,7 @@ const GenericListView = ({
     </div>
   );
 
-  const renderGridContent = () => {
+  const render_grid_content = () => {
     return (
       <div className="ag-theme-alpine w-full h-auto border-b border-x border-gray-300 rounded-b-lg">
         <AgGridReact
@@ -149,7 +166,6 @@ const GenericListView = ({
           defaultColDef={defaultColDef}
           context={context}
           animateRows={true}
-          idField={idField}
           onSearch={onSearch}
           onFirstDataRendered={(params) => {
             params.api.autoSizeAllColumns();
@@ -159,14 +175,23 @@ const GenericListView = ({
             window.gridApi = params;
           }}
           getRowClass={(params) => {
+            let classes = [];
+            
+            // Add negative balance class if applicable
             if (params.data && 'balance' in params.data && params.data.balance < 0) {
-              return 'negative-balance-row';
+              classes.push('negative-balance-row');
             }
-            return '';
+            
+            // Add cursor pointer class if row click handler exists
+            if (onRowClick) {
+              classes.push('cursor-pointer');
+            }
+            
+            return classes.join(' ');
           }}
           onCellClicked={(event) => {
             // If the cell click is on a column that suppresses row click selection, do nothing
-            if (event.colDef?.suppressRowClickSelection) {
+            if (event.colDef?.context?.suppressRowClickSelection) {
               return;
             }
             // Otherwise, call the onRowClick handler if it exists
@@ -179,16 +204,8 @@ const GenericListView = ({
 
   return (
     <div className="ag-theme-alpine">
-      <SectionHeader
-        title={
-          <>
-            <span>{title}</span>
-            <span className="text-gray-500">  ({data.length})</span>
-          </>
-        }
-        description=""
-        actions={renderActions()}
-      />
+      {/* Render section header */}
+      {render_section_header()}
 
       {/* Render error alert */}
       {error && (
@@ -209,9 +226,9 @@ const GenericListView = ({
       )}
 
       {/* Render the main grid content */}
-      {!loading && renderGridContent()}
+      {!loading && render_grid_content()}
 
-      {/* JSON detail modal */}
+      {/* render JSON detail modal */}
       <DetailModal
         isOpen={!!jsonModalData}
         data={jsonModalData}

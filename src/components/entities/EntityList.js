@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GenericListView } from '../common';
-import { EntityConfig } from './EntityConfig.js';
+import { EntityListConfig } from './EntityListConfig.js';
 import useEntities from '../../hooks/useEntities';
 
 /**
@@ -24,14 +24,14 @@ const EntityList = () => {
   };
   
   // Define the columns for the entity list
-  const columns = [...EntityConfig.listColumns];
+  const columns = [...EntityListConfig.listColumns];
   
   return (
     <GenericListView
       data={entities}
       columns={columns}
       title="Entities"
-      idField={EntityConfig.idField}
+      idField={EntityListConfig.idField}
       onRowClick={handleViewDetails}
       onRefresh={fetchEntities}
       searchPlaceholder="Search entities..."

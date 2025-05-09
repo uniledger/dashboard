@@ -2,7 +2,7 @@ import React from 'react';
 import { GenericListView } from '../common';
 import { ledgerDrillCellRenderer } from '../ledgers/LedgerRenderers.js';
 import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
-import { formatBalance } from '../../utils/formatters/index';
+import { formatBalance, formatDate } from '../../utils/formatters/index';
 
 /**
  * Component to display transfers for an account
@@ -46,12 +46,13 @@ const AccountTransfersList = ({ transfers, accountId, onViewJson, onRefresh, loa
       field: 'amount',
       headerName: 'Amount',
       type: 'rightAligned',
-      cellRenderer: props => formatBalance(props.data.amount, {}),
+      cellRenderer: props => formatBalance(props.value, false),
     },
     // Timestamp 
     {
       field: 'timestamp',
       headerName: 'Timestamp',
+      cellRenderer: props => formatDate(props.value, true),  
       width: 180
     },
     // Ledger with drill link (using correct 'ledger' field)

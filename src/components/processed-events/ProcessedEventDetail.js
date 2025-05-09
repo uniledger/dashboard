@@ -1,7 +1,6 @@
 import React from 'react';
 import { GenericDetailView, GenericListView } from '../common';
-import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
-import { getAccountType } from '../../utils/formatters/accountFormatters.js';
+import { ProcessedEventDetailConfig } from './ProcessedEventDetailConfig.js';
 /**
  * Component to display detailed information about a processed event
  * using the GenericDetailView component for consistency
@@ -30,56 +29,6 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
     return Promise.resolve(); // Return promise for loading state
   };
 
-  // Define basic sections for the detail view
-  const basicSections = [
-    {
-      label: 'Event ID',
-      content: event.event_id
-    },
-    {
-      label: 'Template ID',
-      content: event.template_id
-    },
-    {
-      label: 'Amount',
-      content: event.amount
-    },
-    {
-      label: 'Timestamp',
-      content: event.timestamp 
-        ? new Date(event.timestamp * 1000).toLocaleString() 
-        : 'N/A'
-    },
-    {
-      label: 'Ledger',
-      content: () => {
-        const enrichedLedger = event.accounts?.from?.enriched_ledger;
-    
-        // If enrichedLedger exists, display its core info. Otherwise 'N/A'.
-        return enrichedLedger ? (
-          <div>
-            {/* Assume ID and Name are present if enrichedLedger is */}
-            <p><span className="font-medium">ID:</span> {enrichedLedger.ledger_id}</p>
-            <p><span className="font-medium">Name:</span> {enrichedLedger.name}</p>
-    
-            {/* Still check for optional description */}
-            {enrichedLedger.description && (
-              <p><span className="font-medium">Description:</span> {enrichedLedger.description}</p>
-            )}
-    
-            {/* Still need to check for r_currency before accessing its properties */}
-            {enrichedLedger.r_currency && (
-              <p>
-                <span className="font-medium">Currency:</span> {enrichedLedger.r_currency.currency_code}
-                (Scale: {enrichedLedger.r_currency.scale})
-              </p>
-            )}
-          </div>
-        ) : 'N/A'; // Fallback if enrichedLedger is null/undefined
-      }
-    }
-  ];
-
   // Define children sections (tables)
   const childrenSections = [];
 
@@ -90,28 +39,11 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
       content: (
         <GenericListView
           data={event.transfers}
+          columns={ProcessedEventDetailConfig.transfersColumns}
           title="Transfers"
           onRefresh={refreshTransfers}
           onViewJson={onViewJson}
           loading={false}
-          columns={[
-            {
-              field: 'debit_account_id',
-              headerName: 'From Account',
-              render: t => drillFormatter('accounts', t.debit_account_id, t.debit_account_id)
-            },
-            {
-              field: 'credit_account_id',
-              headerName: 'To Account',
-              render: t => drillFormatter('accounts', t.credit_account_id, t.credit_account_id)
-            },
-            {
-              field: 'amount',
-              headerName: 'Amount',
-              cellClassName: 'text-right font-medium',
-              render: t => t.amount
-            }
-          ]}
           emptyMessage="No transfers found"
         />
       )
@@ -132,34 +64,10 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
         <GenericListView
           data={accountsArray}
           title="Accounts"
+          columns={ProcessedEventDetailConfig.accountsColumns}
           onRefresh={refreshAccounts}
           onViewJson={onViewJson}
           loading={false}
-          columns={[
-            {
-              field: 'role',
-              headerName: 'Role',
-              cellClassName: 'font-medium text-gray-900'
-            },
-            {
-              field: 'name',
-              headerName: 'Account',
-              render: (row) => `${row.name} (ID: ${row.account_extra_id})`
-            },
-            {
-              field: 'account_code',
-              headerName: 'Type',
-              cellRenderer: props => getAccountType(props.data),
-            },
-            {
-              field: 'entity',
-              headerName: 'Entity',
-              cellRenderer: props => {
-                const entity = props.data.entity ? props.data.entity : props.data.r_entity;
-                return entity ? drillFormatter('entities', entity.entity_id, entity.entity_id) : 'N/A';
-              },
-            }
-          ]}
           emptyMessage="No accounts found"
         />
       )
@@ -185,18 +93,7 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
           onRefresh={refreshMetadata}
           onViewJson={onViewJson}
           loading={false}
-          columns={[
-            {
-              field: 'key',
-              headerName: 'Key',
-              cellClassName: 'font-medium text-gray-900'
-            },
-            {
-              field: 'value',
-              headerName: 'Value',
-              cellClassName: 'whitespace-normal text-gray-500'
-            }
-          ]}
+          columns={ProcessedEventDetailConfig.metadataColumns}
           emptyMessage="No metadata found"
         />
       )
@@ -223,14 +120,11 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
         content: (
           <GenericListView
             data={extras}
-            title=""            
+            title="Other Properties"            
             onRefresh={refreshMetadata}
             onViewJson={onViewJson}
             loading={false}
-            columns={[
-              { field: 'key', header: 'Property', cellClassName: 'font-medium text-gray-900' },
-              { field: 'value', header: 'Value', cellClassName: 'whitespace-pre-wrap text-gray-700' }
-            ]}
+            columns={ProcessedEventDetailConfig.metadataColumns}
             emptyMessage="No additional properties"
           />
         )
@@ -243,7 +137,7 @@ const ProcessedEventDetail = ({ event, onBack, onViewJson }) => {
       data={event}
       title="Processed Event Detail"
       subtitle={`Event ID: ${event.event_id}`}
-      sections={basicSections}
+      sections={ProcessedEventDetailConfig.basicSections(event)}
       childrenSections={childrenSections}
       onBack={onBack}
       onViewJson={onViewJson}
