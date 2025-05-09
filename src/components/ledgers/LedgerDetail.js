@@ -11,12 +11,11 @@ import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
 import { getAccountType } from '../../utils/formatters/accountFormatters.js';
 
 /**
- * Displays the detailed view of a specific ledger.
- * It uses `GenericDetailView` to show ledger information and `GenericListView` to display accounts associated with the ledger.
- * Data is fetched using the `useLedgers` hook and `apiService` for entity details if not already present.
- * This component does not take any direct props; it retrieves the `ledgerId` from URL parameters.
+ * Renders the ledger detail view.
  *
- * @returns {JSX.Element|null} The rendered LedgerDetail component, or null if the ledger data is not yet available.
+ * Displays detailed information for a specific ledger, including its accounts and transactions. Fetches data using the useLedgers hook and useParams for the ledger ID. Renders content using GenericDetailView for ledger details and GenericListView for related accounts and transactions.
+ *
+ * @returns {JSX.Element} The rendered LedgerDetail component, or null if no ledger data.
  */
 const LedgerDetail = () => {
   // Destructure the object returned by useParams

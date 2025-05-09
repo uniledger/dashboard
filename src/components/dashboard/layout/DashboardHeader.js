@@ -2,11 +2,10 @@ import React from 'react';
 import { useDashboard } from '../../../context/DashboardContext';
 
 /**
- * Header component for the main dashboard layout.
- * Currently, its primary function is to display and control the auto-refresh
- * setting for balances, sourced from the `useDashboard` context.
- * It does not take any direct props.
- * 
+ * Renders the dashboard header.
+ *
+ * Displays and controls the auto-refresh setting for balances, sourced from the useDashboard context. Does not take any direct props.
+ *
  * @returns {JSX.Element} The rendered DashboardHeader component.
  */
 const DashboardHeader = () => {

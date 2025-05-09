@@ -21,9 +21,10 @@ const icons = {
 };
 
 /**
- * Sidebar navigation component for the dashboard.
- * Displays categorized navigation links and allows for a collapsed/expanded state.
- * 
+ * Renders the dashboard sidebar navigation.
+ *
+ * Displays categorized navigation links and allows for a collapsed/expanded state. Used for navigating between main dashboard sections.
+ *
  * @param {Object} props - Component props.
  * @param {boolean} props.collapsed - Boolean indicating if the sidebar is collapsed.
  * @param {function} props.setCollapsed - Callback function to toggle the collapsed state of the sidebar.

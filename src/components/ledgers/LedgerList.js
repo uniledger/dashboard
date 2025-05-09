@@ -5,12 +5,10 @@ import { LedgerConfig } from './LedgerConfig.js';
 import useLedgers from '../../hooks/useLedgers';
 
 /**
- * Renders a list of ledgers using the `GenericListView` component.
- * It utilizes the `useLedgers` hook to fetch and manage ledger data and
- * handles navigation to the detailed view of a ledger when a row is clicked.
- * The list configuration (columns, etc.) is sourced from `LedgerConfig`.
- * This component does not take any direct props.
- * 
+ * Renders a list of ledgers.
+ *
+ * Uses the GenericListView component to display ledger data. Utilizes the useLedgers hook to fetch and manage ledger data and handles navigation to the detailed view of a ledger when a row is clicked. The list configuration (columns, etc.) is sourced from LedgerConfig. This component does not take any direct props.
+ *
  * @returns {JSX.Element} The rendered LedgerList component.
  */
 const LedgerList = () => {

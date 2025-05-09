@@ -1,9 +1,10 @@
 import React from 'react';
 
 /**
- * Modal component to display detailed JSON data for any record
- * with improved readability and copy functionality.
- * 
+ * Displays a modal for viewing JSON data.
+ *
+ * Shows detailed JSON data for any record with improved readability and copy functionality. Can be used for debugging or inspecting raw data.
+ *
  * @param {Object} props - Component props.
  * @param {boolean} props.isOpen - Controls the visibility of the modal.
  * @param {Object} props.data - The data object to be displayed as JSON.

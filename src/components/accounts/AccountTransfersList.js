@@ -5,8 +5,9 @@ import { drillFormatter } from '../../utils/formatters/drillFormatters.js';
 import { formatBalance, formatDate } from '../../utils/formatters/index';
 
 /**
- * Renders a list of transfers for a specific account using the `GenericListView` component.
- * It displays details such as transfer ID, related account, amount, timestamp, and ledger.
+ * Renders a list of account transfers.
+ *
+ * Uses the GenericListView component to display account transfer data, including transfer ID, related account, amount, timestamp, and ledger. Utilizes props to provide transfer data, account context, and handlers for viewing JSON and refreshing the list.
  *
  * @param {Object} props - Component props.
  * @param {Array<Object>} props.transfers - An array of transfer objects to display.

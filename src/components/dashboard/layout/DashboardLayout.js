@@ -7,12 +7,10 @@ import DetailModal from '../../shared/DetailModal';
 import { useDashboard } from '../../../context/DashboardContext';
 
 /**
- * Main layout component for the authenticated areas of the dashboard.
- * It sets up the overall page structure including the `Sidebar`, `DashboardHeader`,
- * `DashboardFooter`, and the main content area where routed components are rendered via `Outlet`.
- * It also integrates the `DetailModal` for displaying JSON data, managed via `useDashboard` context.
- * The sidebar's collapsed state is managed internally.
- * 
+ * Renders the main dashboard layout.
+ *
+ * Sets up the overall page structure including the Sidebar, DashboardHeader, DashboardFooter, and the main content area where routed components are rendered via Outlet. Also integrates the DetailModal for displaying JSON data, managed via useDashboard context. The sidebar's collapsed state is managed internally.
+ *
  * @returns {JSX.Element} The rendered DashboardLayout component.
  */
 const DashboardLayout = () => {

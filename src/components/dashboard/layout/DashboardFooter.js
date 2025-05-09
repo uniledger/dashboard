@@ -1,10 +1,10 @@
 import React from 'react';
 
 /**
- * Footer component for the main dashboard layout.
- * Displays copyright information and links to API documentation (Ledger and Transactions APIs).
- * It does not take any direct props.
- * 
+ * Renders the dashboard footer.
+ *
+ * Displays copyright information and links to API documentation (Ledger and Transactions APIs). Does not take any direct props.
+ *
  * @returns {JSX.Element} The rendered DashboardFooter component.
  */
 const DashboardFooter = () => {

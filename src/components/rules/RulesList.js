@@ -3,7 +3,9 @@ import { GenericListView } from '../common';
 import { RuleConfig } from './RuleConfig.js';
 
 /**
- * Component to display a list of rules using GenericListView
+ * Renders a list of rules.
+ *
+ * Uses GenericListView to display a list of rules with columns for description, expression, and action. Supports selection, JSON view, refresh, and loading state.
  */
 const RulesList = ({ rules, onSelectRule, onViewJson, onRefresh, loading }) => {
   // Define columns for the rules list

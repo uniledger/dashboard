@@ -9,8 +9,9 @@ import { GenericListView } from '../common'
 import { EventEntryPageConfig } from './EventEntryPageConfig';
 
 /**
- * Event Entry page component
- * Allows users to create new events directly from the navbar
+ * Renders the event entry page.
+ *
+ * Allows users to create new events directly from the navbar. Integrates templates, accounts, and ledgers selection, and handles event submission.
  */
 const EventEntryPage = ({ onViewJson }) => {
   console.log('EventEntryPage received onViewJson:', onViewJson);
