@@ -13,9 +13,21 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
   // Define columns for the DataTable
   const columns = [
     {
+      field: 'site_id',
+      headerName: 'Site ID',
+      cellClassName: 'font-medium text-gray-900',
+      render: (code) => code.site_id || 'N/A'
+    },
+    {
       field: 'account_code',
       headerName: 'Code',
       cellClassName: 'font-medium text-gray-900',
+    },
+    {
+      field: 'account_code_id',
+      headerName: 'Code ID',
+      cellClassName: 'font-medium text-gray-900',
+      render: (code) => code.account_code_id || 'N/A'
     },
     {
       field: 'name',
