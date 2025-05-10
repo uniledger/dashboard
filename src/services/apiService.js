@@ -204,14 +204,7 @@ const referenceApi = {
   getAccountCodes: async () => {
     const response = await fetchWithErrorHandling(endpoints.ledger.accountCodes);
     if (response.ok && response.data) {
-      // Ensure the response includes site_id, account_code, and account_code_id
-      const enrichedData = response.data.map(code => ({
-        site_id: code.site_id !== undefined && code.site_id !== null ? code.site_id : 'N/A',
-        account_code: code.account_code || 'N/A',
-        account_code_id: code.account_code_id || 'N/A',
-        ...code
-      }));
-      return { ...response, data: enrichedData };
+      return response;
     }
     return response;
   }
