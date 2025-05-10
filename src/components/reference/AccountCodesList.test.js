@@ -60,11 +60,11 @@ describe('AccountCodesList', () => {
         expect(await screen.findByText('Code ID')).toBeInTheDocument();
 
         // Verify the data rows
-        await waitFor(() => {
-            expect(screen.getByText('963')).toBeInTheDocument();
-            expect(screen.getByText('1100')).toBeInTheDocument();
-            expect(screen.getByText('1101')).toBeInTheDocument();
-            expect(screen.getByText('1200')).toBeInTheDocument();
+        await waitFor(async () => {
+            expect(await screen.findByText('963')).toBeInTheDocument();
+            expect(await screen.findByText('1100')).toBeInTheDocument();
+            expect(await screen.findByText('1101')).toBeInTheDocument();
+            expect(await screen.findByText('1200')).toBeInTheDocument();
         });
     });
 
