@@ -201,8 +201,10 @@ const referenceApi = {
    * Get all account codes
    * @returns {Promise<Array>} - List of account codes
    */
-  getAccountCodes: () => 
-    fetchWithErrorHandling(endpoints.ledger.accountCodes)
+  getAccountCodes: async () => {
+    const response = await fetchWithErrorHandling(endpoints.ledger.accountCodes);
+    return response;
+  }
 };
 
 /**

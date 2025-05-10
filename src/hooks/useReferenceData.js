@@ -79,7 +79,7 @@ const useReferenceData = () => {
       console.log('Account Codes response:', response);
       
       // Extract data from the response object
-      const data = response.ok && response.data ? response.data : [];
+      const data = response.data;
       setAccountCodes(data);
       setLoading(prev => ({ ...prev, accountCodes: false }));
       return data;
