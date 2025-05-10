@@ -44,7 +44,6 @@ describe('AccountCodesList', () => {
 
     it('renders account codes with site_id, account_code, and account_code_id', async () => {
         apiService.reference.getAccountCodes.mockResolvedValue({
-            ok: true,
             data: mockAccountCodes,
         });
 
@@ -70,7 +69,6 @@ describe('AccountCodesList', () => {
 
     it('shows empty message when no account codes are available', async () => {
         apiService.reference.getAccountCodes.mockResolvedValue({
-            ok: true,
             data: [],
         });
 

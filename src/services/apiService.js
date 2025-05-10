@@ -203,9 +203,6 @@ const referenceApi = {
    */
   getAccountCodes: async () => {
     const response = await fetchWithErrorHandling(endpoints.ledger.accountCodes);
-    if (response.ok && response.data) {
-      return response;
-    }
     return response;
   }
 };
