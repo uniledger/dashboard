@@ -83,7 +83,7 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
             data={accountCodes}
             columns={columns}
             title="Account Codes"
-            idField="account_code"
+            idField="site_id"
             loading={loading}
             error={error}
             onViewJson={onViewJson}

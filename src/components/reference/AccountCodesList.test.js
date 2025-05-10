@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import AccountCodesList from './AccountCodesList';
 import apiService from '../../services/apiService';
 import { MemoryRouter } from 'react-router-dom';
@@ -54,15 +54,18 @@ describe('AccountCodesList', () => {
             </MemoryRouter>
         );
 
+        // Verify column headers
         expect(await screen.findByText('Site ID')).toBeInTheDocument();
         expect(await screen.findByText('Code')).toBeInTheDocument();
         expect(await screen.findByText('Code ID')).toBeInTheDocument();
 
         // Verify the data rows
-        expect(await screen.findByText('963')).toBeInTheDocument();
-        expect(await screen.findByText('1100')).toBeInTheDocument();
-        expect(await screen.findByText('1101')).toBeInTheDocument();
-        expect(await screen.findByText('1200')).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText('963')).toBeInTheDocument();
+            expect(screen.getByText('1100')).toBeInTheDocument();
+            expect(screen.getByText('1101')).toBeInTheDocument();
+            expect(screen.getByText('1200')).toBeInTheDocument();
+        });
     });
 
     it('shows empty message when no account codes are available', async () => {
