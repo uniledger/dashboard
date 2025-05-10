@@ -22,6 +22,7 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
             field: 'account_code',
             headerName: 'Code',
             cellClassName: 'font-medium text-gray-900',
+            render: (code) => (code.account_code !== undefined && code.account_code !== null ? String(code.account_code) : 'N/A'),
         },
         {
             field: 'account_code_id',
