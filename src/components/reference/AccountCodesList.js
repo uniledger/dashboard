@@ -16,7 +16,7 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
       field: 'site_id',
       headerName: 'Site ID',
       cellClassName: 'font-medium text-gray-900',
-      render: (code) => code.site_id || 'N/A'
+      render: (code) => code.site_id !== undefined && code.site_id !== null ? String(code.site_id) : 'N/A'
     },
     {
       field: 'account_code',
@@ -27,7 +27,7 @@ const AccountCodesList = ({ onViewJson, onRefresh }) => {
       field: 'account_code_id',
       headerName: 'Code ID',
       cellClassName: 'font-medium text-gray-900',
-      render: (code) => code.account_code_id || 'N/A'
+      render: (code) => code.account_code_id !== undefined && code.account_code_id !== null ? String(code.account_code_id) : 'N/A'
     },
     {
       field: 'name',
